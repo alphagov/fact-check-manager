@@ -1,0 +1,13 @@
+.dockerignore
+.git
+.github
+.gitignore
+Dockerfile
+README.md
+coverage
+docs
+features
+log
+spec
+test
+tmp
