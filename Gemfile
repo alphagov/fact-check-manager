@@ -12,6 +12,7 @@ gem "sprockets-rails"
 # gem "importmap-rails"
 
 gem "bootsnap", require: false
+gem "erb_lint"
 gem "gds-api-adapters"
 gem "gds-sso"
 gem "govuk_app_config"

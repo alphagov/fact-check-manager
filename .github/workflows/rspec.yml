@@ -1,0 +1,96 @@
+
+name: Run Rspec
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: 'The branch, tag or SHA to checkout'
+        required: false
+        type: string
+#      publishingApiRef:
+#        description: 'The branch, tag or SHA to checkout Publishing API'
+#        required: false
+#        default: 'main'
+#        type: string
+
+jobs:
+  rspec-matrix:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_node_total: [4]
+        ci_node_index: [0, 1, 2, 3]
+    steps:
+      - name: Setup Postgres
+        id: setup-postgres
+        uses: alphagov/govuk-infrastructure/.github/actions/setup-postgres@main
+
+      - name: Setup Redis
+        uses: alphagov/govuk-infrastructure/.github/actions/setup-redis@main
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          repository: alphagov/fact-check-manager
+          ref: ${{ inputs.ref || github.ref }}
+          show-progress: false
+
+#      - name: Checkout Publishing API (for Content Schemas)
+#        uses: actions/checkout@v6
+#        with:
+#          repository: alphagov/publishing-api
+#          ref: ${{ inputs.publishingApiRef }}
+#          path: vendor/publishing-api
+#          show-progress: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Setup Node
+        uses: alphagov/govuk-infrastructure/.github/actions/setup-node@main
+
+      - name: Precompile assets
+        uses: alphagov/govuk-infrastructure/.github/actions/precompile-rails-assets@main
+
+      - name: Initialize database
+        env:
+          RAILS_ENV: test
+          TEST_DATABASE_URL: ${{ steps.setup-postgres.outputs.db-url }}
+        run: bundle exec rails db:setup
+
+      - name: Run Rspec
+        env:
+          RAILS_ENV: test
+          GOVUK_CONTENT_SCHEMAS_PATH: vendor/publishing-api/content_schemas
+          TEST_DATABASE_URL: ${{ steps.setup-postgres.outputs.db-url }}
+          CI_NODE_TOTAL: ${{ matrix.ci_node_total }}
+          CI_NODE_INDEX: ${{ matrix.ci_node_index }}
+          COVERAGE: true
+        run: |
+          ./bin/rspec-ci
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v5
+        with:
+          name: rspec-coverage-${{ matrix.ci_node_index }}
+          path: coverage/
+          include-hidden-files: true
+
+  run-rspec:
+    name: Run RSpec
+    needs: rspec-matrix
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Fail on workflow error
+        run: exit 1
+        if: >-
+          ${{
+            contains(needs.*.result, 'failure')
+            || contains(needs.*.result, 'cancelled')
+            || contains(needs.*.result, 'skipped')
+          }}
