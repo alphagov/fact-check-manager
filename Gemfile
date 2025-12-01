@@ -12,6 +12,8 @@ gem "sprockets-rails"
 # gem "importmap-rails"
 
 gem "bootsnap", require: false
+gem "bootstrap-sass"
+gem "dartsass-rails"
 gem "erb_lint"
 gem "gds-api-adapters"
 gem "gds-sso"
