@@ -11,7 +11,7 @@ gem "sprockets-rails"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 # gem "importmap-rails"
 
-gem "bootsnap"
+gem "bootsnap", require: false
 gem "gds-api-adapters"
 gem "gds-sso"
 gem "govuk_app_config"
