@@ -1,0 +1,7 @@
+# Configuration file for Sidekiq.
+# Options here can still be overridden by cmd line args.
+---
+:verbose: true
+:concurrency: 2
+:queues:
+  - default
