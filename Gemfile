@@ -12,6 +12,9 @@ gem "sprockets-rails"
 # gem "importmap-rails"
 
 gem "bootsnap", require: false
+gem "bootstrap-sass"
+gem "dartsass-rails"
+gem "erb_lint"
 gem "gds-api-adapters"
 gem "gds-sso"
 gem "govuk_app_config"
@@ -25,7 +28,8 @@ group :development do
 end
 
 group :test do
-  gem "simplecov"
+  gem "simplecov", "~>0.22"
+  gem "simplecov-html", "~>0.12"
 end
 
 group :development, :test do

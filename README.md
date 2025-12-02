@@ -27,9 +27,11 @@ Anything that's not done automatically by the development environment:
 
 ### Running the test suite
 
-Give one command to run all the tests, linting, etc.
+The default `rake` task runs all the tests:
 
-You can also suggest other commands e.g. to run JS tests, run ...
+```sh
+govuk-docker run publisher-lite bundle exec rake
+```
 
 ### Further documentation
 

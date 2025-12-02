@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+# This script is used during the GitHub Actions workflow
+# defined in .github/workflows/rspec.yml.
+# It splits the rspec suite into randomly-allocated groups
+# which are executed across multiple GitHub Actions 'matrix' nodes.
+
+test_files = [
+  Dir["spec/**/*_spec.rb"],
+].flatten
+
+# Determine which CI node is running
+node_index = ENV["CI_NODE_INDEX"].to_i
+total_nodes = ENV["CI_NODE_TOTAL"].to_i
+
+# Other nodes distribute regular tests
+tests = test_files.
+  sort.
+  shuffle(random: Random.new(ENV['GITHUB_SHA'].to_i(16))).
+  select.
+  with_index { |_, i| i % (total_nodes - 1) == (node_index - 1) }
+
+exec({ "RUN_IN_PARALLEL" => "true" }, "bundle exec rspec #{tests.join(' ')}")
