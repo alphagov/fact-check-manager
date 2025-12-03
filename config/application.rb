@@ -3,11 +3,15 @@ require_relative "boot"
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"
-require "active_record/railtie"
 require "active_job/railtie"
+require "active_record/railtie"
+# require "active_storage/engine"
 require "action_controller/railtie"
 require "action_mailer/railtie"
+# require "action_mailbox/engine"
+# require "action_text/engine"
 require "action_view/railtie"
+# require "action_cable/engine"
 require "rails/test_unit/railtie"
 
 require "open-uri"
@@ -20,20 +24,12 @@ Bundler.require(*Rails.groups)
 module FactCheckManager
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.2
+    config.load_defaults 8.0
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
-    # Due to how we initialize state_count_reporter we need to disable a new
-    # optimisation put in place in Rails 7.1.
-    # See: https://guides.rubyonrails.org/upgrading_ruby_on_rails.html#autoloaded-paths-are-no-longer-in-$load-path
-    config.add_autoload_paths_to_load_path = true
-
-    # Settings in config/environments/* take precedence over those specified here.
-    # Application configuration should go into files in config/initializers
-    # -- all .rb files in that directory are automatically loaded.
 
     # Enable the asset pipeline
     config.assets.enabled = true
