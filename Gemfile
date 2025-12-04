@@ -21,6 +21,7 @@ gem "govuk_app_config"
 gem "govuk_publishing_components"
 gem "pg"
 gem "plek"
+gem "terser"
 gem "uglifier"
 
 group :development do
