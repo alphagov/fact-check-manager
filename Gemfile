@@ -19,8 +19,11 @@ gem "gds-api-adapters"
 gem "gds-sso"
 gem "govuk_app_config"
 gem "govuk_publishing_components"
+gem "govuk_sidekiq"
 gem "pg"
 gem "plek"
+gem "sentry-sidekiq"
+gem "sidekiq"
 gem "uglifier"
 
 group :development do

@@ -206,6 +206,11 @@ GEM
       rouge
       sprockets (>= 3)
       sprockets-rails
+    govuk_sidekiq (10.0.0)
+      gds-api-adapters (>= 19.1.0)
+      govuk_app_config (>= 1.1)
+      redis-client (>= 0.22.2)
+      sidekiq (~> 7.0, < 8)
     govuk_test (4.1.2)
       brakeman (>= 5.0.2)
       capybara (>= 3.36)
@@ -554,6 +559,8 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
+    redis-client (0.26.2)
+      connection_pool
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
@@ -652,6 +659,15 @@ GEM
     sentry-ruby (5.28.1)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
+    sentry-sidekiq (5.28.1)
+      sentry-ruby (~> 5.28.1)
+      sidekiq (>= 3.0)
+    sidekiq (7.3.9)
+      base64
+      connection_pool (>= 2.3.0)
+      logger
+      rack (>= 2.2.4)
+      redis-client (>= 0.22.2)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -723,6 +739,7 @@ DEPENDENCIES
   gds-sso
   govuk_app_config
   govuk_publishing_components
+  govuk_sidekiq
   govuk_test
   listen
   pg
@@ -730,6 +747,8 @@ DEPENDENCIES
   rails (= 8.0.3)
   rspec-rails
   rubocop-govuk
+  sentry-sidekiq
+  sidekiq
   simplecov (~> 0.22)
   simplecov-html (~> 0.12)
   sprockets-rails
