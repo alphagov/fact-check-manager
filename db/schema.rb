@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_15_111224) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_06_113343) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -20,6 +20,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_15_111224) do
 
   create_table "tests", force: :cascade do |t|
     t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "name"
+    t.string "email"
+    t.string "uid"
+    t.string "organisation_slug"
+    t.string "organisation_content_id"
+    t.string "app_name"
+    t.text "permissions", default: [], array: true
+    t.boolean "remotely_signed_out", default: false
+    t.boolean "disabled", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
