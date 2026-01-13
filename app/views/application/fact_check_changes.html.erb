@@ -1,0 +1,59 @@
+<% content_for :title_caption, "Article Title" %>
+<% content_for :title, "Fact check the changes" %>
+
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+  <%= render "govuk_publishing_components/components/inset_text", {} do %>
+    <p class="govuk-body">Respond by <span class="govuk-body govuk-!-font-weight-bold">DATE_VALUE</span></p>
+  <% end %>
+  <%= render "govuk_publishing_components/components/button", {
+    text: "Respond to fact check",
+  } %>
+</div>
+</div>
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+    <div class="govuk-body compare-editions">
+    <div class="diff">
+      <ul class="govuk-list">
+          <li class="unchanged"><h2 class="govuk-heading-xl">How apprenticeships work</h2></li><li class="unchanged">Apprenticeships combine practical training in a job with study.</li>
+          <li class="unchanged">&nbsp;</li>
+
+          <li class="">
+            <p class="govuk-body">As an apprentice you’ll:</p>
+            <ul class="govuk-list govuk-list--bullet">
+              <li>be an employee <a href="#" class="govuk-link--no-visited-state">earning a wage and getting holiday pay</a></li>
+              <li>work alongside experienced staff</li>
+              <li>gain job-specific skills</li>
+              <li>get time for training and study related to your role (at least 20% of your normal working hours)</li>
+            </ul>            
+          </li>
+          <li class="del"><del>Apprenticeships take <strong>1</strong> to <strong>5</strong> years to complete depending on the<strong>ir</strong> level.</del></li>
+          <li class="ins"><ins>Apprenticeships <strong>can </strong>take <strong>from 8 months</strong> to <strong>6</strong> years to complete<strong>,</strong> depending on the<strong> type and</strong> level<strong> of the apprenticeship</strong>.</ins></li>
+    </div>
+    </div>
+</div>
+<div class="govuk-grid-column-one-third options-sidebar">
+        <div class="sidebar-components">
+        <%= render "govuk_publishing_components/components/heading", {
+            text: "Preview",
+            heading_level: 3,
+            font_size: "s",
+            padding: true,
+        } %>
+        <p class="govuk-body"><a href="" class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank">Preview the draft page (opens in new tab)</a></p>
+        </div>
+        <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3">
+        <%= render "govuk_publishing_components/components/heading", {
+            text: "Guidance",
+            heading_level: 3,
+            font_size: "s",
+            padding: true,
+        } %>
+        <ul class="govuk-list govuk-list--bullet">
+            <li>red highlights and a minus sign (–) show content that’s been deleted</li>
+            <li>green highlights and a plus sign (+) show content that’s been added</li>
+        </ul>
+      <p class="govuk-body"><a href="https://www.gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk" class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank">Fact checking guidance (opens in new tab)</a></p>
+      </div>
+</div>
