@@ -1,9 +1,10 @@
+# This file is copied to spec/ when you run 'rails generate rspec:install'
 require "spec_helper"
-ENV["RAILS_ENV"] = "test"
+ENV["RAILS_ENV"] ||= "test"
+
 # Must go at top of file
 require "simplecov"
-# SimpleCov.start "rails"
-SimpleCov.start
+SimpleCov.start "rails"
 
 require_relative "../config/environment"
 # Prevent database truncation if the environment is production
