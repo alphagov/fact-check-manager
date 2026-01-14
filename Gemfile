@@ -32,13 +32,14 @@ group :development do
 end
 
 group :test do
+  gem "rspec-rails"
   gem "simplecov", "~>0.22"
   gem "simplecov-html", "~>0.12"
 end
 
 group :development, :test do
   gem "byebug"
+  gem "factory_bot_rails"
   gem "govuk_test"
-  gem "rspec-rails"
   gem "rubocop-govuk"
 end
