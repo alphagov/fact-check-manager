@@ -30,7 +30,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_04_143415) do
     t.uuid "source_id", null: false
     t.string "requester_name", null: false
     t.string "requester_email", null: false
-    t.string "status", default: "in_progress", null: false
+    t.string "status", default: "new", null: false
     t.text "previous_content"
     t.text "current_content", null: false
     t.datetime "deadline"
