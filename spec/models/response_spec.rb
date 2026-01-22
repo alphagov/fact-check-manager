@@ -40,5 +40,14 @@ RSpec.describe Response, type: :model do
 
       expect(request.response).to equal(response)
     end
+
+    it "allows a user to return a collection of response objects" do
+      user = FactoryBot.create(:user)
+      first_request_response = FactoryBot.create(:response, user: user)
+      second_request_response = FactoryBot.create(:response, user: user)
+
+      expect(user.responses).to include(first_request_response)
+      expect(user.responses).to include(second_request_response)
+    end
   end
 end
