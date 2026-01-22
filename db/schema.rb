@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_13_105815) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_21_152056) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -40,6 +40,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_105815) do
     t.index ["edition_id"], name: "index_requests_on_edition_id"
   end
 
+  create_table "responses", force: :cascade do |t|
+    t.bigint "request_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["request_id"], name: "index_responses_on_request_id", unique: true
+    t.index ["user_id"], name: "index_responses_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
@@ -54,4 +64,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_105815) do
     t.datetime "updated_at", null: false
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
+
+  add_foreign_key "responses", "requests"
+  add_foreign_key "responses", "users"
 end
