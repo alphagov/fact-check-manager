@@ -2,7 +2,10 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require_relative "config/application"
-
 Rails.application.load_tasks
 
-task default: %i[lint test jasmine]
+if Rails.env.development? || Rails.env.test?
+  require "rspec/core/rake_task"
+
+  task default: %i[lint spec]
+end

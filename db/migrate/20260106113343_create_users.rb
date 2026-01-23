@@ -10,7 +10,10 @@ class CreateUsers < ActiveRecord::Migration[8.0]
       t.text     :permissions, array: true, default: []
       t.boolean  :remotely_signed_out, default: false
       t.boolean  :disabled, default: false
+
       t.timestamps
     end
+
+    add_index :users, :uid, unique: true
   end
 end
