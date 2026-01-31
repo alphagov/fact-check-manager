@@ -75,8 +75,6 @@ GEM
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
     ast (2.4.3)
-    autoprefixer-rails (10.4.21.0)
-      execjs (~> 2)
     base64 (0.3.0)
     benchmark (0.5.0)
     better_html (2.2.0)
@@ -89,9 +87,6 @@ GEM
     bigdecimal (3.3.1)
     bootsnap (1.19.0)
       msgpack (~> 1.2)
-    bootstrap-sass (3.4.1)
-      autoprefixer-rails (>= 5.2.1)
-      sassc (>= 2.0.0)
     brakeman (7.1.1)
       racc
     builder (3.3.0)
@@ -113,6 +108,7 @@ GEM
       sass-embedded (~> 1.63)
     date (3.5.0)
     diff-lcs (1.6.2)
+    diffy (3.4.4)
     docile (1.4.1)
     domain_name (0.6.20240107)
     drb (2.2.3)
@@ -650,8 +646,6 @@ GEM
       google-protobuf (~> 4.31)
     sass-embedded (1.94.2-x86_64-linux-musl)
       google-protobuf (~> 4.31)
-    sassc (2.4.0)
-      ffi (~> 1.9)
     securerandom (0.4.1)
     selenium-webdriver (4.38.0)
       base64 (~> 0.2)
@@ -739,9 +733,9 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap
-  bootstrap-sass
   byebug
   dartsass-rails
+  diffy
   erb_lint
   factory_bot_rails
   gds-api-adapters
@@ -760,7 +754,6 @@ DEPENDENCIES
   sidekiq
   simplecov (~> 0.22)
   simplecov-html (~> 0.12)
-  sprockets-rails
   terser
   uglifier
 
