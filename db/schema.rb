@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_04_142302) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_04_143415) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -28,17 +28,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_04_142302) do
 
   create_table "requests", force: :cascade do |t|
     t.uuid "source_id", null: false
-    t.string "source_app", null: false
-    t.string "source_url"
-    t.string "source_title"
     t.string "requester_name", null: false
     t.string "requester_email", null: false
     t.string "status", default: "in_progress", null: false
-    t.text "previous_published_edition"
+    t.text "previous_content"
     t.text "current_content", null: false
     t.datetime "deadline", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source_app", null: false
+    t.string "source_url"
+    t.string "source_title"
     t.index ["created_at"], name: "index_requests_on_created_at"
     t.index ["source_id"], name: "index_requests_on_source_id"
   end
