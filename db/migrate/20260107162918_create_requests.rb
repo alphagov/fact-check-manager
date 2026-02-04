@@ -3,7 +3,7 @@ class CreateRequests < ActiveRecord::Migration[8.0]
     # Bigint ID column is added by default
     create_table :requests do |t|
       enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
-      t.uuid :edition_id, index: true, null: false
+      t.uuid :source_id, index: true, null: false
       t.string :requester_name, null: false
       t.string :requester_email, null: false
       t.string :status, null: false, default: 'in_progress'

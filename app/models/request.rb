@@ -3,8 +3,8 @@ class Request < ApplicationRecord
   has_many :users, through: :collaborations
   has_one :response
 
-  validates :edition_id, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
-  scope :for_edition, ->(edition_id) { where(edition_id: edition_id) }
+  validates :source_id, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
+  scope :for_source, ->(source_id) { where(source_id: source_id) }
   scope :most_recent_first, -> { order(created_at: :desc) }
-  scope :most_recent_for_edition, ->(edition_id) { for_edition(edition_id).most_recent_first.first }
+  scope :most_recent_for_source, ->(source_id) { for_source(source_id).most_recent_first.first }
 end

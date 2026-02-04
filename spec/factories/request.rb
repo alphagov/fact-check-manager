@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :request do
-    edition_id { SecureRandom.uuid }
+    source_id { SecureRandom.uuid }
     requester_name { "Malcolm Tucker" }
     requester_email { "m.tucker@gov.uk" }
     current_content { "<HTML> Changes go here <HTML>" }
