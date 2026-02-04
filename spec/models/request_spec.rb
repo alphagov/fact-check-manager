@@ -11,7 +11,7 @@ RSpec.describe Request, type: :model do
     record = described_class.new
     record.valid?
 
-    expect(record.errors.attribute_names).to include(:source_id, :requester_name, :requester_email, :current_content, :deadline)
+    expect(record.errors.attribute_names).to include(:source_id, :source_app, :requester_name, :requester_email, :current_content, :deadline)
   end
 
   it "is valid when all required attributes are set" do
