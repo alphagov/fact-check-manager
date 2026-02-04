@@ -7,11 +7,11 @@ RSpec.describe Request, type: :model do
     expect(record).not_to be_valid
   end
 
-  it "includes errors for each missing attribute" do
+  it "includes errors for each missing mandatory attribute" do
     record = described_class.new
     record.valid?
 
-    expect(record.errors.attribute_names).to include(:source_id, :source_app, :requester_name, :requester_email, :current_content, :deadline)
+    expect(record.errors.attribute_names).to include(:source_id, :source_app, :requester_name, :requester_email, :current_content)
   end
 
   it "is valid when all required attributes are set" do

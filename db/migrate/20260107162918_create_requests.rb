@@ -12,7 +12,7 @@ class CreateRequests < ActiveRecord::Migration[8.0]
       t.string :status, null: false, default: 'in_progress'
       t.text :previous_content
       t.text :current_content, null: false
-      t.datetime :deadline, null: false
+      t.datetime :deadline
 
       t.timestamps
     end

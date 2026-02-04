@@ -33,7 +33,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_04_143415) do
     t.string "status", default: "in_progress", null: false
     t.text "previous_content"
     t.text "current_content", null: false
-    t.datetime "deadline", null: false
+    t.datetime "deadline"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "source_app", null: false
