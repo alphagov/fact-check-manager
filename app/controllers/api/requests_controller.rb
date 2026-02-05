@@ -3,7 +3,7 @@ module Api
     # TODO: Implement authentication later
     # before_action :authenticate_publisher!
     # TO REMOVE:
-    protect_from_forgery with: :null_session
+    # protect_from_forgery with: :null_session
 
     def create
       if recipients.blank?
