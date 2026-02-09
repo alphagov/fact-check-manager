@@ -1,10 +1,5 @@
 module Api
-  class RequestsController < ApplicationController
-    # TODO: Implement authentication later
-    # before_action :authenticate_publisher!
-    # TO REMOVE:
-    # protect_from_forgery with: :null_session
-
+  class RequestsController < Api::BaseController
     def create
       if recipients.blank?
         return render json: { errors: ["At least one recipient email is required"] }, status: :bad_request
