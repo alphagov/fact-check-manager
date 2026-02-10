@@ -782,6 +782,7 @@ DEPENDENCIES
   sidekiq
   simplecov (~> 0.22)
   simplecov-html (~> 0.12)
+  sprockets-rails
   terser
   uglifier
 
