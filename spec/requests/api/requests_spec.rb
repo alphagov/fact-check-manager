@@ -50,13 +50,18 @@ RSpec.describe "POST /api/requests", type: :request do
     it "returns errors for missing required fields" do
       invalid_payload = { requester_name: "Alice", recipients: ["recipient1@example.com", "recipient2@example.com"] }
 
-      post "/api/requests", params: invalid_payload, as: :json
+      expect {
+        post "/api/requests", params: invalid_payload, as: :json
+      }.to change(Request, :count).by(0)
+                                  .and change(Collaboration, :count).by(0)
 
       expect(response).to have_http_status(:bad_request)
       json = JSON.parse(response.body)
       expect(json["errors"]).to include(
         "Source can't be blank",
+        "Source app can't be blank",
         "Requester email can't be blank",
+        "Current content can't be blank",
       )
     end
   end
