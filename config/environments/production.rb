@@ -78,6 +78,7 @@ Rails.application.configure do
   # Enable DNS rebinding protection and other `Host` header attacks.
   config.hosts = [
     /fact-check-manager\..*\.gov.uk/,
+    /fact-check-manager/,
   ]
 
   # Skip DNS rebinding protection for the default health check endpoint.
