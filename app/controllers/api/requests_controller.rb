@@ -1,18 +1,15 @@
 module Api
   class RequestsController < ApplicationController
-    # TODO: Implement authentication later
-    # before_action :authenticate_publisher!
-    # TO REMOVE:
-    # protect_from_forgery with: :null_session
+    wrap_parameters include: Request.attribute_names + [:recipients]
 
     def create
-      if recipients.blank?
+      if request_params[:recipients].blank?
         return render json: { errors: ["At least one recipient email is required"] }, status: :bad_request
       end
 
       fact_check_request = Request.new(request_params.except(:recipients))
 
-      recipients.each do |email|
+      request_params[:recipients].each do |email|
         user = User.find_or_create_by!(email: email) do |u|
           u.name = email.split("@").first
           u.uid = SecureRandom.uuid
@@ -41,11 +38,8 @@ module Api
         :current_content,
         :previous_content, # optional
         :deadline, # optional
+        recipients: [],
       )
-    end
-
-    def recipients
-      params.fetch(:recipients, [])
     end
   end
 end
