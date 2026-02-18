@@ -1,0 +1,44 @@
+<% content_for :title_context, @article_title %>
+<% content_for :title, t("fact_check_comparison.fact_check_heading") %>
+
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+  <%= render "govuk_publishing_components/components/inset_text", {} do %>
+    <p class="govuk-body"><%= t "fact_check_comparison.respond_by" %> <span class="govuk-body govuk-!-font-weight-bold"><%= @date %></span></p>
+  <% end %>
+  <%= render "govuk_publishing_components/components/button", {
+    text: t("fact_check_comparison.respond_to_button"),
+    href: "/",
+  } %>
+</div>
+</div>
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+    <div class="govuk-body compare-editions">
+        <%= @differ %>
+    </div>
+</div>
+<div class="govuk-grid-column-one-third options-sidebar">
+        <div class="sidebar-components">
+        <%= render "govuk_publishing_components/components/heading", {
+            text: t("fact_check_comparison.preview_heading"),
+            heading_level: 3,
+            font_size: "s",
+            padding: true,
+        } %>
+        <p class="govuk-body"><a href=<%= @draft_url %>class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank"><%= t "fact_check_comparison.preview_link" %></a></p>
+        </div>
+        <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3">
+        <%= render "govuk_publishing_components/components/heading", {
+            text: t("fact_check_comparison.guidance_heading"),
+            heading_level: 3,
+            font_size: "s",
+            padding: true,
+        } %>
+        <ul class="govuk-list govuk-list--bullet">
+            <li><%= t("fact_check_comparison.guidance_deleted") %></li>
+            <li><%= t("fact_check_comparison.guidance_added") %></li>
+        </ul>
+      <p class="govuk-body"><a href="https://www.gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk" class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank"><%= t("fact_check_comparison.guidance_link") %></a></p>
+      </div>
+</div>
