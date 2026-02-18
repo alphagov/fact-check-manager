@@ -4,6 +4,8 @@ Rails.application.routes.draw do
 
   root to: "application#hello_world"
 
+  get "compare", to: "fact_check_comparison#compare"
+
   namespace :api do
     resources :requests, only: [:create]
   end

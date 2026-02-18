@@ -1,2 +1,12 @@
 en:
   hello: "Hello world"
+  fact_check_comparison:
+    fact_check_heading: "Fact check the changes"
+    respond_by: "Respond by"
+    respond_to_button: "Respond to fact check"
+    preview_heading: "Preview"
+    preview_link: "Preview the draft page (opens in new tab)"
+    guidance_heading: "Guidance"
+    guidance_deleted: "red highlights and a minus sign (–) show content that’s been deleted"
+    guidance_added: "green highlights and a plus sign (+) show content that’s been added"
+    guidance_link: "Fact checking guidance (opens in new tab)"
