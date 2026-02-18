@@ -4,17 +4,18 @@
 <div class="govuk-grid-row">
 <div class="govuk-grid-column-two-thirds">
   <%= render "govuk_publishing_components/components/inset_text", {} do %>
-    <p class="govuk-body"><%= t "fact_check_comparison.respond_by" %> <span class="govuk-body govuk-!-font-weight-bold"><%= @date %></span></p>
+    <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @date %></span>
   <% end %>
   <%= render "govuk_publishing_components/components/button", {
     text: t("fact_check_comparison.respond_to_button"),
     href: "/",
+    margin_bottom: 6,
   } %>
 </div>
 </div>
 <div class="govuk-grid-row">
 <div class="govuk-grid-column-two-thirds">
-    <div class="govuk-body compare-editions">
+    <div class="compare-editions">
         <%= @differ %>
     </div>
 </div>
@@ -26,7 +27,7 @@
             font_size: "s",
             padding: true,
         } %>
-        <p class="govuk-body"><a href=<%= @draft_url %>class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank"><%= t "fact_check_comparison.preview_link" %></a></p>
+        <p class="govuk-body"><%= link_to  t("fact_check_comparison.preview_link"), @draft_url, class: "govuk-link--no-visited-state govuk-link" %></p>
         </div>
         <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3">
         <%= render "govuk_publishing_components/components/heading", {
@@ -35,10 +36,18 @@
             font_size: "s",
             padding: true,
         } %>
-        <ul class="govuk-list govuk-list--bullet">
-            <li><%= t("fact_check_comparison.guidance_deleted") %></li>
-            <li><%= t("fact_check_comparison.guidance_added") %></li>
-        </ul>
-      <p class="govuk-body"><a href="https://www.gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk" class="govuk-link--no-visited-state" rel="noreferrer noopener" target="_blank"><%= t("fact_check_comparison.guidance_link") %></a></p>
+        <%= render "govuk_publishing_components/components/list", {
+          visible_counters: true,
+          items: [
+            t("fact_check_comparison.guidance_deleted"),
+            t("fact_check_comparison.guidance_added"),
+          ],
+        } %>
+      <p class="govuk-body">
+        <%= link_to t("fact_check_comparison.guidance_link"), 
+          "https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk",
+          class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener 
+        %>
+      </p>
       </div>
 </div>
