@@ -1,0 +1,5 @@
+.compare-editions {
+  & > div {
+    @extend .govuk-body; // stylelint-disable-line scss/at-extend-no-missing-placeholder
+  }
+}
