@@ -1,65 +1,23 @@
 require "rails_helper"
 
-RSpec.shared_examples "test JSON content" do |content_field|
-  it "#{content_field} contains non string values" do
-    invalid_hash_content = { "illegal_boolean": false }
-    record = FactoryBot.build(:request, **{ content_field => invalid_hash_content })
-    record.validate
-
-    expect(record).not_to be_valid
-    expect(record.errors.messages[content_field]).to include("value for illegal_boolean must be a string")
-  end
-
-  it "it adds an error to #{content_field}" do
-    invalid_hash_content = "[\"apple\", \"banana\", \"kiwi\"]"
-    record = FactoryBot.build(:request, **{ content_field => invalid_hash_content })
-    record.validate
-
-    expect(record).not_to be_valid
-    expect(record.errors.messages[content_field]).to include("#{content_field} is not a hash")
-  end
-end
-
 RSpec.describe Request, type: :model do
-  context "is invalid" do
-    it "without required attributes" do
-      record = described_class.new
+  it "is not valid without required attributes" do
+    record = described_class.new
 
-      expect(record).not_to be_valid
-    end
-
-    it "and includes errors for each missing mandatory attribute" do
-      record = described_class.new
-      record.validate
-
-      expect(record.errors.attribute_names).to include(:source_id, :source_app, :requester_name, :requester_email, :current_content)
-    end
-
-    it "current_content is an empty hash" do
-      record = FactoryBot.build(:request, current_content: {})
-      record.validate
-
-      expect(record).not_to be_valid
-      expect(record.errors.attribute_names).to include(:current_content)
-      expect(record.errors.messages[:current_content]).to include("can't be blank")
-    end
-
-    include_examples "test JSON content", :previous_content
-    include_examples "test JSON content", :current_content
+    expect(record).not_to be_valid
   end
 
-  context "is valid" do
-    it "when all required attributes are set" do
-      record = FactoryBot.build(:request)
+  it "includes errors for each missing mandatory attribute" do
+    record = described_class.new
+    record.valid?
 
-      expect(record).to be_valid
-    end
+    expect(record.errors.attribute_names).to include(:source_id, :source_app, :requester_name, :requester_email, :current_content)
+  end
 
-    it "when content hashes contain multiple key-value-pairs" do
-      record = FactoryBot.build(:request, :with_more_complex_content_data)
+  it "is valid when all required attributes are set" do
+    record = FactoryBot.build(:request)
 
-      expect(record).to be_valid
-    end
+    expect(record).to be_valid
   end
 
   describe "searching by source_id" do
