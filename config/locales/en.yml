@@ -1,7 +1,7 @@
 en:
   hello: "Hello world"
   fact_check_comparison:
-    fact_check_heading: "Fact check the changes"
+    heading: "Fact check the changes"
     respond_by: "Respond by"
     respond_to_button: "Respond to fact check"
     preview_heading: "Preview"
