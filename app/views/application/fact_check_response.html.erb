@@ -1,0 +1,44 @@
+<% content_for :page_title, @article_title %>
+<% content_for :title_context, @article_title %>
+<% content_for :back_link, "_blank" %>
+<% content_for :title, t("fact_check_response.heading") %>
+<% if @errors.any? %>
+  <% content_for :error_summary, render(partial: "application/confirmations/response_error_summary") %>
+<% end %>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <%= form_with url: respond_path,
+                  method: :post,
+                  scope: :fact_check_response do |f| %>
+      <%= f.hidden_field :page_title, :value => @article_title %>
+      <%= f.hidden_field :page_id, :value => "id" %>
+      <%= render "govuk_publishing_components/components/radio", {
+        name: "fact_check_response[status]",
+        heading: t("fact_check_response.form_heading"),
+        id: "selection_radio_buttons",
+        visually_hidden_heading: true,
+        error_message: (@errors[:status].presence),
+        items: [
+          {
+            value: "correct",
+            text: t("fact_check_response.correct"),
+            id: "correct",
+            checked: @form_data.present? && @form_data["status"] == "correct",
+          },
+          {
+            value: "incorrect",
+            text: t("fact_check_response.incorrect"),
+            id: "incorrect",
+            checked: @errors[:details].present? || @form_data.present? &&  @form_data["status"] == "incorrect",
+            conditional: render(partial: "application/confirmations/factual_error_textarea"),
+          },
+        ],
+      } %>
+
+      <%= render "govuk_publishing_components/components/button", {
+        text: t("fact_check_response.continue_button"),
+        margin_bottom: 6,
+      } %>
+    <% end %>
+  </div>
+</div>
