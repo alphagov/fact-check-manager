@@ -16,7 +16,7 @@ RSpec.describe "FactCheckComparison", type: :request do
       get compare_path
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include(I18n.t("fact_check_comparison.fact_check_heading"))
+      expect(response.body).to include(I18n.t("fact_check_comparison.heading"))
       expect(response.body).to include(I18n.t("fact_check_comparison.respond_by"))
       expect(response.body).to include(I18n.t("fact_check_comparison.respond_to_button"))
       expect(response.body).to include(I18n.t("fact_check_comparison.preview_heading"))
