@@ -1,0 +1,26 @@
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+    <%= render "govuk_publishing_components/components/panel", {
+      title: t("fact_check_submitted.fact_check_submitted"),
+      description: t("fact_check_submitted.fact_check_description"),
+    } %>
+    <p class="govuk-body"> <%= t("fact_check_submitted.thank_you") %> </p>
+    <%= render "govuk_publishing_components/components/heading", {
+        text: t("fact_check_submitted.what_happens_next"),
+        padding_top: 10,
+        margin_bottom: 6,
+    } %>
+    <p class="govuk-body"> <%= t("fact_check_submitted.contact_you") %> </p>
+    <%= render "govuk_publishing_components/components/list", {
+          visible_counters: true,
+          items: [
+            t("fact_check_submitted.when_changes"),
+            t("fact_check_submitted.when_questions"),
+          ],
+        } %>
+    <p class="govuk-body"><%= link_to t("fact_check_submitted.what_do_you_think"),
+        href: "",
+        class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener 
+        %> <%= t("fact_check_submitted.thirty_sec") %></p>
+</div>
+
