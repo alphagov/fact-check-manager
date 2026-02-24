@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_05_161332) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_24_092134) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,14 +31,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_161332) do
     t.string "requester_name", null: false
     t.string "requester_email", null: false
     t.string "status", default: "new", null: false
-    t.text "previous_content"
-    t.text "current_content", null: false
-    t.datetime "deadline"
+    t.datetime "deadline", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "source_app", null: false
     t.string "source_url"
     t.string "source_title"
+    t.json "current_content"
+    t.json "previous_content"
     t.index ["created_at"], name: "index_requests_on_created_at"
     t.index ["source_id"], name: "index_requests_on_source_id"
   end
