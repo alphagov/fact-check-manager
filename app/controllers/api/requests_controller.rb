@@ -21,7 +21,7 @@ module Api
       if fact_check_request.save
         render json: { id: fact_check_request.id, source_id: fact_check_request.source_id }, status: :created
       else
-        render json: { errors: fact_check_request.errors.full_messages }, status: :bad_request
+        render json: { errors: fact_check_request.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -37,7 +37,7 @@ module Api
         :requester_email,
         :current_content,
         :previous_content, # optional
-        :deadline, # optional
+        :deadline,
         recipients: [],
         # dynamic hash fields at the end
         current_content: {},
