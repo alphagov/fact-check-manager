@@ -3,7 +3,7 @@ class Request < ApplicationRecord
   has_many :users, through: :collaborations
   has_one :response
 
-  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, presence: true
+  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
   validate :content_data_must_be_string_pairs
 
   scope :for_source, ->(source_id) { where(source_id: source_id) }

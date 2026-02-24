@@ -37,7 +37,7 @@ module Api
         :requester_email,
         :current_content,
         :previous_content, # optional
-        :deadline, # optional
+        :deadline,
         recipients: [],
         # dynamic hash fields at the end
         current_content: {},

@@ -79,6 +79,7 @@ RSpec.describe "POST /api/requests", type: :request do
         "Source app can't be blank",
         "Requester email can't be blank",
         "Current content can't be blank",
+        "Deadline can't be blank",
       )
     end
 
