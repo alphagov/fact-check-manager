@@ -1,0 +1,10 @@
+<%= render "govuk_publishing_components/components/textarea", {
+            label: {
+              text: t("fact_check_response.factual_errors"),
+              is_page_heading: true,
+              heading_size: "m",
+            },
+            name: "fact_check_response[details]",
+            hint: sanitize(t("fact_check_response.factual_errors_hint")),
+            error: @errors[:details].presence,
+          } %>

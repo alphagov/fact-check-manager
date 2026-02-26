@@ -1,0 +1,40 @@
+<% content_for :title_context, @article_title %>
+<% content_for :title, t("fact_check_verification.heading") %>
+<div class="govuk-grid-row">
+<div class="govuk-grid-column-two-thirds">
+<%= form_with url: confirm_response_path,
+              method: :post,
+              scope: :fact_check_response do |confirm| %>
+
+  <%= render "govuk_publishing_components/components/summary_list", {
+    items: [
+      {
+        field: t("fact_check_verification.confirm_changes"),
+        edit: {
+          href: respond_path(from: :edit_choice),
+          text: t("fact_check_verification.change_link"),
+        },
+        value: @form_data["status"] == "correct" ?
+          t("fact_check_response.correct") :
+          t("fact_check_response.incorrect"),
+      },
+    ],
+    margin_bottom: 6,
+  } %>
+
+  <%= render "govuk_publishing_components/components/heading", {
+    text: t("fact_check_verification.send_response"),
+    margin_bottom: 6,
+  } %>
+
+  <%= render "govuk_publishing_components/components/warning_text", {
+    text: t("fact_check_verification.send_response_warning"),
+  } %>
+
+  <%= render "govuk_publishing_components/components/button", {
+    text: t("fact_check_verification.confirm_button"),
+    margin_bottom: 6,
+  } %>
+
+<% end %>
+</div>
