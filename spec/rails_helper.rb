@@ -16,6 +16,23 @@ require "rspec/rails"
 # Add additional requires below this line. Rails is not loaded until this point!
 require_relative "./support/factory_bot"
 
+require "capybara/rails"
+
+GovukTest.configure
+
+Capybara.register_driver :headless_chrome do |app|
+  chrome_options = GovukTest.headless_chrome_selenium_options
+  chrome_options.add_argument("--disable-web-security")
+  chrome_options.add_argument("--window-size=1400,1400")
+  chrome_options.add_argument("--no-sandbox")
+
+  Capybara::Selenium::Driver.new(
+    app,
+    browser: :chrome,
+    options: chrome_options,
+  )
+end
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
@@ -41,6 +58,10 @@ rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
 RSpec.configure do |config|
+  config.before(:each, type: :system) do
+    driven_by :headless_chrome
+  end
+
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
     Rails.root.join("spec/fixtures"),
