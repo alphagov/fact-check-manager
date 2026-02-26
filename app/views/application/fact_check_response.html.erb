@@ -2,10 +2,10 @@
 <% content_for :title, t("fact_check_response.heading") %>
 <div class="govuk-grid-row">
 <div class="govuk-grid-column-two-thirds">
-<%= form_with url: respond_path, method: :post, scope: :fact_check_response do |f| %>
-    <%= f.hidden_field :status, value: @form_data["status"] %>
-    <%= f.hidden_field :details, value: @form_data["details"] %>
-    <%= render "govuk_publishing_components/components/radio", {
+<%= form_with url: respond_path,
+              method: :post,
+              scope: :fact_check_response do |f| %>
+  <%= render "govuk_publishing_components/components/radio", {
     name: "fact_check_response[status]",
     heading: t("fact_check_response.form_heading"),
     error_message: (@errors[:status].presence),
@@ -24,10 +24,12 @@
         conditional: render(partial: "application/confirmations/factual_error_textarea"),
       },
     ],
-    } %>
-    <%= render "govuk_publishing_components/components/button", {
-      text: t("fact_check_response.continue_button"),
-      margin_bottom: 6,
-    } %>
+  } %>
+
+  <%= render "govuk_publishing_components/components/button", {
+    text: t("fact_check_response.continue_button"),
+    margin_bottom: 6,
+  } %>
+
 <% end %>
 </div>
