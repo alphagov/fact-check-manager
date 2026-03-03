@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_05_161332) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_26_095141) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,8 +31,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_161332) do
     t.string "requester_name", null: false
     t.string "requester_email", null: false
     t.string "status", default: "new", null: false
-    t.text "previous_content"
-    t.text "current_content", null: false
+    t.json "previous_content"
+    t.json "current_content", null: false
     t.datetime "deadline"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -49,6 +49,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_05_161332) do
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "accepted"
     t.index ["request_id"], name: "index_responses_on_request_id", unique: true
     t.index ["user_id"], name: "index_responses_on_user_id"
   end
