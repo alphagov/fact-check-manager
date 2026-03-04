@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "compare", to: "fact_check_comparison#compare"
 
   namespace :api do
-    resources :requests, only: [:create]
+    patch "requests/:source_app/:source_id", to: "requests#update", as: :update_request
+    resources :requests, only: %i[create]
   end
 end
