@@ -4,15 +4,7 @@
 
 <% content_for :head do %>
   <meta name="govuk:components_gem_version" content="<%= GovukPublishingComponents::VERSION %>">
-  <% if false %>
-  <meta name="govuk:user-id" content="<%= current_user&.anonymous_user_id %>">
-  <meta name="govuk:user-created-at" content="<%= current_user&.created_at&.to_date %>">
-  <meta name="govuk:user-organisation-name" content="<%= current_user&.gds_editor? ? "Government Digital Service" : "nil" %>">
-  <meta name="govuk:user-role" content="<%= current_user&.role %>">
-  <%= javascript_include_tag "domain-config" %>
-  <%= javascript_include_tag "govuk_publishing_components/load-analytics" %>
   <%= javascript_include_tag "es6-components", type: "module" %>
-  <% end %>
 <% end %>
 
 <% sanitized_title = sanitize((yield(:page_title).presence || yield(:title))) %>
@@ -23,13 +15,6 @@
   environment: environment,
   head: yield(:head),
 } do %>
-
-  <% if false %>
-  <div data-module="ga4-page-view-tracking" data-attributes='<%= track_analytics_data_on_load(sanitized_title) %>'></div>
-  <% end %>
-
-
-  <%#= render partial: "/shared/maintenance_banner" %>
   
   <%= render "govuk_publishing_components/components/skip_link" %>
 
@@ -37,14 +22,12 @@
     product_name: "Fact Check Manager",
     environment: environment,
     navigation_items: [],
-    data_attributes: {
-      module: "ga4-link-tracker",
-      ga4_link: '{ "event_name": "navigation", "type": "generic_link" }',
-      ga4_no_copy: true,
-    },
   } %>
 
   <div class="govuk-width-container">
+    <% if content_for?(:back_link) %>
+      <%= render "govuk_publishing_components/components/back_link", { href: yield(:back_link) } %>
+    <% end %>
     <main
       id="main-content"
       class="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
@@ -80,8 +63,5 @@
 
   <%= render "govuk_publishing_components/components/layout_footer", {
     navigation: [],
-    data_attributes: {
-      ga4_no_copy: true,
-    },
   } %>
 <% end %>
