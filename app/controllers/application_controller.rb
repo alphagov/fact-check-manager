@@ -3,9 +3,14 @@ class ApplicationController < ActionController::Base
   layout "design_system"
 
   include GDS::SSO::ControllerMethods
+  include TokenHelper
 
   before_action :authenticate_user!
   def hello_world
     render "hello_world"
+  end
+
+  def preview
+    render "shareable_preview"
   end
 end
