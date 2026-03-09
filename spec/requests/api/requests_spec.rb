@@ -64,11 +64,11 @@ RSpec.describe "POST /api/requests", type: :request do
     end
 
     it "returns errors for missing required fields" do
-      payload_missing_requesters = { requester_name: "Alice",
-                                     recipients: ["recipient1@example.com", "recipient2@example.com"] }
+      payload_missing_required_fields = { requester_name: "Alice",
+                                          recipients: ["recipient1@example.com", "recipient2@example.com"] }
 
       expect {
-        post "/api/requests", params: payload_missing_requesters, as: :json
+        post "/api/requests", params: payload_missing_required_fields, as: :json
       }.to change(Request, :count).by(0)
                                   .and change(Collaboration, :count).by(0)
 
