@@ -22,6 +22,7 @@ class FactCheckResponseController < ApplicationController
   end
 
   def confirm_response
+    @errors = {}
     render :confirm_response
   end
 

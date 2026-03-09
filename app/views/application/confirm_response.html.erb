@@ -2,6 +2,9 @@
 <% content_for :title_context, @form_data[:page_title] %>
 <% content_for :back_link, respond_path(back: :true) %>
 <% content_for :title, t("fact_check_verification.heading") %>
+<% if @errors.any? %>
+  <% content_for :error_summary, render(partial: "application/errors/submission_error_summary") %>
+<% end %>
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <%= form_with url: confirm_response_path,
@@ -21,8 +24,16 @@
               t("fact_check_response.correct") :
               t("fact_check_response.incorrect"),
           },
-        ],
-        margin_bottom: 6,
+          (@form_data[:status] == "incorrect" ? {
+            field: t("fact_check_verification.factual_errors"),
+            edit: {
+              href: respond_path(back: :true),
+              text: t("fact_check_verification.change_link"),
+            },
+            value: simple_format(@form_data[:details]),
+          } : nil),
+        ].compact,
+        margin_bottom: 9,
       } %>
     
       <%= render "govuk_publishing_components/components/heading", {
