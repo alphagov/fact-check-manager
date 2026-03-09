@@ -3,7 +3,7 @@
 <% content_for :back_link, "_blank" %>
 <% content_for :title, t("fact_check_response.heading") %>
 <% if @errors.any? %>
-  <% content_for :error_summary, render(partial: "application/confirmations/response_error_summary") %>
+  <% content_for :error_summary, render(partial: "application/errors/response_error_summary") %>
 <% end %>
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
@@ -30,7 +30,7 @@
             text: t("fact_check_response.incorrect"),
             id: "incorrect",
             checked: @errors[:details].present? || @form_data.present? &&  @form_data["status"] == "incorrect",
-            conditional: render(partial: "application/confirmations/factual_error_textarea"),
+            conditional: render(partial: "application/partials/factual_error_textarea"),
           },
         ],
       } %>
