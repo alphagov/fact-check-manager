@@ -5,7 +5,6 @@ Rails.application.routes.draw do
   root to: "application#hello_world"
 
   get "compare", to: "fact_check_comparison#compare"
-  get "/preview/:id", to: "application#preview"
 
   # TODO: Wrap in a resources block
   # See: https://github.com/alphagov/fact-check-manager/pull/33#discussion_r2905663106
@@ -16,5 +15,13 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :requests, only: [:create]
+  end
+
+  namespace :requests do
+    scope ":source_app" do
+      scope ":source_id" do
+        get "/preview", to: "/application#preview"
+      end
+    end
   end
 end
