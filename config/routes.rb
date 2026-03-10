@@ -27,4 +27,12 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  namespace :requests do
+    scope ":source_app" do
+      scope ":source_id" do
+        get "/preview", to: "/application#preview"
+      end
+    end
+  end
 end
