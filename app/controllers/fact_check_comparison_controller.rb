@@ -3,20 +3,24 @@ class FactCheckComparisonController < ApplicationController
   require "date"
 
   def compare
-    before = previous_content
-    after = current_content
-    @article_title = "Title"
+    before = previous_content["body"]
+    after = current_content["body"]
+    @article_title = tmp_req.source_title
     @date = Date.current.to_s
     @differ = Nokodiff.diff(before, after)
     @draft_url = "/"
     render "fact_check_comparison"
   end
 
+  def tmp_req
+    Request.last
+  end
+
   def previous_content
-    "<div>This is a line with no changes</div> <div>This line will change</div>"
+    tmp_req.previous_content
   end
 
   def current_content
-    "<div>This is a line with no changes</div> <div>This line has some changes</div>"
+    tmp_req.current_content
   end
 end
