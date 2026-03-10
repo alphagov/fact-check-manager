@@ -14,6 +14,14 @@ Rails.application.routes.draw do
   post "fact-check-submitted", to: "fact_check_response#fact_check_submitted"
 
   namespace :api do
-    resources :requests, only: [:create]
+    resources :requests, only: %i[create]
+
+    namespace :requests do
+      scope ":source_app" do
+        scope ":source_id" do
+          post "/resend-emails", to: "resend_emails"
+        end
+      end
+    end
   end
 end
