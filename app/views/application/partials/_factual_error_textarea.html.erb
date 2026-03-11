@@ -6,6 +6,8 @@
             name: "fact_check_response[details]",
             textarea_id: "fact_check_details",
             hint: sanitize(t("fact_check_response.factual_errors_hint")),
+            value: @form_data&.dig("details"),
             error: @errors[:details].presence,
+            error_message: @errors[:details].present? ? t("fact_check_response.factual_errors_empty_field") : nil,
             rows: 18,
           } %>
