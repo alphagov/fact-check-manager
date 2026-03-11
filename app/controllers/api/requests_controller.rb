@@ -25,6 +25,20 @@ module Api
       end
     end
 
+    def resend_emails
+      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
+
+      unless request_record
+        return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
+      end
+
+      if NotifyService.resend_emails(request_record)
+        render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
+      else
+        render json: { errors: request_record.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
   private
 
     def request_params
