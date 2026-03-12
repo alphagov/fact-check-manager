@@ -205,4 +205,113 @@ RSpec.describe "POST /api/requests", type: :request do
       end
     end
   end
+
+  describe "#update" do
+    let!(:existing_request) { FactoryBot.create(:request) }
+
+    let!(:update_payload) do
+      {
+        source_app: "Mainstream",
+        source_id: existing_request.source_id,
+        source_title: "Updated Title",
+        current_content: {
+          "heading": "Some title words",
+          "body": "Updated body goes here",
+        },
+      }
+    end
+
+    context "with a valid payload" do
+      it "updates the Request with collaborations" do
+        expect {
+          patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: update_payload, as: :json
+        }.not_to change(Request, :count)
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        expect(json).to include("id")
+        expect(json).to include("source_id")
+        expect(json).to include("source_app")
+
+        request = Request.last
+        expect(request.source_app).to eq("publisher")
+        expect(request.source_id).to be_present
+        expect(request.source_title).to eq("Updated Title")
+        expect(request.current_content).to eq({ "body" => "Updated body goes here", "heading" => "Some title words" })
+        expect(request.status).to eq("new")
+        expect(request.requester_name).to eq("Malcolm Tucker")
+        expect(request.requester_email).to eq("m.tucker@gov.uk")
+      end
+    end
+
+    context "invalid request parameters" do
+      let(:invalid_source_app) { "invalid-source-app" }
+      let(:invalid_source_id) { "invalid-source-id" }
+
+      describe "invalid source_app and invalid source_id" do
+        it "returns a 400 error" do
+          patch "/api/requests/#{invalid_source_app}/#{invalid_source_id}", params: update_payload, as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include(
+            "Request with ID #{invalid_source_id} not found for app #{invalid_source_app}",
+          )
+        end
+      end
+
+      describe "valid source_app and invalid source_id" do
+        it "returns a 400 error" do
+          patch "/api/requests/#{update_payload[:source_app]}/#{invalid_source_id}", params: update_payload, as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include(
+            "Request with ID #{invalid_source_id} not found for app #{update_payload[:source_app]}",
+          )
+        end
+      end
+
+      describe "invalid source_app and valid source_id" do
+        it "returns a 400 error" do
+          patch "/api/requests/#{invalid_source_app}/#{update_payload[:source_id]}", params: update_payload, as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include(
+            "Request with ID #{update_payload[:source_id]} not found for app #{invalid_source_app}",
+          )
+        end
+      end
+
+      describe "source_app and source_id both valid, but invalid in combination" do
+        let(:second_request) { FactoryBot.create(:request, source_app: "second-app") }
+
+        it "returns a 400 error" do
+          patch "/api/requests/#{second_request[:source_app]}/#{update_payload[:source_id]}", params: update_payload, as: :json
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include(
+            "Request with ID #{update_payload[:source_id]} not found for app #{second_request[:source_app]}",
+          )
+        end
+      end
+    end
+
+    context "with an invalid payload" do
+      let(:invalid_content_payload) { { source_app: existing_request.source_app, source_id: existing_request.source_id, current_content: { body: 123 } } }
+
+      it "returns errors for missing required fields" do
+        patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: invalid_content_payload, as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include(
+          "Current content value for body must be a string",
+        )
+      end
+    end
+  end
 end
