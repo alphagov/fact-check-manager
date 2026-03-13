@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       scope ":source_app" do
         scope ":source_id" do
           post "/resend-emails", to: "resend_emails"
+          patch "", to: "/api/requests#update", as: :update_request
         end
       end
     end
