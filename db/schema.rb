@@ -37,7 +37,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_03_10_161215) do
     t.string "source_app", null: false
     t.string "source_url"
     t.string "source_title"
-    t.json "current_content"
+    t.json "current_content", null: false
     t.json "previous_content"
     t.uuid "auth_bypass_id", default: -> { "gen_random_uuid()" }, null: false
     t.index ["created_at"], name: "index_requests_on_created_at"

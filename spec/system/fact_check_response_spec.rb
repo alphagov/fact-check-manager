@@ -2,11 +2,12 @@ require "rails_helper"
 
 RSpec.describe "FactCheckResponse", type: :system do
   before do
+    GDS::SSO.test_user = user
     allow(PublisherApiService).to receive(:post_fact_check_response)
                               .and_return(double(code: 200))
   end
 
-  let(:user) { create(:user) }
+  let!(:user) { create(:user) }
   let(:request) do
     create(
       :request,

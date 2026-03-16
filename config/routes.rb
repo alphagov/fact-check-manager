@@ -11,6 +11,7 @@ Rails.application.routes.draw do
         get  "respond", to: "fact_check_response#respond_to_fact_check"
         post "verify-response", to: "fact_check_response#validate_fact_check_response"
         post "confirm-response", to: "fact_check_response#send_response"
+        get "/preview", to: "application#preview"
       end
     end
   end
@@ -24,14 +25,6 @@ Rails.application.routes.draw do
           post "/resend-emails", to: "resend_emails"
           patch "", to: "/api/requests#update", as: :update_request
         end
-      end
-    end
-  end
-
-  namespace :requests do
-    scope ":source_app" do
-      scope ":source_id" do
-        get "/preview", to: "/application#preview"
       end
     end
   end
