@@ -5,19 +5,23 @@ class ApplicationController < ActionController::Base
   include GDS::SSO::ControllerMethods
   include TokenHelper
 
-  before_action :authenticate_user!
+  before_action :authenticate_user!, unless: :token_bypass?
 
-  skip_before_action :authenticate_user!, only: :preview, unless: -> { !valid_jwt?(preview_params[:token], preview_request) }
+  TOKEN_BYPASS_METHODS = %w[preview].freeze
 
   def hello_world
     render "hello_world"
+  end
+
+  def token_bypass?
+    TOKEN_BYPASS_METHODS.include?(action_name) && valid_jwt?(preview_params[:token], preview_request)
   end
 
   def preview_request
     @preview_request ||= Request
       .where(source_app: preview_params[:source_app])
       .where(source_id: preview_params[:source_id])
-      .first
+      .last
   end
 
   def preview
