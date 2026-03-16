@@ -7,15 +7,19 @@ class ApplicationController < ActionController::Base
 
   before_action :authenticate_user!
 
-  def preview
-    @request = Request
+  def preview_request
+    @preview_request ||= Request
       .where(source_app: preview_params[:source_app])
       .where(source_id: preview_params[:source_id])
       .first
+  end
+
+  def preview
+    preview_request
     render "shareable_preview"
   end
 
   def preview_params
-    params.permit(:source_app, :source_id)
+    params.permit(:source_app, :source_id, :token)
   end
 end

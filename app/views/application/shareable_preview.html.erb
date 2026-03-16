@@ -2,6 +2,6 @@
   <h2>
     Hello World! I am the shareable preview page!
   </h2>
-  <%= @request.source_title %>
-  <%= valid_jwt?(params[:token], @request) %>
+  <%= @preview_request.source_title %>
+  <%= valid_jwt?(params[:token], @preview_request) %>
 </div>
