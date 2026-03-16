@@ -1,10 +1,5 @@
 module TokenHelper
-  def generate_preview_link(_request)
-    request = Request
-      .where(source_app: "publisher")
-      .where(source_id: "2e54da60-4a34-4804-9eeb-d38b85ea8494")
-      .first
-
+  def generate_preview_link(request)
     path = requests_preview_path(request.source_app, request.source_id)
     path << "?token=#{jwt_token(request)}"
 
@@ -14,7 +9,7 @@ module TokenHelper
   def valid_jwt?(jwt_token, request)
     decoded_token = JWT.decode(jwt_token, jwt_auth_secret)
     token_matches_request?(decoded_token, request)
-  rescue JWT::VerificationError, JWT::Base64DecodeError, JWT::ExpiredSignature => e
+  rescue JWT::VerificationError, JWT::Base64DecodeError, JWT::ExpiredSignature, JWT::DecodeError => e
     Rails.logger.error "Error #{e.class} #{e.message}"
     false
   end
