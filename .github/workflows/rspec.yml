@@ -8,11 +8,6 @@ on:
         description: 'The branch, tag or SHA to checkout'
         required: false
         type: string
-#      publishingApiRef:
-#        description: 'The branch, tag or SHA to checkout Publishing API'
-#        required: false
-#        default: 'main'
-#        type: string
 
 jobs:
   rspec-matrix:
@@ -36,14 +31,6 @@ jobs:
           repository: alphagov/fact-check-manager
           ref: ${{ inputs.ref || github.ref }}
           show-progress: false
-
-#      - name: Checkout Publishing API (for Content Schemas)
-#        uses: actions/checkout@v6
-#        with:
-#          repository: alphagov/publishing-api
-#          ref: ${{ inputs.publishingApiRef }}
-#          path: vendor/publishing-api
-#          show-progress: false
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
