@@ -4,12 +4,14 @@ Rails.application.routes.draw do
 
   root to: "application#hello_world"
 
-  get "compare", to: "fact_check_comparison#compare"
+  get "compare/:source_app/:source_id", to: "fact_check_comparison#compare", as: :compare
 
   # TODO: Wrap in a resources block
   # See: https://github.com/alphagov/fact-check-manager/pull/33#discussion_r2905663106
-  get  "respond", to: "fact_check_response#respond_to_fact_check"
-  post "respond", to: "fact_check_response#verify_fact_check_response"
+  get "respond", to: "fact_check_response#respond_to_fact_check",
+                 constraints: ->(req) { req.params[:back].present? }
+  post "respond", to: "fact_check_response#respond_to_fact_check"
+  post "verify-response", to: "fact_check_response#validate_fact_check_response"
   post "confirm-response", to: "fact_check_response#send_response"
   post "fact-check-submitted", to: "fact_check_response#fact_check_submitted"
 
