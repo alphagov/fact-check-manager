@@ -53,7 +53,29 @@ module Api
       end
     end
 
+    def test_action
+      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
+
+      request_record.update!(test_params)
+    end
+
   private
+
+    def test_params
+      params.require(:request).permit(
+        :source_app,
+        :source_id,
+        :source_url, # optional
+        :source_title, # optional
+        :requester_name,
+        :requester_email,
+        :deadline,
+        recipients: [],
+        # dynamic hash fields at the end
+        current_content: {},
+        previous_content: {}, # optional
+      )
+    end
 
     def request_params
       params.require(:request).permit(
