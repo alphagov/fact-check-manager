@@ -10,10 +10,12 @@ class Request < ApplicationRecord
   scope :most_recent_first, -> { order(created_at: :desc) }
   scope :most_recent_for_source, ->(source_id) { for_source(source_id).most_recent_first.first }
 
+private
+
   def content_data_must_be_string_pairs
     %i[current_content previous_content].each do |content_field|
       content_hash = public_send(content_field)
-      next if content_hash.blank?
+      next if content_hash.nil?
 
       unless content_hash.is_a?(Hash)
         errors.add(content_field, "#{content_field} is not a hash")
