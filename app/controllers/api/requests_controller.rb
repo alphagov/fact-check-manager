@@ -3,9 +3,8 @@ module Api
     wrap_parameters include: Request.attribute_names + [:recipients]
 
     def create
-      if request_params[:recipients].blank?
-        return render json: { errors: ["At least one recipient email is required"] }, status: :bad_request
-      end
+      errors = validate_create_params
+      return render json: { errors: errors }, status: :bad_request if errors.any?
 
       fact_check_request = Request.new(request_params.except(:recipients))
 
@@ -76,6 +75,20 @@ module Api
         :source_title, # optional
         current_content: {},
       )
+    end
+
+    def validate_create_params
+      errors = []
+
+      errors << "At least one recipient email is required" if request_params[:recipients].blank?
+
+      %i[current_content previous_content].each do |content_hash|
+        if params.dig(:request, content_hash).present? && request_params[content_hash].blank?
+          errors << "#{content_hash} must be a hash"
+        end
+      end
+
+      errors
     end
   end
 end
