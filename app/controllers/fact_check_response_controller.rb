@@ -23,8 +23,32 @@ class FactCheckResponseController < ApplicationController
   end
 
   def send_response
+    @errors = {}
+    @session_data = session[:fact_check_response]&.deep_symbolize_keys
+    response = Response.new(
+      request_id: @session_data[:request_id],
+      user: current_user,
+      accepted: @session_data[:accepted],
+      body: @session_data[:body],
+    )
+
+    unless response.save
+      @errors = response.errors.full_messages
+    end
+
+    begin
+      PublisherApiService.post_fact_check_response(response)
+    rescue GdsApi::HTTPErrorResponse => e
+      @errors = e.error_details
+      response.delete
+    end
+
+    if @errors.present?
+      render :fact_check_verify_response
+    else
       session.delete(:fact_check_response)
       render :fact_check_submitted
+    end
   end
 
 private
