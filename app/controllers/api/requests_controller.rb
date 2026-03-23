@@ -31,6 +31,10 @@ module Api
         return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
       end
 
+      if params.dig(:request, :current_content).present? && update_params[:current_content].blank?
+        return render json: { errors: ["current_content must be a hash"] }, status: :bad_request
+      end
+
       if request_record.update(update_params)
         render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
       else
