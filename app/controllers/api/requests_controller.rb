@@ -1,6 +1,7 @@
 module Api
   class RequestsController < Api::BaseController
     wrap_parameters include: Request.attribute_names + [:recipients]
+    before_action :set_request_record, only: %i[update resend_emails]
 
     def create
       errors = validate_create_params
@@ -25,34 +26,22 @@ module Api
     end
 
     def update
-      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
-
-      if request_record.nil?
-        return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
-      end
-
       if params.dig(:request, :current_content).present? && update_params[:current_content].blank?
         return render json: { errors: ["current_content must be a hash"] }, status: :bad_request
       end
 
-      if request_record.update(update_params)
-        render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
+      if @request_record.update(update_params)
+        render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
-        render json: { errors: request_record.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def resend_emails
-      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
-
-      unless request_record
-        return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
-      end
-
-      if NotifyService.resend_emails(request_record)
-        render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
+      if NotifyService.resend_emails(@request_record)
+        render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
-        render json: { errors: request_record.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -93,6 +82,14 @@ module Api
       end
 
       errors
+    end
+
+    def set_request_record
+      @request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
+
+      unless @request_record
+        render json: { errors: ["Request with ID #{params[:source_id]} not found for app #{params[:source_app]}"] }, status: :not_found
+      end
     end
   end
 end

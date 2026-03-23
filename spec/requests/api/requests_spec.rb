@@ -158,7 +158,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{invalid_source_app}/#{invalid_source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{invalid_source_app}",
@@ -170,7 +170,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{existing_request.source_app}/#{invalid_source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{existing_request.source_app}",
@@ -182,7 +182,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{invalid_source_app}/#{existing_request.source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{existing_request.source_id} not found for app #{invalid_source_app}",
@@ -196,7 +196,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{existing_request_whitehall.source_app}/#{existing_request.source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{existing_request.source_id} not found for app #{existing_request_whitehall.source_app}",
@@ -253,7 +253,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{invalid_source_app}/#{invalid_source_id}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{invalid_source_app}",
@@ -265,7 +265,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{update_payload[:source_app]}/#{invalid_source_id}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{update_payload[:source_app]}",
@@ -277,7 +277,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{invalid_source_app}/#{update_payload[:source_id]}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{update_payload[:source_id]} not found for app #{invalid_source_app}",
@@ -290,7 +290,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
         it "returns a 400 error" do
           patch "/api/requests/#{second_request[:source_app]}/#{update_payload[:source_id]}", params: update_payload, as: :json
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{update_payload[:source_id]} not found for app #{second_request[:source_app]}",
