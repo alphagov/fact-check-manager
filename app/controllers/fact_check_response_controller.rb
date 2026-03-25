@@ -1,46 +1,48 @@
 class FactCheckResponseController < ApplicationController
+  before_action :set_request, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+
   def respond_to_fact_check
+    session.delete(:fact_check_response) unless params[:back]
     @errors = {}
-    @session_data = session[:fact_check_response]&.deep_symbolize_keys
+    @form_data = session.fetch(:fact_check_response, {}).with_indifferent_access
 
     render :fact_check_response
   end
 
   def validate_fact_check_response
-    @session_data = session[:fact_check_response]&.deep_symbolize_keys
-    @session_data[:accepted] = params[:fact_check_response][:accepted]
-    @session_data[:body] = params[:fact_check_response][:body]
-    @errors = validate(@session_data)
+    @form_data = permitted_params
+    @errors = validate_form_data(@form_data)
 
     if @errors.any?
-      @article_title = @session_data[:article_title]
-      @request_id = @session_data[:request_id]
       render :fact_check_response
     else
-      session[:fact_check_response] = @session_data
+      session[:fact_check_response] = @form_data
       render :fact_check_verify_response
     end
   end
 
   def send_response
-    @errors = {}
-    @session_data = session[:fact_check_response]&.deep_symbolize_keys
+    @errors = []
+    @form_data = permitted_params
+
     response = Response.new(
-      request_id: @session_data[:request_id],
+      request: @request,
       user: current_user,
-      accepted: @session_data[:accepted],
-      body: @session_data[:body],
+      accepted: @form_data[:accepted],
+      body: @form_data[:body],
     )
 
-    unless response.save
-      @errors = response.errors.full_messages
-    end
-
-    begin
-      PublisherApiService.post_fact_check_response(response)
-    rescue GdsApi::HTTPErrorResponse => e
-      @errors = e.error_details
-      response.delete
+    ActiveRecord::Base.transaction do
+      if response.save
+        begin
+          PublisherApiService.post_fact_check_response(response)
+        rescue GdsApi::HTTPErrorResponse
+          @errors << t("fact_check_verification.api_submission_error")
+          raise ActiveRecord::Rollback
+        end
+      else
+        @errors = response.errors.full_messages
+      end
     end
 
     if @errors.present?
@@ -53,20 +55,21 @@ class FactCheckResponseController < ApplicationController
 
 private
 
+  def set_request
+    @request = Request.where(source_app: params[:source_app], source_id: params[:source_id]).most_recent_first.first
+    raise ActiveRecord::RecordNotFound, "No request found" unless @request
+  end
+
   def permitted_params
-    params.fetch(:fact_check_response, {})
-          .permit(:article_title, :request_id, :accepted, :body)
+    params.require(:fact_check_response)
+          .permit(:accepted, :body)
   end
 
-  def session_data
-    session[:fact_check_response]&.deep_symbolize_keys
-  end
-
-  def validate(data)
+  def validate_form_data(data)
     errors = {}
     errors[:accepted] = t("fact_check_response.selection_error") if data[:accepted].blank?
 
-    if data[:accepted] == "incorrect" && data[:body].blank?
+    if data[:accepted] == "false" && data[:body].blank?
       errors[:body] = t("fact_check_response.factual_errors_empty_field")
     end
 

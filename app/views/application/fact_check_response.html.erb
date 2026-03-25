@@ -1,16 +1,15 @@
-<% content_for :page_title, @session_data[:article_title] %>
-<% content_for :title_context, @session_data[:article_title] %>
-<% content_for :back_link, 
-  compare_path(source_app: @session_data[:source_app], 
-                source_id: @session_data[:source_id],
-                back: true) %>
+<% content_for :page_title, @request.source_title %>
+<% content_for :title_context, @request.source_title %>
+<% content_for :back_link, compare_path(source_app: @request.source_app, source_id: @request.source_id) %>
 <% content_for :title, t("fact_check_response.heading") %>
+
 <% if @errors.any? %>
   <% content_for :error_summary, render(partial: "application/errors/response_error_summary") %>
 <% end %>
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <%= form_with url: verify_response_path,
+    <%= form_with url: verify_response_path(source_app: @request.source_app, source_id: @request.source_id),
                   method: :post,
                   scope: :fact_check_response do |f| %>
       <%= render "govuk_publishing_components/components/radio", {
@@ -24,13 +23,13 @@
             value: true,
             text: t("fact_check_response.correct"),
             id: "correct",
-            checked: @session_data.present? && @session_data[:accepted] == "true",
+            checked: @form_data[:accepted] == "true",
           },
           {
             value: false,
             text: t("fact_check_response.incorrect"),
             id: "incorrect",
-            checked: @errors[:body].present? || @session_data.present? && @session_data[:accepted] == "false" ,
+            checked: @errors[:body].present? || @form_data[:accepted] == "false" ,
             conditional: render(partial: "application/partials/factual_error_textarea"),
           },
         ],

@@ -1,34 +1,38 @@
-<% content_for :page_title, @session_data[:article_title] %>
-<% content_for :title_context, @session_data[:article_title] %>
-<% content_for :back_link, respond_path(back: :true) %>
+<% content_for :page_title, @request.source_title %>
+<% content_for :title_context, @request.source_title %>
+<% content_for :back_link, respond_path(source_app: @request.source_app, source_id: @request.source_id, back: :true) %>
 <% content_for :title, t("fact_check_verification.heading") %>
+
 <% if @errors.present? %>
   <% content_for :error_summary, render(partial: "application/errors/submission_error_summary") %>
 <% end %>
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <%= form_with url: confirm_response_path,
+    <%= form_with url: confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
                   method: :post,
                   scope: :fact_check_response do |f| %>
+      <%= hidden_field_tag "fact_check_response[accepted]", @form_data[:accepted] %>
+      <%= hidden_field_tag "fact_check_response[body]", @form_data[:body] %>
       <%= render "govuk_publishing_components/components/summary_list", {
         items: [
           {
             field: t("fact_check_verification.confirm_changes"),
             edit: {
-              href: respond_path(back: :true),
+              href: respond_path(source_app: @request.source_app, source_id: @request.source_id, back: :true),
               text: t("fact_check_verification.change_link"),
             },
-            value: @session_data[:accepted] == "true" ?
+            value: @form_data[:accepted] == "true" ?
               t("fact_check_response.correct") :
               t("fact_check_response.incorrect"),
           },
-          (@session_data[:accepted] == "false" ? {
+          (@form_data[:accepted] == "false" ? {
             field: t("fact_check_verification.factual_errors"),
             edit: {
-              href: respond_path(back: :true),
+              href: respond_path(source_app: @request.source_app, source_id: @request.source_id, back: :true),
               text: t("fact_check_verification.change_link"),
             },
-            value: simple_format(@session_data[:body]),
+            value: simple_format(@form_data[:body]),
           } : nil),
         ].compact,
         margin_bottom: 9,
