@@ -118,6 +118,28 @@ RSpec.describe "POST /api/requests", type: :request do
         end
       end
 
+      context "if current_content is not a hash" do
+        let(:dynamic_current_content) { "not a hash" }
+
+        it "returns an error" do
+          post "/api/requests", params: base_payload, as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include("current_content must be a hash")
+        end
+      end
+
+      context "if previous_content is not a hash" do
+        it "returns an error" do
+          post "/api/requests", params: valid_payload.merge(previous_content: "not a hash"), as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include("previous_content must be a hash")
+        end
+      end
+
       context "without recipients" do
         it "returns a 400 error" do
           payload = valid_payload
@@ -158,7 +180,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{invalid_source_app}/#{invalid_source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{invalid_source_app}",
@@ -170,7 +192,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{existing_request.source_app}/#{invalid_source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{existing_request.source_app}",
@@ -182,7 +204,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{invalid_source_app}/#{existing_request.source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{existing_request.source_id} not found for app #{invalid_source_app}",
@@ -196,7 +218,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           post "/api/requests/#{existing_request_whitehall.source_app}/#{existing_request.source_id}/resend-emails", as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{existing_request.source_id} not found for app #{existing_request_whitehall.source_app}",
@@ -253,7 +275,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{invalid_source_app}/#{invalid_source_id}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{invalid_source_app}",
@@ -265,7 +287,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{update_payload[:source_app]}/#{invalid_source_id}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{invalid_source_id} not found for app #{update_payload[:source_app]}",
@@ -277,7 +299,7 @@ RSpec.describe "POST /api/requests", type: :request do
         it "returns a 400 error" do
           patch "/api/requests/#{invalid_source_app}/#{update_payload[:source_id]}", params: update_payload, as: :json
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{update_payload[:source_id]} not found for app #{invalid_source_app}",
@@ -290,7 +312,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
         it "returns a 400 error" do
           patch "/api/requests/#{second_request[:source_app]}/#{update_payload[:source_id]}", params: update_payload, as: :json
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           json = JSON.parse(response.body)
           expect(json["errors"]).to include(
             "Request with ID #{update_payload[:source_id]} not found for app #{second_request[:source_app]}",
@@ -310,6 +332,21 @@ RSpec.describe "POST /api/requests", type: :request do
         json = JSON.parse(response.body)
         expect(json["errors"]).to include(
           "Current content value for body must be a string",
+        )
+      end
+    end
+
+    context "if current_content is not a hash" do
+      let(:invalid_content_payload) { { source_app: existing_request.source_app, source_id: existing_request.source_id, current_content: "not a hash" } }
+
+      it "returns errors for current_content format" do
+        patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: invalid_content_payload, as: :json
+
+        expect(response).to have_http_status(:bad_request)
+
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include(
+          "current_content must be a hash",
         )
       end
     end

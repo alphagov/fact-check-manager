@@ -1,11 +1,11 @@
 module Api
   class RequestsController < Api::BaseController
     wrap_parameters include: Request.attribute_names + [:recipients]
+    before_action :set_request_record, only: %i[update resend_emails]
 
     def create
-      if request_params[:recipients].blank?
-        return render json: { errors: ["At least one recipient email is required"] }, status: :bad_request
-      end
+      errors = validate_create_params
+      return render json: { errors: errors }, status: :bad_request if errors.any?
 
       fact_check_request = Request.new(request_params.except(:recipients))
 
@@ -26,30 +26,22 @@ module Api
     end
 
     def update
-      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
-
-      if request_record.nil?
-        return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
+      if params.dig(:request, :current_content).present? && update_params[:current_content].blank?
+        return render json: { errors: ["current_content must be a hash"] }, status: :bad_request
       end
 
-      if request_record.update(update_params)
-        render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
+      if @request_record.update(update_params)
+        render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
-        render json: { errors: request_record.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def resend_emails
-      request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
-
-      unless request_record
-        return render json: { errors: "Request with ID #{params[:source_id]} not found for app #{params[:source_app]}" }, status: :bad_request
-      end
-
-      if NotifyService.resend_emails(request_record)
-        render json: { id: request_record.id, source_id: request_record.source_id, source_app: request_record.source_app }, status: :ok
+      if NotifyService.resend_emails(@request_record)
+        render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
-        render json: { errors: request_record.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -76,6 +68,28 @@ module Api
         :source_title, # optional
         current_content: {},
       )
+    end
+
+    def validate_create_params
+      errors = []
+
+      errors << "At least one recipient email is required" if request_params[:recipients].blank?
+
+      %i[current_content previous_content].each do |content_hash|
+        if params.dig(:request, content_hash).present? && request_params[content_hash].blank?
+          errors << "#{content_hash} must be a hash"
+        end
+      end
+
+      errors
+    end
+
+    def set_request_record
+      @request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
+
+      unless @request_record
+        render json: { errors: ["Request with ID #{params[:source_id]} not found for app #{params[:source_app]}"] }, status: :not_found
+      end
     end
   end
 end
