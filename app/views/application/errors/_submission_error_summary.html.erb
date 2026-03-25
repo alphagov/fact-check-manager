@@ -1,4 +1,4 @@
 <%= render "govuk_publishing_components/components/error_summary", {
   title: t("fact_check_verification.error_heading"),
-  items: @errors.map { { text: it } },
+  items: @errors.map { |error| { text: error } },
 } %>
