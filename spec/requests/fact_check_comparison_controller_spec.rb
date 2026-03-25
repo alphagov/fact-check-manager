@@ -42,5 +42,11 @@ RSpec.describe "FactCheckComparison", type: :request do
       expect(parsed.at_css("ins")&.text).not_to include("This is the unchanged line.")
       expect(parsed.at_css("ins")&.text).not_to include("This line will be changed")
     end
+
+    it "returns 404 when no request exists for the given source_app and source_id" do
+      get compare_path(source_app: "invalid", source_id: "invalid")
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 end

@@ -29,7 +29,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
       it "allows the user to confirm the changes are correct" do
         visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
-        click_button(I18n.t("fact_check_comparison.respond_to_button"))
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
         expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
@@ -63,7 +63,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
       it "allows the user to click the change link without wiping the previous selection" do
         visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
-        click_button(I18n.t("fact_check_comparison.respond_to_button"))
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
         expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
@@ -89,7 +89,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
       it "allows the user to enter content into the factual error textbox and have it persist to confirmation" do
         visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
-        click_button(I18n.t("fact_check_comparison.respond_to_button"))
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
         expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
@@ -109,7 +109,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
       it "allows the user to click the change link without losing the detail contents for an incorrect response" do
         visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
-        click_button(I18n.t("fact_check_comparison.respond_to_button"))
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
         expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
@@ -138,6 +138,29 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
     end
 
+    context "when submitting without selecting a radio button" do
+      it "shows a selection error" do
+        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+        click_button(I18n.t("fact_check_response.continue_button"))
+
+        expect(page).to have_text(I18n.t("fact_check_response.selection_error"))
+      end
+    end
+
+    context "when submitting 'Incorrect' without entering body text" do
+      it "shows a factual errors empty field error" do
+        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+        choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+        click_button(I18n.t("fact_check_response.continue_button"))
+
+        expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
+      end
+    end
+
     context "when the API fails" do
       before do
         allow(PublisherApiService).to receive(:post_fact_check_response)
@@ -146,7 +169,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
       it "shows the user an error prompt suggesting to try submitting again" do
         visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
-        click_button(I18n.t("fact_check_comparison.respond_to_button"))
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
         expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
@@ -167,7 +190,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
         click_button(I18n.t("fact_check_verification.confirm_button"))
         expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
-        expect(page).to have_text(I18n.t("fact_check_verification.error_description"))
+        expect(page).to have_text(I18n.t("fact_check_verification.api_submission_error"))
       end
     end
   end

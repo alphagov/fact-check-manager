@@ -30,7 +30,7 @@ en:
     send_response_warning: "Only one fact check response can be submitted. Make sure you’ve discussed this with colleagues first."
     confirm_button: "Confirm and send"
     error_heading: "There was a problem"
-    error_description: "Please try submitting again"
+    api_submission_error: "Please try submitting again"
   fact_check_submitted:
     fact_check_submitted: "Fact check submitted"
     fact_check_description: "Your response has been sent"
