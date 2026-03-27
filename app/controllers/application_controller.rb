@@ -5,7 +5,4 @@ class ApplicationController < ActionController::Base
   include GDS::SSO::ControllerMethods
 
   before_action :authenticate_user!
-  def hello_world
-    render "hello_world"
-  end
 end

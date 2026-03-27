@@ -1,22 +1,25 @@
 class FactCheckComparisonController < ApplicationController
   require "nokodiff"
-  require "date"
 
   def compare
-    before = previous_content
-    after = current_content
-    @article_title = "Title"
-    @date = Date.current.to_s
+    @request = Request.where(source_app: params[:source_app], source_id: params[:source_id]).most_recent_first.first
+    raise ActiveRecord::RecordNotFound, "No request found" unless @request
+
+    before = parse_html(@request.previous_content&.fetch("body", nil))
+    after = parse_html(@request.current_content.fetch("body", nil))
+
     @differ = Nokodiff.diff(before, after)
+    @article_title = @request.source_title
+    @deadline = @request.deadline.to_date.to_s
     @draft_url = "/"
+
     render "fact_check_comparison"
   end
 
-  def previous_content
-    "<div>This is a line with no changes</div> <div>This line will change</div>"
-  end
+private
 
-  def current_content
-    "<div>This is a line with no changes</div> <div>This line has some changes</div>"
+  def parse_html(html_text)
+    # TODO: Remove this when HTML is coming from API
+    view_context.simple_format(html_text)
   end
 end

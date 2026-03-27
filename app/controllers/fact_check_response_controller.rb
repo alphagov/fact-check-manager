@@ -1,53 +1,76 @@
 class FactCheckResponseController < ApplicationController
+  before_action :set_request, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+
   def respond_to_fact_check
     session.delete(:fact_check_response) unless params[:back]
-    @article_title = "Title"
     @errors = {}
-    @form_data = session[:fact_check_response] || {}
+    @form_data = session.fetch(:fact_check_response, {}).with_indifferent_access
 
     render :fact_check_response
   end
 
-  def verify_fact_check_response
+  def validate_fact_check_response
     @form_data = permitted_params
-    @errors = validate(@form_data)
+    @errors = validate_form_data(@form_data)
 
     if @errors.any?
-      @article_title = "Title"
       render :fact_check_response
     else
       session[:fact_check_response] = @form_data
-      confirm_response
+      render :fact_check_verify_response
     end
   end
 
-  def confirm_response
-    render :confirm_response
-  end
-
   def send_response
-    # TODO: API submission here
+    @errors = []
+    @form_data = permitted_params
 
-    fact_check_submitted
-  end
+    response = Response.new(
+      request: @request,
+      user: current_user,
+      accepted: @form_data[:accepted],
+      body: @form_data[:body],
+    )
 
-  def fact_check_submitted
-    render :fact_check_submitted
+    ActiveRecord::Base.transaction do
+      if response.save
+        begin
+          PublisherApiService.post_fact_check_response(response)
+        rescue GdsApi::HTTPErrorResponse
+          @errors << t("fact_check_verification.api_submission_error")
+          raise ActiveRecord::Rollback
+        end
+      else
+        @errors = response.errors.full_messages
+      end
+    end
+
+    if @errors.present?
+      render :fact_check_verify_response
+    else
+      session.delete(:fact_check_response)
+      render :fact_check_submitted
+    end
   end
 
 private
 
-  def permitted_params
-    params.fetch(:fact_check_response, {})
-          .permit(:page_title, :page_id, :status, :details)
+  def set_request
+    @request = Request.where(source_app: params[:source_app], source_id: params[:source_id]).most_recent_first.first
+    raise ActiveRecord::RecordNotFound, "No request found" unless @request
   end
 
-  def validate(data)
-    errors = {}
-    errors[:status] = t("fact_check_response.selection_error") if data[:status].blank?
+  def permitted_params
+    params.require(:fact_check_response)
+          .permit(:accepted, :body)
+  end
 
-    if data[:status] == "incorrect" && data[:details].blank?
-      errors[:details] = t("fact_check_response.factual_errors_empty_field")
+  def validate_form_data(data)
+    errors = {}
+    errors[:accepted] = t("fact_check_response.selection_error") if data[:accepted].blank?
+
+    if data[:accepted] == "false" && data[:body].blank?
+      errors[:body] = t("fact_check_response.factual_errors_empty_field")
     end
 
     errors
