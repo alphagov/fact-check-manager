@@ -2,22 +2,23 @@ require "rails_helper"
 
 RSpec.describe "FactCheckResponse", type: :system do
   before do
-    create(:user)
+    allow(PublisherApiService).to receive(:post_fact_check_response)
+                              .and_return(double(code: 200))
+  end
 
-    @request = create(
+  let(:user) { create(:user) }
+  let(:request) do
+    create(
       :request,
       previous_content: { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" },
       current_content: { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" },
     )
-
-    allow(PublisherApiService).to receive(:post_fact_check_response)
-      .and_return(double(code: 200))
   end
 
   describe "The response page" do
     context "when the running without an API failure" do
       it "allows the user to return to the comparison page with the back link" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_on(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -28,7 +29,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
 
       it "allows the user to confirm the changes are correct" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -62,7 +63,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
 
       it "allows the user to click the change link without wiping the previous selection" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -88,7 +89,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
 
       it "allows the user to enter content into the factual error textbox and have it persist to confirmation" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -108,7 +109,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
 
       it "allows the user to click the change link without losing the detail contents for an incorrect response" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -140,7 +141,7 @@ RSpec.describe "FactCheckResponse", type: :system do
 
     context "when submitting without selecting a radio button" do
       it "shows a selection error" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         click_button(I18n.t("fact_check_response.continue_button"))
@@ -151,13 +152,31 @@ RSpec.describe "FactCheckResponse", type: :system do
 
     context "when submitting 'Incorrect' without entering body text" do
       it "shows a factual errors empty field error" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
         click_button(I18n.t("fact_check_response.continue_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
+      end
+    end
+
+    context "when a response has already been submitted for the request" do
+      let!(:response) { create(:response, request:) }
+
+      it "shows an error on the verification page" do
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
+        click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+        choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+        click_button(I18n.t("fact_check_response.continue_button"))
+
+        expect(page).to have_text(I18n.t("fact_check_verification.heading"))
+
+        click_button(I18n.t("fact_check_verification.confirm_button"))
+
+        expect(page).to have_text("Request has already been responded to")
       end
     end
 
@@ -168,7 +187,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
 
       it "shows the user an error prompt suggesting to try submitting again" do
-        visit compare_path(source_app: @request.source_app, source_id: @request.source_id)
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))

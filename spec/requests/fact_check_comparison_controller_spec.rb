@@ -1,10 +1,9 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :request do
-  before do
-    create(:user)
-
-    @request = create(
+  let(:user) { create(:user) }
+  let(:request) do
+    create(
       :request,
       previous_content: { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" },
       current_content: { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" },
@@ -13,7 +12,7 @@ RSpec.describe "FactCheckComparison", type: :request do
 
   describe "GET /compare" do
     it "renders the expected unchanging assets" do
-      get compare_path(source_app: @request.source_app, source_id: @request.source_id)
+      get compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(I18n.t("fact_check_comparison.heading"))
@@ -28,7 +27,7 @@ RSpec.describe "FactCheckComparison", type: :request do
     end
 
     it "renders the diff with formatting" do
-      get compare_path(source_app: @request.source_app, source_id: @request.source_id)
+      get compare_path(source_app: request.source_app, source_id: request.source_id)
 
       parsed = Nokogiri::HTML(response.body)
 
