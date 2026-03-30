@@ -1,35 +1,35 @@
-<% content_for :page_title, @article_title %>
-<% content_for :title_context, @article_title %>
-<% content_for :back_link, "_blank" %>
+<% content_for :page_title, @request.source_title %>
+<% content_for :title_context, @request.source_title %>
+<% content_for :back_link, compare_path(source_app: @request.source_app, source_id: @request.source_id) %>
 <% content_for :title, t("fact_check_response.heading") %>
+
 <% if @errors.any? %>
   <% content_for :error_summary, render(partial: "application/errors/response_error_summary") %>
 <% end %>
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <%= form_with url: respond_path,
+    <%= form_with url: verify_response_path(source_app: @request.source_app, source_id: @request.source_id),
                   method: :post,
                   scope: :fact_check_response do |f| %>
-      <%= f.hidden_field :page_title, :value => @article_title %>
-      <%= f.hidden_field :page_id, :value => "id" %>
       <%= render "govuk_publishing_components/components/radio", {
-        name: "fact_check_response[status]",
+        name: "fact_check_response[accepted]",
         heading: t("fact_check_response.form_heading"),
         id: "selection_radio_buttons",
         visually_hidden_heading: true,
-        error_message: (@errors[:status].presence),
+        error_message: (@errors[:accepted].presence),
         items: [
           {
-            value: "correct",
+            value: true,
             text: t("fact_check_response.correct"),
             id: "correct",
-            checked: @form_data.present? && @form_data["status"] == "correct",
+            checked: @form_data[:accepted] == "true",
           },
           {
-            value: "incorrect",
+            value: false,
             text: t("fact_check_response.incorrect"),
             id: "incorrect",
-            checked: @errors[:details].present? || @form_data.present? &&  @form_data["status"] == "incorrect",
+            checked: @errors[:body].present? || @form_data[:accepted] == "false" ,
             conditional: render(partial: "application/partials/factual_error_textarea"),
           },
         ],

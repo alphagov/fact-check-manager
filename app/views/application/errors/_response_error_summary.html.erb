@@ -3,8 +3,8 @@
     title: t("fact_check_response.error_heading"),
     items: [
       {
-        text: @errors[:status] || @errors[:details],
-        href: @errors[:status].present? ? "#selection_radio_buttons" : "#fact_check_details",
+        text: @errors[:accepted] || @errors[:body],
+        href: @errors[:accepted].present? ? "#selection_radio_buttons" : "#fact_check_details",
       },
     ],
     } %>

@@ -1,53 +1,55 @@
+<% content_for :page_title, @article_title %>
 <% content_for :title_context, @article_title %>
 <% content_for :title, t("fact_check_comparison.heading") %>
 
 <div class="govuk-grid-row">
-<div class="govuk-grid-column-two-thirds">
-  <%= render "govuk_publishing_components/components/inset_text", {} do %>
-    <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @date %></span>
-  <% end %>
-  <%= render "govuk_publishing_components/components/button", {
-    text: t("fact_check_comparison.respond_to_button"),
-    href: "/",
-    margin_bottom: 6,
-  } %>
-</div>
+  <div class="govuk-grid-column-two-thirds">
+    <%= render "govuk_publishing_components/components/inset_text", {} do %>
+      <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @deadline %></span>
+    <% end %>
+
+    <%= render "govuk_publishing_components/components/button", {
+      text: t("fact_check_comparison.respond_to_button"),
+      href: respond_path(source_app: @request.source_app, source_id: @request.source_id),
+      margin_bottom: 6,
+    } %>
+  </div>
 </div>
 <div class="govuk-grid-row">
-<div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-two-thirds">
     <div class="compare-editions gem-c-govspeak gem-c-govspeak--direction-ltr">
-        <%= @differ %>
+      <%= @differ %>
     </div>
-</div>
-<div class="govuk-grid-column-one-third options-sidebar">
-        <div class="sidebar-components">
-        <%= render "govuk_publishing_components/components/heading", {
-            text: t("fact_check_comparison.preview_heading"),
-            heading_level: 3,
-            font_size: "s",
-            padding: true,
-        } %>
-        <p class="govuk-body"><%= link_to  t("fact_check_comparison.preview_link"), @draft_url, class: "govuk-link--no-visited-state govuk-link" %></p>
-        </div>
-        <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3">
-        <%= render "govuk_publishing_components/components/heading", {
-            text: t("fact_check_comparison.guidance_heading"),
-            heading_level: 3,
-            font_size: "s",
-            padding: true,
-        } %>
-        <%= render "govuk_publishing_components/components/list", {
-          visible_counters: true,
-          items: [
-            t("fact_check_comparison.guidance_deleted"),
-            t("fact_check_comparison.guidance_added"),
-          ],
-        } %>
-      <p class="govuk-body">
-        <%= link_to t("fact_check_comparison.guidance_link"), 
-          "https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk",
-          class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener 
-        %>
-      </p>
-      </div>
+  </div>
+  <div class="govuk-grid-column-one-third options-sidebar">
+    <div class="sidebar-components">
+      <%= render "govuk_publishing_components/components/heading", {
+          text: t("fact_check_comparison.preview_heading"),
+          heading_level: 3,
+          font_size: "s",
+          padding: true,
+      } %>
+      <p class="govuk-body"><%= link_to  t("fact_check_comparison.preview_link"), @draft_url, class: "govuk-link--no-visited-state govuk-link" %></p>
+    </div>
+    <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3" />
+    <%= render "govuk_publishing_components/components/heading", {
+        text: t("fact_check_comparison.guidance_heading"),
+        heading_level: 3,
+        font_size: "s",
+        padding: true,
+    } %>
+    <%= render "govuk_publishing_components/components/list", {
+      visible_counters: true,
+      items: [
+        t("fact_check_comparison.guidance_deleted"),
+        t("fact_check_comparison.guidance_added"),
+      ],
+    } %>
+    <p class="govuk-body">
+      <%= link_to t("fact_check_comparison.guidance_link"), 
+        "https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk",
+        class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener 
+      %>
+    </p>
+  </div>
 </div>
