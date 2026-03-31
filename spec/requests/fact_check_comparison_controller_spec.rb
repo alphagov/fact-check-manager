@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :request do
-  let(:user) { create(:user) }
+  let!(:user) { create(:user) }
   let(:request) do
     create(
       :request,

@@ -9,8 +9,8 @@
 # migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
-ActiveRecord::Schema[8.0].define(version: 2026_02_26_095141) do
 
+ActiveRecord::Schema[8.0].define(version: 2026_03_10_161215) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -39,6 +39,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_26_095141) do
     t.string "source_title"
     t.json "current_content", null: false
     t.json "previous_content"
+    t.uuid "auth_bypass_id", default: -> { "gen_random_uuid()" }, null: false
     t.index ["created_at"], name: "index_requests_on_created_at"
     t.index ["source_id"], name: "index_requests_on_source_id"
   end

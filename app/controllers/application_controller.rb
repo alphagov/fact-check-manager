@@ -3,6 +3,26 @@ class ApplicationController < ActionController::Base
   layout "design_system"
 
   include GDS::SSO::ControllerMethods
+  include TokenHelper
 
-  before_action :authenticate_user!
+  before_action :authenticate_user!, unless: :token_bypass?
+
+  TOKEN_BYPASS_METHODS = %w[preview].freeze
+
+  def token_bypass?
+    TOKEN_BYPASS_METHODS.include?(action_name) && valid_jwt?(preview_params[:token], set_preview_request)
+  end
+
+  def set_preview_request
+    @set_preview_request ||= Request.where(source_app: preview_params[:source_app], source_id: preview_params[:source_id]).most_recent_first.first
+  end
+
+  def preview
+    set_preview_request
+    render "shareable_preview"
+  end
+
+  def preview_params
+    params.permit(:source_app, :source_id, :token)
+  end
 end

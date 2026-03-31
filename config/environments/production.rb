@@ -9,6 +9,8 @@ Rails.application.configure do
   # Eager load code on boot for better performance and memory savings (ignored by Rake tasks).
   config.eager_load = true
 
+  config.jwt_auth_secret = ENV["JWT_AUTH_SECRET"]
+
   # Full error reports are disabled.
   config.consider_all_requests_local = false
 
