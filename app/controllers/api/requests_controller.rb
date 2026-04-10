@@ -10,11 +10,7 @@ module Api
       fact_check_request = Request.new(request_params.except(:recipients))
 
       request_params[:recipients].each do |email|
-        user = User.find_or_create_by!(email: email) do |u|
-          u.name = email.split("@").first
-          u.uid = SecureRandom.uuid
-        end
-
+        user = User.find_or_create_by!(email: email)
         fact_check_request.collaborations.build(user: user, role: "fact_checker")
       end
 
