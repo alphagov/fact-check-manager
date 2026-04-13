@@ -1,11 +1,6 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :system do
-  before do
-    GDS::SSO.test_user = user
-  end
-
-  let!(:user) { create(:user) }
   let(:request) do
     create(
       :request,
