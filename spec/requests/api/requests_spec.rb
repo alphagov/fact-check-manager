@@ -1,14 +1,6 @@
 require "rails_helper"
 
 RSpec.describe "POST /api/requests", type: :request do
-  let!(:user) do
-    User.create!(
-      name: "FCM User",
-      email: "fcm-user@example.com",
-      uid: "test-uid",
-    )
-  end
-
   describe "#create" do
     let(:valid_payload) do
       {

@@ -1,7 +1,6 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckResponse", type: :request do
-  let!(:user) { create(:user) }
   let(:request) do
     create(
       :request,

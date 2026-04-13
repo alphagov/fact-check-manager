@@ -5,12 +5,12 @@ RSpec.describe "Token Bypass Access", type: :request do
 
   let(:request_record) { FactoryBot.create(:request) }
 
-  let!(:user) { FactoryBot.create(:user) }
-
   describe "GET /requests/:source_app/:source_id/preview" do
     let(:url) { "/requests/#{request_record.source_app}/#{request_record.source_id}/preview" }
 
     context "with a valid token" do
+      before { GDS::SSO.test_user = nil }
+
       it "bypasses authentication (does not call authenticate_user!)" do
         token = jwt_token(request_record)
 
@@ -24,6 +24,8 @@ RSpec.describe "Token Bypass Access", type: :request do
     end
 
     context "with an invalid token" do
+      before { GDS::SSO.test_user = nil }
+
       it "attempts authentication (calls authenticate_user!)" do
         expect_any_instance_of(ApplicationController).to receive(:authenticate_user!) do |controller|
           controller.redirect_to("/auth/gds")
@@ -35,6 +37,8 @@ RSpec.describe "Token Bypass Access", type: :request do
     end
 
     context "with no token" do
+      before { GDS::SSO.test_user = nil }
+
       it "attempts authentication (calls authenticate_user!)" do
         expect_any_instance_of(ApplicationController).to receive(:authenticate_user!) do |controller|
           controller.redirect_to("/auth/gds")
@@ -46,10 +50,6 @@ RSpec.describe "Token Bypass Access", type: :request do
     end
 
     context "when logged in as a GDS user" do
-      before do
-        GDS::SSO.test_user = user
-      end
-
       it "allows access with no token" do
         get url
         expect(response).to have_http_status(:success)
