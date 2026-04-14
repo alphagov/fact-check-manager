@@ -40,6 +40,51 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.requester_name).to eq("GDS Content Designer")
         expect(request.requester_email).to eq("gds-content-designer@example.com")
       end
+
+      it "creates a user record for given email address when one does not already exist" do
+        expect {
+          post "/api/requests", params: valid_payload, as: :json
+        }.to change(User, :count).by(2)
+
+        expect(User.second_to_last.email).to eq("recipient1@example.com")
+        expect(User.last.email).to eq("recipient2@example.com")
+      end
+
+      it "does not create any new user records if they already exist for given email addresses" do
+        recipient1_email = "recipient1@example.com"
+        recipient1 = create(:user, email: recipient1_email)
+
+        expect {
+          post "/api/requests", params: valid_payload, as: :json
+        }.to change(User, :count).by(1)
+
+        expect(User.find_by(email: recipient1_email).id).to eq(recipient1.id)
+        expect(User.where(email: recipient1_email).count).to eq(1)
+      end
+
+      it "creates a user record which contains only the email, ID, timestamps and defaults" do
+        post "/api/requests", params: valid_payload, as: :json
+
+        populated_attributes = User.last.attributes.compact.keys
+        expect(populated_attributes).to contain_exactly(
+          "email",
+          "id",
+          "created_at",
+          "updated_at",
+          "disabled",
+          "permissions",
+          "remotely_signed_out",
+        )
+      end
+
+      it "does not alter any existing user records" do
+        recipient1_email = "recipient1@example.com"
+        recipient1 = create(:user, email: recipient1_email)
+
+        expect {
+          post "/api/requests", params: valid_payload, as: :json
+        }.not_to(change { recipient1.reload.updated_at })
+      end
     end
 
     context "with an invalid payload" do
@@ -74,6 +119,14 @@ RSpec.describe "POST /api/requests", type: :request do
           "Current content can't be blank",
           "Deadline can't be blank",
         )
+      end
+
+      it "does not create any new user collaborations records" do
+        payload_missing_required_fields = { requester_name: "Alice" }
+
+        expect {
+          post "/api/requests", params: payload_missing_required_fields, as: :json
+        }.not_to change(Collaboration, :count)
       end
 
       context "if current_content value is not a string" do
