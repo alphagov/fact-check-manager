@@ -192,7 +192,7 @@ GEM
       nokogiri (~> 1.12)
       rinku (~> 2.0)
       sanitize (>= 6, < 8)
-    govuk_app_config (9.23.8)
+    govuk_app_config (9.23.9)
       connection_pool (< 3)
       logstasher (~> 2.1)
       opentelemetry-exporter-otlp (>= 0.25, < 0.34)
@@ -773,7 +773,7 @@ DEPENDENCIES
   factory_bot_rails
   gds-api-adapters
   gds-sso
-  govuk_app_config (~> 9.23.8)
+  govuk_app_config (~> 9.23.9)
   govuk_publishing_components
   govuk_sidekiq
   govuk_test
