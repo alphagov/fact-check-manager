@@ -81,7 +81,7 @@ module Api
     end
 
     def set_request_record
-      @request_record = Request.find_by(source_app: params[:source_app], source_id: params[:source_id])
+      @request_record = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
 
       unless @request_record
         render json: { errors: ["Request with ID #{params[:source_id]} not found for app #{params[:source_app]}"] }, status: :not_found
