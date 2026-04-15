@@ -25,6 +25,34 @@ RSpec.describe "FactCheckComparison", type: :request do
       expect(response.body).to include(I18n.t("fact_check_comparison.guidance_link"))
     end
 
+    it "includes a draft origin preview link with a JWT token" do
+      get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+      expect(response.body).to include("draft-origin.dev.gov.uk/#{request.draft_slug}")
+      expect(response.body).to include("token=")
+    end
+
+    context "when draft origin fields are not present" do
+      let(:request) do
+        create(
+          :request,
+          draft_content_id: nil,
+          draft_auth_bypass_id: nil,
+          draft_slug: nil,
+          previous_content: { "body" => "<div>Old content</div>" },
+          current_content: { "body" => "<div>New content</div>" },
+        )
+      end
+
+      it "does not render the preview section" do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).not_to include(I18n.t("fact_check_comparison.preview_heading"))
+        expect(response.body).not_to include(I18n.t("fact_check_comparison.preview_link"))
+      end
+    end
+
     it "renders the diff with formatting" do
       get compare_path(source_app: request.source_app, source_id: request.source_id)
 

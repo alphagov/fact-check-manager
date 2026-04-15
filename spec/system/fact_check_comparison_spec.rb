@@ -35,14 +35,33 @@ RSpec.describe "FactCheckComparison", type: :system do
       expect(page).to have_text(I18n.t("fact_check_response.heading"))
     end
 
-    it "displays the guidance sidebar" do
+    it "displays the draft origin preview link" do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(page).to have_text(I18n.t("fact_check_comparison.preview_heading"))
+      expect(page).to have_link(I18n.t("fact_check_comparison.preview_link"))
+    end
+
+    it "displays the guidance sidebar" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+
       expect(page).to have_text(I18n.t("fact_check_comparison.guidance_heading"))
       expect(page).to have_text(I18n.t("fact_check_comparison.guidance_deleted"))
       expect(page).to have_text(I18n.t("fact_check_comparison.guidance_added"))
       expect(page).to have_link(I18n.t("fact_check_comparison.guidance_link"))
+    end
+
+    context "when no draft preview link can be generated" do
+      before do
+        allow_any_instance_of(TokenHelper).to receive(:draft_origin_preview_url).and_return(nil)
+      end
+
+      it "does not render the preview section or link" do
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(page).not_to have_text(I18n.t("fact_check_comparison.preview_heading"))
+        expect(page).not_to have_link(I18n.t("fact_check_comparison.preview_link"))
+      end
     end
   end
 end
