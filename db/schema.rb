@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_091958) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_15_093518) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -31,6 +31,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_091958) do
     t.datetime "created_at", null: false
     t.json "current_content", null: false
     t.datetime "deadline", null: false
+    t.uuid "draft_auth_bypass_id"
+    t.uuid "draft_content_id"
+    t.string "draft_slug"
     t.json "previous_content"
     t.string "requester_email", null: false
     t.string "requester_name", null: false
