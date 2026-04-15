@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_091958) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_15_175153) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -41,7 +41,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_091958) do
     t.string "status", default: "new", null: false
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_requests_on_created_at"
-    t.index ["source_id"], name: "index_requests_on_source_id"
+    t.index ["source_app", "source_id", "created_at"], name: "index_requests_on_source_app_id_source_id_and_created_at", unique: true
   end
 
   create_table "responses", force: :cascade do |t|
