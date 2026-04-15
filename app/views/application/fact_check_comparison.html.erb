@@ -31,6 +31,7 @@
             padding: true,
         } %>
         <p class="govuk-body"><%= link_to t("fact_check_comparison.preview_link"), @draft_url, class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener %></p>
+        <p class="govuk-body"><%= t("fact_check_comparison.preview_link_expiry") %></p>
         <hr class="govuk-section-break govuk-section-break govuk-section-break--visible govuk-!-margin-top-6 govuk-!-margin-bottom-3" />
       <% end %>
       <%= render "govuk_publishing_components/components/heading", {

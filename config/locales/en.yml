@@ -6,6 +6,7 @@ en:
     respond_to_button: "Respond to fact check"
     preview_heading: "Preview"
     preview_link: "Preview the draft page (opens in new tab)"
+    preview_link_expiry: The preview link will expire when the content is published.
     guidance_heading: "Guidance"
     guidance_deleted: "Red highlights and a minus sign (–) show content that’s been deleted"
     guidance_added: "Green highlights and a plus sign (+) show content that’s been added"

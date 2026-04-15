@@ -40,6 +40,7 @@ RSpec.describe "FactCheckComparison", type: :system do
 
       expect(page).to have_text(I18n.t("fact_check_comparison.preview_heading"))
       expect(page).to have_link(I18n.t("fact_check_comparison.preview_link"))
+      expect(page).to have_text(I18n.t("fact_check_comparison.preview_link_expiry"))
     end
 
     it "displays the guidance sidebar" do
@@ -61,6 +62,7 @@ RSpec.describe "FactCheckComparison", type: :system do
 
         expect(page).not_to have_text(I18n.t("fact_check_comparison.preview_heading"))
         expect(page).not_to have_link(I18n.t("fact_check_comparison.preview_link"))
+        expect(page).not_to have_text(I18n.t("fact_check_comparison.preview_link_expiry"))
       end
     end
   end
