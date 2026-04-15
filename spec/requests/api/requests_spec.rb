@@ -2,6 +2,9 @@ require "rails_helper"
 
 RSpec.describe "POST /api/requests", type: :request do
   describe "#create" do
+    let(:draft_content_id) { SecureRandom.uuid }
+    let(:draft_auth_bypass_id) { SecureRandom.uuid }
+
     let(:valid_payload) do
       {
         source_app: "Mainstream",
@@ -17,6 +20,9 @@ RSpec.describe "POST /api/requests", type: :request do
         previous_content: {},
         deadline: 1.week.from_now.iso8601,
         recipients: ["recipient1@example.com", "recipient2@example.com"],
+        draft_content_id:,
+        draft_auth_bypass_id:,
+        draft_slug: "test-edition-slug",
       }
     end
 
@@ -39,6 +45,24 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("GDS Content Designer")
         expect(request.requester_email).to eq("gds-content-designer@example.com")
+        expect(request.draft_content_id).to eq(draft_content_id)
+        expect(request.draft_auth_bypass_id).to eq(draft_auth_bypass_id)
+        expect(request.draft_slug).to eq("test-edition-slug")
+      end
+
+      it "creates a Request without draft fields" do
+        payload_without_draft = valid_payload.except(:draft_content_id, :draft_auth_bypass_id, :draft_slug)
+
+        expect {
+          post "/api/requests", params: payload_without_draft, as: :json
+        }.to change(Request, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+
+        request = Request.last
+        expect(request.draft_content_id).to be_nil
+        expect(request.draft_auth_bypass_id).to be_nil
+        expect(request.draft_slug).to be_nil
       end
 
       it "creates a user record for given email address when one does not already exist" do
@@ -309,6 +333,25 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("Malcolm Tucker")
         expect(request.requester_email).to eq("m.tucker@gov.uk")
+      end
+
+      it "updates the draft_auth_bypass_id" do
+        new_auth_bypass_id = SecureRandom.uuid
+        payload_with_auth_bypass = update_payload.merge(draft_auth_bypass_id: new_auth_bypass_id)
+
+        patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: payload_with_auth_bypass, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(existing_request.reload.draft_auth_bypass_id).to eq(new_auth_bypass_id)
+      end
+
+      it "updates the draft_slug" do
+        payload_with_slug = update_payload.merge(draft_slug: "updated-slug")
+
+        patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: payload_with_slug, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(existing_request.reload.draft_slug).to eq("updated-slug")
       end
     end
 
