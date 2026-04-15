@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   TOKEN_BYPASS_METHODS = %w[preview].freeze
 
   def token_bypass?
-    TOKEN_BYPASS_METHODS.include?(action_name) && valid_jwt?(preview_params[:token], set_preview_request)
+    TOKEN_BYPASS_METHODS.include?(action_name) && valid_compare_preview_jwt?(preview_params[:token], set_preview_request)
   end
 
   def set_preview_request

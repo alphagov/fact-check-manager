@@ -1,7 +1,7 @@
 module TokenHelper
-  def generate_preview_link(request)
+  def generate_compare_preview_link(request)
     path = preview_path(request.source_app, request.source_id)
-    path << "?token=#{jwt_token(request)}"
+    path << "?token=#{compare_preview_jwt_token(request)}"
 
     path
   end
@@ -12,7 +12,7 @@ module TokenHelper
     "#{Plek.external_url_for('draft-origin')}/#{request.draft_slug}?token=#{draft_origin_preview_jwt_token(request)}"
   end
 
-  def valid_jwt?(jwt_token, request)
+  def valid_compare_preview_jwt?(jwt_token, request)
     decoded_token = JWT.decode(jwt_token, jwt_auth_secret, true, {
       verify_expiration: true,
       verify_sub: true,
@@ -37,7 +37,7 @@ protected
     JWT.encode(payload, jwt_auth_secret, "HS256")
   end
 
-  def jwt_token(request)
+  def compare_preview_jwt_token(request)
     payload = {
       "source_app" => request.source_app,
       "source_id" => request.source_id,
