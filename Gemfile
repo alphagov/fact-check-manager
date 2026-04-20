@@ -40,6 +40,7 @@ group :development, :test do
   gem "byebug"
   gem "factory_bot_rails"
   gem "govuk_test"
+  gem "rspec-html-matchers"
   gem "rspec-rails"
   gem "rubocop-govuk"
 end

@@ -13,7 +13,11 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+require "rspec-html-matchers"
+
 RSpec.configure do |config|
+  config.include RSpecHtmlMatchers
+
   # This allows you to run only failures with --only-failures
   config.example_status_persistence_file_path = "spec/examples.txt"
 
