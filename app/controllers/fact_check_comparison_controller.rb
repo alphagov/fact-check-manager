@@ -11,7 +11,7 @@ class FactCheckComparisonController < ApplicationController
     @differ = Nokodiff.diff(before, after)
     @article_title = @request.source_title
     @deadline = @request.deadline.to_date.to_s
-    @draft_url = "/"
+    @draft_url = draft_origin_preview_url(@request)
 
     render "fact_check_comparison"
   end

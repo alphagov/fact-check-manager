@@ -12,7 +12,7 @@ RSpec.describe "Token Bypass Access", type: :request do
       before { GDS::SSO.test_user = nil }
 
       it "bypasses authentication (does not call authenticate_user!)" do
-        token = jwt_token(request_record)
+        token = compare_preview_jwt_token(request_record)
 
         expect_any_instance_of(ApplicationController).not_to receive(:authenticate_user!)
 
@@ -56,7 +56,7 @@ RSpec.describe "Token Bypass Access", type: :request do
       end
 
       it "allows access with a valid token" do
-        token = jwt_token(request_record)
+        token = compare_preview_jwt_token(request_record)
 
         get url, params: { token: token }
         expect(response).to have_http_status(:success)
