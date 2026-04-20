@@ -52,6 +52,9 @@ module Api
         :requester_name,
         :requester_email,
         :deadline,
+        :draft_content_id, # optional
+        :draft_auth_bypass_id, # optional
+        :draft_slug, # optional
         recipients: [],
         # dynamic hash fields at the end
         current_content: {},
@@ -62,6 +65,8 @@ module Api
     def update_params
       params.require(:request).permit(
         :source_title, # optional
+        :draft_auth_bypass_id, # optional
+        :draft_slug, # optional
         current_content: {},
       )
     end

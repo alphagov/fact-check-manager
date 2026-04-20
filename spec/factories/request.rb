@@ -6,6 +6,9 @@ FactoryBot.define do
     requester_name { "Malcolm Tucker" }
     requester_email { "m.tucker@gov.uk" }
     auth_bypass_id { SecureRandom.uuid }
+    draft_content_id { SecureRandom.uuid }
+    draft_auth_bypass_id { SecureRandom.uuid }
+    draft_slug { "test-slug" }
     current_content do
       {
         "body":
