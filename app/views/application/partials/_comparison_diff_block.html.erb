@@ -1,0 +1,11 @@
+<% unless heading.nil? %>
+<%= render "govuk_publishing_components/components/heading", {
+          text: heading,
+          heading_level: 3,
+          font_size: "m",
+          padding: true,
+      } %>
+      <% end %>
+      <div class="compare-editions">
+          <%= content.html_safe %>
+      </div>

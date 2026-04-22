@@ -4,8 +4,8 @@ RSpec.describe "FactCheckComparison", type: :request do
   let(:request) do
     create(
       :request,
-      previous_content: { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" },
-      current_content: { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" },
+      previous_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
+      current_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
     )
   end
 
