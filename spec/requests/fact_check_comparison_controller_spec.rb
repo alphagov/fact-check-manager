@@ -1,28 +1,16 @@
 require "rails_helper"
+require "helpers/formatted_diff_helpers"
 
 RSpec.describe "FactCheckComparison", type: :request do
-  let(:request) do
-    create(
-      :request,
-      previous_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
-      current_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
-    )
-  end
+  include FormattedDiffHelpers
 
   describe "GET /compare" do
-    it "renders the expected unchanging assets" do
-      get compare_path(source_app: request.source_app, source_id: request.source_id)
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include(I18n.t("fact_check_comparison.heading"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.respond_by"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.respond_to_button"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.preview_heading"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.preview_link"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.guidance_heading"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.guidance_deleted"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.guidance_added"))
-      expect(response.body).to include(I18n.t("fact_check_comparison.guidance_link"))
+    let(:request) do
+      create(
+        :request,
+        previous_content: previous_content,
+        current_content: current_content,
+      )
     end
 
     it "includes a draft origin preview link with a JWT token" do
@@ -52,27 +40,334 @@ RSpec.describe "FactCheckComparison", type: :request do
         expect(response.body).not_to include(I18n.t("fact_check_comparison.preview_link"))
       end
     end
-
-    it "renders the diff with formatting" do
-      get compare_path(source_app: request.source_app, source_id: request.source_id)
-
-      parsed = Nokogiri::HTML(response.body)
-
-      expect(parsed.at_css("div.compare-editions")&.text).to include("This is the unchanged line.")
-
-      expect(parsed.at_css("del")&.text).to include("This line will be changed")
-      expect(parsed.at_css("del")&.text).not_to include("This is the unchanged line.")
-      expect(parsed.at_css("del")&.text).not_to include("This line has changes")
-
-      expect(parsed.at_css("ins")&.text).to include("This line has changes")
-      expect(parsed.at_css("ins")&.text).not_to include("This is the unchanged line.")
-      expect(parsed.at_css("ins")&.text).not_to include("This line will be changed")
+    
+    let(:parsed) do
+      doc = Nokogiri::HTML(response.body)
+      {
+        ins: doc.css("div.compare-editions ins").map { |n| n.text.strip },
+        del: doc.css("div.compare-editions del").map { |n| n.text.strip },
+        diff: doc.css("div.compare-editions div").map { |n| n.text.squish }.reject(&:empty?),
+        heading: doc.css("div.gem-c-govspeak h3").map { |n| n.text.strip },
+      }
     end
 
-    it "returns 404 when no request exists for the given source_app and source_id" do
-      get compare_path(source_app: "invalid", source_id: "invalid")
+    context "when no request exists for the given source_app and source_id" do
+      it "returns 404" do
+        get compare_path(source_app: "invalid", source_id: "invalid")
 
-      expect(response).to have_http_status(:not_found)
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "with one part" do
+      let(:current_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
+
+      before do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+      end
+
+      context "with differing previous_content and current_content" do
+        let(:previous_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } } }
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["This is the unchanged line."])
+          verify_ins(parsed, ["This line has changes"])
+          verify_del(parsed, ["This line will be changed"])
+          expect(response.body).not_to include("heading_not_shown")
+        end
+      end
+
+      context "with identical current_content and previous_content" do
+        let(:previous_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["This is the unchanged line.", "This line has changes"])
+          expect(parsed[:del]).to eq([])
+          expect(parsed[:ins]).to eq([])
+          expect(response.body).not_to include("heading_not_shown")
+        end
+      end
+
+      context "with no previous_content" do
+        let(:previous_content) { nil }
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["This is the unchanged line.", "This line has changes"])
+          expect(parsed[:del]).to eq([])
+          expect(parsed[:ins]).to eq([])
+          expect(response.body).not_to include("heading_not_shown")
+        end
+      end
+    end
+
+    context "with two parts" do
+      before do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+      end
+
+      context "with differing previous_content and current_content" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" } }
+        end
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["Part 1 unchanged.", "Part 2 unchanged."])
+          verify_del(parsed, ["Part 1 to be changed.", "Part 2 to be changed."])
+          verify_ins(parsed, ["Part 1 changed.", "Part 2 changed."])
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading"])
+        end
+      end
+
+      context "when the first part is removed" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+        let(:current_content) { { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } } }
+
+        it "displays the heading of the removed part" do
+          verify_headings_order(parsed, ["Part 1 heading (REMOVED)", "Part 2 heading"])
+        end
+
+        it "displays the part as removed" do
+          verify_del(parsed, ["Part 1."])
+        end
+      end
+
+      context "when the second part is removed" do
+        let(:current_content) { { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } } }
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+
+        it "displays the heading of the removed part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading (REMOVED)"])
+        end
+
+        it "displays the part as removed" do
+          verify_del(parsed, ["Part 2."])
+        end
+      end
+
+      context "when the first part is a new addition" do
+        let(:previous_content) { { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } } }
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1 new part</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+
+        it "displays the heading of the added part" do
+          verify_headings_order(parsed, ["Part 1 heading (ADDED)", "Part 2 heading"])
+        end
+
+        it "displays the part as added" do
+          expect(parsed[:ins]).to eq(["Part 1 new part"])
+        end
+      end
+
+      context "when the second part is a new addition" do
+        let(:previous_content) { { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } } }
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2 new part</div>" } }
+        end
+
+        it "displays the heading of the added part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading (ADDED)"])
+        end
+
+        it "displays the part as added" do
+          expect(parsed[:ins]).to eq(["Part 2 new part"])
+        end
+      end
+
+      context "when the two parts swap positions" do
+        let(:previous_content) do
+          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+
+        it "uses the order from current_content" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading"])
+        end
+      end
+    end
+
+    context "with three parts" do
+      before do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+      end
+
+      context "when all parts are in previous and current" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3 unchanged.</div><div>Part 3 to be changed.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3 unchanged.</div><div>Part 3 changed.</div>" } }
+        end
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["Part 1 unchanged.", "Part 2 unchanged.", "Part 3 unchanged."])
+          verify_del(parsed, ["Part 1 to be changed.", "Part 2 to be changed.", "Part 3 to be changed."])
+          verify_ins(parsed, ["Part 1 changed.", "Part 2 changed.", "Part 3 changed."])
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading", "Part 3 heading"])
+        end
+      end
+      context "when the first part is a new addition" do
+        let(:previous_content) do
+          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+
+        it "displays the heading of the added part" do
+          verify_headings_order(parsed, ["Part 1 heading (ADDED)", "Part 2 heading", "Part 3 heading"])
+        end
+
+        it "displays the part as added" do
+          verify_ins(parsed, ["Part 1."])
+        end
+      end
+
+      context "when the second part is a new addition" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+
+        it "displays the heading of the added part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading (ADDED)", "Part 3 heading"])
+        end
+
+        it "displays the part as added" do
+          verify_ins(parsed, ["Part 2."])
+        end
+      end
+
+      context "when the third part is a new addition" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+
+        it "displays the heading of the added part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading", "Part 3 heading (ADDED)"])
+        end
+
+        it "displays the part as added" do
+          verify_ins(parsed, ["Part 3."])
+        end
+      end
+
+      context "when the first part is removed" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+
+        it "displays the heading of the removed part" do
+          verify_headings_order(parsed, ["Part 1 heading (REMOVED)", "Part 2 heading", "Part 3 heading"])
+        end
+
+        it "displays the part as removed" do
+          verify_del(parsed, ["Part 1."])
+        end
+      end
+
+      context "when the second part is removed" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+
+        it "displays the heading of the removed part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading (REMOVED)", "Part 3 heading"])
+        end
+
+        it "displays the part as removed" do
+          verify_del(parsed, ["Part 2."])
+        end
+      end
+
+      context "when the third part is removed" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+
+        it "displays the heading of the removed part" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 2 heading", "Part 3 heading (REMOVED)"])
+        end
+
+        it "displays the part as removed" do
+          verify_del(parsed, ["Part 3."])
+        end
+      end
+
+      context "when two parts are swapped" do
+        let(:previous_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+        end
+        let(:current_content) do
+          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
+            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" },
+            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+        end
+
+        it "uses the order from current_content" do
+          verify_headings_order(parsed, ["Part 1 heading", "Part 3 heading", "Part 2 heading"])
+        end
+      end
     end
   end
 end
