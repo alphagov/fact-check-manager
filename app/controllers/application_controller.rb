@@ -14,7 +14,7 @@ class ApplicationController < ActionController::Base
   end
 
   def set_preview_request
-    @set_preview_request ||= Request.where(source_app: preview_params[:source_app], source_id: preview_params[:source_id]).most_recent_first.first
+    @set_preview_request ||= Request.most_recent_for_source(source_app: preview_params[:source_app], source_id: preview_params[:source_id])
   end
 
   def preview

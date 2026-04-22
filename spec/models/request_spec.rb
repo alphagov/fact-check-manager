@@ -91,55 +91,48 @@ RSpec.describe Request, type: :model do
     end
   end
 
-  context "scopes" do
-    describe ".for_source" do
-      it "returns only requests matching the given source id" do
-        source_id = SecureRandom.uuid
-        source_request = FactoryBot.create(:request, source_id: source_id)
-        other_source_request = FactoryBot.create(:request)
+  describe ".most_recent_for_source" do
+    it "returns the most recent request for the given source app and source ID" do
+      source_id = SecureRandom.uuid
+      source_app = "app"
+      _older_request = FactoryBot.create(:request, source_app: source_app, source_id: source_id, created_at: Time.zone.now - 2.hours)
+      newer_request = FactoryBot.create(:request, source_app: source_app, source_id: source_id, created_at: Time.zone.now)
+      _newer_non_source_request = FactoryBot.create(:request, source_id: SecureRandom.uuid)
 
-        requests = Request.for_source(source_id)
+      request = Request.most_recent_for_source(source_app:, source_id:)
 
-        expect(requests).to include(source_request)
-        expect(requests).not_to include(other_source_request)
-      end
+      expect(request).to eq(newer_request)
     end
 
-    describe ".most_recent_first" do
-      it "returns requests in descending order of created_at" do
-        source_id = SecureRandom.uuid
-        older_request = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now - 2.hours)
-        newer_request = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now)
+    it "returns nil if source_app is not matched" do
+      source_id = SecureRandom.uuid
+      source_app = "app"
+      alt_source_app = "app2"
 
-        requests = Request.most_recent_first
+      FactoryBot.create(:request, source_app: alt_source_app, source_id: source_id, created_at: Time.zone.now)
 
-        expect(requests).to eq([newer_request, older_request])
-      end
-
-      it "combines with .for_source to return source requests in descending order" do
-        source_id = SecureRandom.uuid
-        older_request_for_source = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now - 2.hours)
-        newer_request_for_source = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now)
-        older_request_other_source = FactoryBot.create(:request, created_at: Time.zone.now - 2.days)
-        newer_request_other_source = FactoryBot.create(:request, created_at: Time.zone.now)
-
-        requests = Request.for_source(source_id).most_recent_first
-
-        expect(requests).to eq([newer_request_for_source, older_request_for_source])
-        expect(requests).not_to include(older_request_other_source, newer_request_other_source)
-      end
+      expect(Request.most_recent_for_source(source_app:, source_id:)).to be_nil
     end
 
-    describe ".most_recent_for_source" do
-      it "returns the most recent request for the given source ID" do
-        source_id = SecureRandom.uuid
-        _older_request = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now - 2.hours)
-        newer_request = FactoryBot.create(:request, source_id: source_id, created_at: Time.zone.now)
+    it "returns nil if source_id is not matched" do
+      source_id = SecureRandom.uuid
+      source_app = "app"
+      alt_source_id = SecureRandom.uuid
 
-        request = Request.most_recent_for_source source_id
+      FactoryBot.create(:request, source_app: source_app, source_id: alt_source_id, created_at: Time.zone.now)
 
-        expect(request).to eq(newer_request)
-      end
+      expect(Request.most_recent_for_source(source_app:, source_id:)).to be_nil
+    end
+
+    it "returns nil if neither source_app or source_id is matched" do
+      source_id = SecureRandom.uuid
+      source_app = "app"
+      alt_source_id = SecureRandom.uuid
+      alt_source_app = "app2"
+
+      FactoryBot.create(:request, source_app: alt_source_app, source_id: alt_source_id, created_at: Time.zone.now)
+
+      expect(Request.most_recent_for_source(source_app:, source_id:)).to be_nil
     end
   end
 end

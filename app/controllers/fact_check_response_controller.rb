@@ -56,7 +56,7 @@ class FactCheckResponseController < ApplicationController
 private
 
   def set_request
-    @request = Request.where(source_app: params[:source_app], source_id: params[:source_id]).most_recent_first.first
+    @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
   end
 
