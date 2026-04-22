@@ -7,7 +7,7 @@ RSpec.shared_examples "test JSON content" do |content_field|
       record = FactoryBot.build(:request, **{ content_field => invalid_hash_content })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("value for illegal_boolean must be a string")
+      expect(record.errors.messages[content_field]).to include("value for illegal_boolean must be a hash")
     end
 
     it "adds an error to #{content_field}" do

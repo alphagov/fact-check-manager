@@ -4,7 +4,7 @@ class Request < ApplicationRecord
   has_one :response
 
   validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
-  validate :content_data_must_be_string_pairs
+  validate :content_data_must_be_string_hash_pairs
 
   def self.most_recent_for_source(source_app:, source_id:)
     where(source_app: source_app, source_id: source_id).order(created_at: :desc).first
@@ -12,7 +12,7 @@ class Request < ApplicationRecord
 
 private
 
-  def content_data_must_be_string_pairs
+  def content_data_must_be_string_hash_pairs
     %i[current_content previous_content].each do |content_field|
       content_hash = public_send(content_field)
       next if content_hash.nil?
@@ -23,8 +23,8 @@ private
       end
 
       content_hash.each do |key, value|
-        unless value.is_a?(String)
-          errors.add(content_field, "value for #{key} must be a string")
+        unless value.is_a?(Hash)
+          errors.add(content_field, "value for #{key} must be a hash")
         end
       end
     end
