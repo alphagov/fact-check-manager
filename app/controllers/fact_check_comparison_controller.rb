@@ -22,7 +22,7 @@ private
       @request.previous_content = @request.current_content.deep_dup
     end
 
-    if @request.current_content.size == 1
+    if @request.current_content.size == 1 && @request.previous_content.size == 1
       return @request.current_content
     end
 
@@ -54,22 +54,20 @@ private
     current_content.to_h
   end
 
-  def create_diff(content_pairs)
+  def create_diff(current_content)
     diff_hash = {}
 
-    content_pairs.each do |pair|
-      pair_hash = pair.last
-      pair_id = pair.first
+    current_content.each do |pair_id, pair_hash|
       heading = visible_heading = pair_hash.keys.first
       current = pair_hash[heading]
-      previous = @request.previous_content.fetch(pair_id, @default_content)
-      previous_key = previous == @default_content ? heading : previous.keys.first
+      previous = @request.previous_content.fetch(pair_id, "")
+      previous_key = previous == "" ? heading : previous.keys.first
 
-      if previous == @default_content
+      if current_content.size == 1
+        visible_heading = nil
+      elsif previous.blank?
         visible_heading = "#{heading} (ADDED)"
-      end
-
-      if current == @default_content
+      elsif current.blank?
         visible_heading = "#{heading} (REMOVED)"
       end
 
