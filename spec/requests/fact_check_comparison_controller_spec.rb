@@ -13,11 +13,16 @@ RSpec.describe "FactCheckComparison", type: :request do
       )
     end
 
-    it "includes a draft origin preview link with a JWT token" do
-      get compare_path(source_app: request.source_app, source_id: request.source_id)
+    context "when draft origin fields are present" do
+      let(:previous_content) { { "test_part" => { "body" => "<div>Old content</div>" } } }
+      let(:current_content) { { "test_part" => { "body" => "<div>New content</div>" } } }
 
-      expect(response.body).to include("draft-origin.dev.gov.uk/#{request.draft_slug}")
-      expect(response.body).to include("token=")
+      it "includes a draft origin preview link with a JWT token" do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response.body).to include("draft-origin.dev.gov.uk/#{request.draft_slug}")
+        expect(response.body).to include("token=")
+      end
     end
 
     context "when draft origin fields are not present" do
@@ -27,8 +32,8 @@ RSpec.describe "FactCheckComparison", type: :request do
           draft_content_id: nil,
           draft_auth_bypass_id: nil,
           draft_slug: nil,
-          previous_content: { "body" => "<div>Old content</div>" },
-          current_content: { "body" => "<div>New content</div>" },
+          previous_content: { "test_part" => { "body" => "<div>Old content</div>" } },
+          current_content: { "test_part" => { "body" => "<div>New content</div>" } },
         )
       end
 
@@ -40,7 +45,7 @@ RSpec.describe "FactCheckComparison", type: :request do
         expect(response.body).not_to include(I18n.t("fact_check_comparison.preview_link"))
       end
     end
-    
+
     let(:parsed) do
       doc = Nokogiri::HTML(response.body)
       {
