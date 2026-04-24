@@ -1,5 +1,5 @@
 class FactCheckResponseController < ApplicationController
-  before_action :set_request, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+  before_action :set_request, :check_permissions, only: %i[respond_to_fact_check validate_fact_check_response send_response]
 
   def respond_to_fact_check
     session.delete(:fact_check_response) unless params[:back]
@@ -58,6 +58,13 @@ private
   def set_request
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
+  end
+
+  def check_permissions
+    return if current_user.govuk_admin? || @request.users.include?(current_user)
+
+    flash[:danger] = "You do not have permission to see this page."
+    redirect_to compare_path(@request.source_app, @request.source_id)
   end
 
   def permitted_params
