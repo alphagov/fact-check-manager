@@ -1,6 +1,12 @@
 require "rails_helper"
+require "notifications/client"
 
 RSpec.describe "POST /api/requests", type: :request do
+  before do
+    @notify_client_spy = instance_spy(Notifications::Client)
+    allow(Services).to receive(:notify_api).and_return(@notify_client_spy)
+  end
+
   describe "#create" do
     let(:draft_content_id) { SecureRandom.uuid }
     let(:draft_auth_bypass_id) { SecureRandom.uuid }
@@ -108,6 +114,32 @@ RSpec.describe "POST /api/requests", type: :request do
         expect {
           post "/api/requests", params: valid_payload, as: :json
         }.not_to(change { recipient1.reload.updated_at })
+      end
+
+      context "Notify returns an error" do
+        it "returns a bad gateway response for general error" do
+          fake_response = double("response", code: 500, body: "Simulated Notify Error")
+          specific_error = Notifications::Client::RequestError.new(fake_response)
+          allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+
+          post "/api/requests", params: valid_payload, as: :json
+
+          expect(response).to have_http_status(:bad_gateway)
+          json = JSON.parse(response.body)
+          expect(json.dig("errors", "notify_error")).to eq("Simulated Notify Error")
+        end
+
+        it "process team only API key errors differently" do
+          allow(ENV).to receive(:fetch).with("GOVUK_ENVIRONMENT").and_return("integration")
+          fake_response = double("response", code: 400, body: "Simulated team-only API key Error")
+          specific_error = Notifications::Client::BadRequestError.new(fake_response)
+          allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+          allow(Rails.logger).to receive(:info)
+
+          post "/api/requests", params: valid_payload, as: :json
+
+          expect(Rails.logger).to have_received(:info).with(/GOV.UK Notify team/)
+        end
       end
     end
 
@@ -228,7 +260,7 @@ RSpec.describe "POST /api/requests", type: :request do
     let(:existing_request) { create(:request) }
 
     context "valid request parameters" do
-      before { expect(NotifyService).to receive(:resend_emails).and_return(true) }
+      before { expect(NotifyApiService).to receive(:resend_emails).and_return(true) }
 
       it "calls NotifyService#resend_emails" do
         post "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}/resend-emails", as: :json
@@ -241,7 +273,7 @@ RSpec.describe "POST /api/requests", type: :request do
     end
 
     context "invalid request parameters" do
-      before { expect(NotifyService).not_to receive(:resend_emails) }
+      before { expect(NotifyApiService).not_to receive(:resend_emails) }
       let(:invalid_source_app) { "invalid-source-app" }
       let(:invalid_source_id) { "invalid-source-id" }
 

@@ -12,6 +12,8 @@ module Api
       request_params[:recipients].each do |email|
         user = User.find_or_create_by!(email: email)
         fact_check_request.collaborations.build(user: user, role: "fact_checker")
+        # TODO: Personalisation hash is specific to the test template on Notify - update
+        NotifyApiService.send_email_to_recipient(user, fact_check_request, { greeting: "Hello from RequestsController" })
       end
 
       if fact_check_request.save
@@ -34,7 +36,7 @@ module Api
     end
 
     def resend_emails
-      if NotifyService.resend_emails(@request_record)
+      if NotifyApiService.resend_emails(@request_record)
         render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
         render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
