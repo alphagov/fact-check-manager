@@ -1,5 +1,9 @@
 FactoryBot.define do
   factory :request do
+    transient do
+      collaborator { FactoryBot.create(:user) }
+    end
+
     source_id { SecureRandom.uuid }
     source_app { "publisher" }
     status { "new" }
@@ -24,6 +28,14 @@ FactoryBot.define do
                                      body: "If you or your partner are travelling abroad for more than 8 months, you may be able to claim for expenses." }
       previous_content { multi_part_previous_content }
       current_content { multi_part_current_content }
+    end
+
+    trait :with_collaborator do
+      after(:build) do |request, evaluator|
+        FactoryBot.create(:collaboration,
+                          user: evaluator.collaborator,
+                          request: request)
+      end
     end
   end
 end
