@@ -34,7 +34,7 @@ module Api
     end
 
     def resend_emails
-      if NotifyService.resend_emails(@request_record)
+      if NotifyApiService.resend_emails(@request_record)
         render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
         render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity

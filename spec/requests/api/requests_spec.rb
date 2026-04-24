@@ -267,7 +267,7 @@ RSpec.describe "POST /api/requests", type: :request do
     let(:existing_request) { create(:request) }
 
     context "valid request parameters" do
-      before { expect(NotifyService).to receive(:resend_emails).and_return(true) }
+      before { expect(NotifyApiService).to receive(:resend_emails).and_return(true) }
 
       it "calls NotifyService#resend_emails" do
         post "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}/resend-emails", as: :json
@@ -280,7 +280,7 @@ RSpec.describe "POST /api/requests", type: :request do
     end
 
     context "invalid request parameters" do
-      before { expect(NotifyService).not_to receive(:resend_emails) }
+      before { expect(NotifyApiService).not_to receive(:resend_emails) }
       let(:invalid_source_app) { "invalid-source-app" }
       let(:invalid_source_id) { "invalid-source-id" }
 
