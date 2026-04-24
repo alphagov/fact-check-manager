@@ -1,5 +1,7 @@
 module Api
   class RequestsController < Api::BaseController
+    include ApiErrorHandlerConcern
+
     wrap_parameters include: Request.attribute_names + [:recipients]
     before_action :set_request_record, only: %i[update resend_emails]
 
@@ -15,6 +17,10 @@ module Api
       end
 
       if fact_check_request.save
+        fact_check_request.users.each do |user|
+          # TODO: Personalisation hash is specific to the test template on Notify - update
+          NotifyApiService.send_email_to_recipient(user, fact_check_request, NotifyApiService::NOTIFY_TEST_TEMPLATE_ID, { greeting: "Hello from RequestsController" })
+        end
         render json: { id: fact_check_request.id, source_id: fact_check_request.source_id }, status: :created
       else
         render json: { errors: fact_check_request.errors.full_messages }, status: :unprocessable_entity
