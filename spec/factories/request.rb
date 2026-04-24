@@ -1,5 +1,9 @@
 FactoryBot.define do
   factory :request do
+    transient do
+      collaborator { FactoryBot.create(:user) }
+    end
+
     source_id { SecureRandom.uuid }
     source_app { "publisher" }
     status { "new" }
@@ -39,6 +43,14 @@ FactoryBot.define do
                                       } }
       previous_content { multi_part_previous_content }
       current_content { multi_part_current_content }
+    end
+
+    trait :with_collaborator do
+      after(:build) do |request, evaluator|
+        FactoryBot.create(:collaboration,
+                          user: evaluator.collaborator,
+                          request: request)
+      end
     end
   end
 end

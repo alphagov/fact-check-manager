@@ -8,11 +8,15 @@
       <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @deadline %></span>
     <% end %>
 
-    <%= render "govuk_publishing_components/components/button", {
-      text: t("fact_check_comparison.respond_to_button"),
-      href: respond_path(source_app: @request.source_app, source_id: @request.source_id),
-      margin_bottom: 6,
-    } %>
+    <% unless current_user.nil? %>
+      <% if current_user.govuk_admin? || @request.users.include?(current_user) %>
+        <%= render "govuk_publishing_components/components/button", {
+          text: t("fact_check_comparison.respond_to_button"),
+          href: respond_path(source_app: @request.source_app, source_id: @request.source_id),
+          margin_bottom: 6,
+        } %>
+      <% end %>
+    <% end %>
   </div>
 </div>
 <div class="govuk-grid-row">
