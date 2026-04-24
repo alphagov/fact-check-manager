@@ -2,6 +2,8 @@ class FactCheckComparisonController < ApplicationController
   require "nokodiff"
   require "nokogiri"
 
+  before_action :authenticate_user!, unless: :token_bypass?, only: :compare
+
   def compare
     @default_content = ""
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])

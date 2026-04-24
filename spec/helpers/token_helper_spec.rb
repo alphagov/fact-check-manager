@@ -7,10 +7,10 @@ RSpec.describe TokenHelper, type: :helper do
 
   describe "#generate_preview_link" do
     it "returns the correctly nested path with the token" do
-      allow(helper).to receive(:preview_path).and_return("/requests/publisher/123/preview")
+      allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
 
       link = helper.generate_compare_preview_link(request_record)
-      expect(link).to include("/requests/publisher/123/preview?token=#{helper.compare_preview_jwt_token(request_record)}")
+      expect(link).to include("/requests/publisher/123/compare?token=#{helper.compare_preview_jwt_token(request_record)}")
     end
   end
 
