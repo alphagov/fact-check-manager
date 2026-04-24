@@ -1,6 +1,8 @@
 class FactCheckComparisonController < ApplicationController
   require "nokodiff"
 
+  before_action :authenticate_user!, unless: :token_bypass?, only: :compare
+
   def compare
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
