@@ -1,6 +1,6 @@
 module TokenHelper
   def generate_compare_preview_link(request)
-    path = preview_path(request.source_app, request.source_id)
+    path = compare_path(request.source_app, request.source_id)
     path << "?token=#{compare_preview_jwt_token(request)}"
 
     path
