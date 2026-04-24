@@ -6,8 +6,8 @@ RSpec.describe "FactCheckComparison", type: :system do
       :request,
       source_title: "Example title",
       deadline: Time.zone.now + 5.days,
-      previous_content: { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" },
-      current_content: { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" },
+      previous_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
+      current_content: { "test_id" => { "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
     )
   end
 
