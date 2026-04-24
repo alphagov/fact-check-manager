@@ -12,6 +12,8 @@ module Api
       request_params[:recipients].each do |email|
         user = User.find_or_create_by!(email: email)
         fact_check_request.collaborations.build(user: user, role: "fact_checker")
+        # TODO: Personalisation hash is specific to the test template on Notify - update
+        NotifyApiService.send_email_to_recipient(user, fact_check_request, { greeting: "Hello from RequestsController" })
       end
 
       if fact_check_request.save
