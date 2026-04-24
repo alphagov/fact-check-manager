@@ -61,6 +61,28 @@
   </div>
 
   <%= render "govuk_publishing_components/components/layout_footer", {
-    navigation: [],
+    navigation: [
+      {
+        title: "Support and feedback",
+        items: [
+          {
+            href: "#{Plek.external_url_for("support")}/technical_fault_report/new",
+            text: "Report a technical fault to GDS",
+          },
+          {
+            href: "#{Plek.website_root}/done/fact-check-manager",
+            text: "Give feedback on Fact Check Manager",
+          },
+          {
+            href: "https://status.publishing.service.gov.uk/",
+            text: "Check if publishing apps are working or if there’s any maintenance planned",
+          },
+          {
+            href: "#{Plek.external_url_for("signon")}/privacy-notice",
+            text: "Privacy notice",
+          },
+        ],
+      },
+    ],
   } %>
 <% end %>
