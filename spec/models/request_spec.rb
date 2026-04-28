@@ -43,7 +43,7 @@ RSpec.shared_examples "test JSON content" do |content_field|
       record = FactoryBot.build(:request, **{ content_field => { "id1": { "heading1": invalid_content } } })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("content in id1 must be a string")
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
     end
 
     it "adds an error to #{content_field}" do
@@ -51,7 +51,7 @@ RSpec.shared_examples "test JSON content" do |content_field|
       record = FactoryBot.build(:request, **{ content_field => { "id1": { "heading1": invalid_content } } })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("content in id1 must be a string")
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
     end
   end
 
@@ -61,17 +61,7 @@ RSpec.shared_examples "test JSON content" do |content_field|
       record = FactoryBot.build(:request, **{ content_field => { "id1": overpopulated_content } })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:content pair")
-    end
-  end
-
-  context "when #{content_field} contains non string ids and headings" do
-    it "casts them as strings and is valid" do
-      invalid_id = 1
-      invalid_content = { nil: "content" }
-      record = FactoryBot.build(:request, **{ content_field => { invalid_id => invalid_content } })
-
-      expect(record).to be_valid
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
     end
   end
 end

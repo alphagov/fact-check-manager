@@ -14,8 +14,8 @@ RSpec.describe "FactCheckComparison", type: :request do
     end
 
     context "when draft origin fields are present" do
-      let(:previous_content) { { "test_part" => { "body" => "<div>Old content</div>" } } }
-      let(:current_content) { { "test_part" => { "body" => "<div>New content</div>" } } }
+      let(:previous_content) { { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } } }
+      let(:current_content) { { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } } }
 
       it "includes a draft origin preview link with a JWT token" do
         get compare_path(source_app: request.source_app, source_id: request.source_id)
@@ -32,8 +32,8 @@ RSpec.describe "FactCheckComparison", type: :request do
           draft_content_id: nil,
           draft_auth_bypass_id: nil,
           draft_slug: nil,
-          previous_content: { "test_part" => { "body" => "<div>Old content</div>" } },
-          current_content: { "test_part" => { "body" => "<div>New content</div>" } },
+          previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+          current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
         )
       end
 
@@ -65,14 +65,14 @@ RSpec.describe "FactCheckComparison", type: :request do
     end
 
     context "with one part" do
-      let(:current_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
+      let(:current_content) { { "test_id" => { "heading" => "heading_not_shown", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
 
       before do
         get compare_path(source_app: request.source_app, source_id: request.source_id)
       end
 
       context "with differing previous_content and current_content" do
-        let(:previous_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } } }
+        let(:previous_content) { { "test_id" => { "heading" => "heading_not_shown", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } } }
 
         it "correctly renders the formatted diff" do
           verify_static_elements
@@ -84,7 +84,7 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       context "with identical current_content and previous_content" do
-        let(:previous_content) { { "test_id" => { "heading_not_shown" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
+        let(:previous_content) { { "test_id" => { "heading" => "heading_not_shown", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
 
         it "correctly renders the formatted diff" do
           verify_static_elements
@@ -115,12 +115,12 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "with differing previous_content and current_content" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" } }
         end
 
         it "correctly renders the formatted diff" do
@@ -134,10 +134,10 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the first part is removed" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
-        let(:current_content) { { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } } }
+        let(:current_content) { { "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } } }
 
         it "displays the heading of the removed part" do
           verify_headings_order(parsed, ["Part 1 heading (REMOVED)", "Part 2 heading"])
@@ -149,10 +149,10 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       context "when the second part is removed" do
-        let(:current_content) { { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } } }
+        let(:current_content) { { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" } } }
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
 
         it "displays the heading of the removed part" do
@@ -165,10 +165,10 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       context "when the first part is a new addition" do
-        let(:previous_content) { { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } } }
+        let(:previous_content) { { "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } } }
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1 new part</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1 new part</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
 
         it "displays the heading of the added part" do
@@ -181,10 +181,10 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       context "when the second part is a new addition" do
-        let(:previous_content) { { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } } }
+        let(:previous_content) { { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" } } }
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2 new part</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2 new part</div>" } }
         end
 
         it "displays the heading of the added part" do
@@ -198,12 +198,12 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the two parts swap positions" do
         let(:previous_content) do
-          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" } }
+          { "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
 
         it "uses the order from current_content" do
@@ -219,14 +219,14 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when all parts are in previous and current" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3 unchanged.</div><div>Part 3 to be changed.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1 unchanged.</div><div>Part 1 to be changed.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2 unchanged.</div><div>Part 2 to be changed.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3 unchanged.</div><div>Part 3 to be changed.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3 unchanged.</div><div>Part 3 changed.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1 unchanged.</div><div>Part 1 changed.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2 unchanged.</div><div>Part 2 changed.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3 unchanged.</div><div>Part 3 changed.</div>" } }
         end
 
         it "correctly renders the formatted diff" do
@@ -239,13 +239,13 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
       context "when the first part is a new addition" do
         let(:previous_content) do
-          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
 
         it "displays the heading of the added part" do
@@ -259,13 +259,13 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the second part is a new addition" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
 
         it "displays the heading of the added part" do
@@ -279,13 +279,13 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the third part is a new addition" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
 
         it "displays the heading of the added part" do
@@ -299,13 +299,13 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the first part is removed" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
 
         it "displays the heading of the removed part" do
@@ -319,13 +319,13 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the second part is removed" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
 
         it "displays the heading of the removed part" do
@@ -339,13 +339,13 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when the third part is removed" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
 
         it "displays the heading of the removed part" do
@@ -359,14 +359,14 @@ RSpec.describe "FactCheckComparison", type: :request do
 
       context "when two parts are swapped" do
         let(:previous_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" } }
         end
         let(:current_content) do
-          { "part_1" => { "Part 1 heading" => "<div>Part 1.</div>" },
-            "part_3" => { "Part 3 heading" => "<div>Part 3.</div>" },
-            "part_2" => { "Part 2 heading" => "<div>Part 2.</div>" } }
+          { "part_1" => { "heading" => "Part 1 heading", "body" => "<div>Part 1.</div>" },
+            "part_3" => { "heading" => "Part 3 heading", "body" => "<div>Part 3.</div>" },
+            "part_2" => { "heading" => "Part 2 heading", "body" => "<div>Part 2.</div>" } }
         end
 
         it "uses the order from current_content" do

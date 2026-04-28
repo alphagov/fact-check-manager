@@ -11,7 +11,7 @@ FactoryBot.define do
     draft_slug { "test-slug" }
     current_content do
       { "id_value" => {
-        "body" => "Many lines of data for the content. Many changes that need fact checking",
+        "heading" => "test_heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
       } }
     end
     deadline { Time.zone.now + 1.week }
@@ -19,23 +19,23 @@ FactoryBot.define do
     trait :with_more_complex_content_data do
       multi_part_previous_content = { "id_1" =>
                                       {
-                                        "How to claim for intergalactic travel expenses" =>
-                                        "<p>If you or your partner is travelling abroad for more than 7 months, you may be able to claim for expenses.</p>",
+                                        "heading" => "How to claim for intergalactic travel expenses",
+                                        "body" => "<p>If you or your partner is travelling abroad for more than 7 months, you may be able to claim for expenses.</p>",
                                       },
                                       "id_2" =>
                                       {
-                                        "How to claim for lost luncheon meat" =>
-                                        "<p>If you have lost your luncheon meat, please inform your local sandwich maker.</p>",
+                                        "heading" => "How to claim for lost luncheon meat",
+                                        "body" => "<p>If you have lost your luncheon meat, please inform your local sandwich maker.</p>",
                                       } }
       multi_part_current_content = { "id_1" =>
                                       {
-                                        "How to claim for intergalactic travel costs" =>
-                                        "<p>If you or your partner is travelling abroad for more than 2 weeks, you may be able to claim for expenses.</p>",
+                                        "heading" => "How to claim for intergalactic travel costs",
+                                        "body" => "<p>If you or your partner is travelling abroad for more than 2 weeks, you may be able to claim for expenses.</p>",
                                       },
                                      "id_2" =>
                                       {
-                                        "How to claim for lost luncheon meat" =>
-                                        "<p>If you have lost your luncheon meat, please inform your local sandwich maker immediately, or find the nearest cake dispenser.</p>",
+                                        "heading" => "How to claim for lost luncheon meat",
+                                        "body" => "<p>If you have lost your luncheon meat, please inform your local sandwich maker immediately, or find the nearest cake dispenser.</p>",
                                       } }
       previous_content { multi_part_previous_content }
       current_content { multi_part_current_content }

@@ -14,7 +14,7 @@ RSpec.describe "POST /api/requests", type: :request do
         requester_name: "GDS Content Designer",
         requester_email: "gds-content-designer@example.com",
         current_content: { "part_id" => {
-          "heading": "Many lines of data for the content. Many changes that need fact checking",
+          "heading" => "heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
         } },
         previous_content: {},
         deadline: 1.week.from_now.iso8601,
@@ -40,7 +40,7 @@ RSpec.describe "POST /api/requests", type: :request do
         request = Request.last
         expect(request.source_app).to eq("Mainstream")
         expect(request.source_id).to be_present
-        expect(request.current_content["part_id"]["heading"]).to eq("Many lines of data for the content. Many changes that need fact checking")
+        expect(request.current_content["part_id"]["body"]).to eq("Many lines of data for the content. Many changes that need fact checking")
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("GDS Content Designer")
         expect(request.requester_email).to eq("gds-content-designer@example.com")
@@ -304,7 +304,7 @@ RSpec.describe "POST /api/requests", type: :request do
         source_app: "Mainstream",
         source_id: existing_request.source_id,
         source_title: "Updated Title",
-        current_content: { "part_id" => { "heading": "Updated body goes here" } },
+        current_content: { "part_id" => { "heading" => "heading", "body" => "Updated body goes here" } },
       }
     end
 
@@ -325,7 +325,7 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.source_app).to eq("publisher")
         expect(request.source_id).to be_present
         expect(request.source_title).to eq("Updated Title")
-        expect(request.current_content).to eq("part_id" => { "heading" => "Updated body goes here" })
+        expect(request.current_content).to eq("part_id" => { "heading" => "heading", "body" => "Updated body goes here" })
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("Malcolm Tucker")
         expect(request.requester_email).to eq("m.tucker@gov.uk")
