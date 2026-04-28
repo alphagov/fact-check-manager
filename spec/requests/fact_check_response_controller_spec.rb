@@ -181,7 +181,7 @@ RSpec.describe "FactCheckResponse", type: :request do
     end
 
     describe "GET /respond" do
-      it "renders the response form" do
+      it "redirects to the compare page" do
         get respond_path(source_app: request.source_app, source_id: request.source_id)
 
         expect(response).to redirect_to("/requests/#{request.source_app}/#{request.source_id}/compare")
@@ -189,7 +189,7 @@ RSpec.describe "FactCheckResponse", type: :request do
     end
 
     describe "POST /verify-response" do
-      it "renders the verification page when accepted is provided and true" do
+      it "redirects to the compare page" do
         post verify_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true" } }
 
@@ -203,7 +203,7 @@ RSpec.describe "FactCheckResponse", type: :request do
                                         .and_return(double(code: 200))
       end
 
-      it "creates a response and renders the submitted page on success" do
+      it "redirects to the compare page" do
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 

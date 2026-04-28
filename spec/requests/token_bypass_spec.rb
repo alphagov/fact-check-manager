@@ -19,7 +19,7 @@ RSpec.describe "Token Bypass Access", type: :request do
         get url, params: { token: token }
 
         expect(response).to have_http_status(:success)
-        expect(response.body).not_to include("Respond to factcheck")
+        expect(response.body).not_to include("Respond to fact check")
       end
     end
 

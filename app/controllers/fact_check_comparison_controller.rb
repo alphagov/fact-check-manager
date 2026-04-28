@@ -2,6 +2,8 @@ class FactCheckComparisonController < ApplicationController
   require "nokodiff"
   require "nokogiri"
 
+  include TokenHelper
+
   before_action :authenticate_user!, unless: :token_bypass?, only: :compare
 
   def compare
@@ -79,5 +81,16 @@ private
     end
 
     diff_hash
+  end
+
+  def token_bypass?
+    current_request = Request.most_recent_for_source(source_app: bypass_params[:source_app], source_id: bypass_params[:source_id])
+    return unless current_request
+
+    valid_compare_preview_jwt?(bypass_params[:token], current_request)
+  end
+
+  def bypass_params
+    params.permit(:source_app, :source_id, :token)
   end
 end

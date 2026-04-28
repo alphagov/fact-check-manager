@@ -4,16 +4,21 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <%= render "govuk_publishing_components/components/inset_text", {} do %>
-      <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @deadline %></span>
-    <% end %>
-
     <% unless current_user.nil? %>
       <% if current_user.govuk_admin? || @request.users.include?(current_user) %>
+        <%= render "govuk_publishing_components/components/inset_text", {} do %>
+          <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @deadline %></span>
+        <% end %>
+
         <%= render "govuk_publishing_components/components/button", {
           text: t("fact_check_comparison.respond_to_button"),
           href: respond_path(source_app: @request.source_app, source_id: @request.source_id),
           margin_bottom: 6,
+        } %>
+
+      <% else %>
+        <%= render "govuk_publishing_components/components/inset_text", {
+          text: "Only the person coordinating the fact check can submit it to GDS.",
         } %>
       <% end %>
     <% end %>
