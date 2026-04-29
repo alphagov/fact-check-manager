@@ -17,8 +17,10 @@
 </div>
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <div class="compare-editions gem-c-govspeak gem-c-govspeak--direction-ltr">
-      <%= @differ %>
+    <div class="gem-c-govspeak gem-c-govspeak--direction-ltr">
+      <% @differ.each do |heading, content| %>
+        <%= render "application/partials/comparison_diff_block", heading: heading, content: content %>
+      <% end %>
     </div>
   </div>
   <div class="govuk-grid-column-one-third options-sidebar">

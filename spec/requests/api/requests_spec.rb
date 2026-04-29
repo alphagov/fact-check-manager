@@ -13,10 +13,9 @@ RSpec.describe "POST /api/requests", type: :request do
         source_title: "",
         requester_name: "GDS Content Designer",
         requester_email: "gds-content-designer@example.com",
-        current_content: {
-          "heading": "Some title words",
-          "body": "Many lines of data for the content. Many changes that need fact checking",
-        },
+        current_content: { "part_id" => {
+          "heading" => "heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
+        } },
         previous_content: {},
         deadline: 1.week.from_now.iso8601,
         recipients: ["recipient1@example.com", "recipient2@example.com"],
@@ -41,7 +40,7 @@ RSpec.describe "POST /api/requests", type: :request do
         request = Request.last
         expect(request.source_app).to eq("Mainstream")
         expect(request.source_id).to be_present
-        expect(request.current_content["body"]).to eq("Many lines of data for the content. Many changes that need fact checking")
+        expect(request.current_content["part_id"]["body"]).to eq("Many lines of data for the content. Many changes that need fact checking")
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("GDS Content Designer")
         expect(request.requester_email).to eq("gds-content-designer@example.com")
@@ -153,7 +152,7 @@ RSpec.describe "POST /api/requests", type: :request do
         }.not_to change(Collaboration, :count)
       end
 
-      context "if current_content value is not a string" do
+      context "if current_content value is not a hash" do
         let(:dynamic_current_content) do
           {
             "normal_field" => "This should pass",
@@ -166,7 +165,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
           expect(response).to have_http_status(:unprocessable_content)
           json = JSON.parse(response.body)
-          expect(json["errors"]).to include("Current content value for bad_number_field must be a string")
+          expect(json["errors"]).to include("Current content value for bad_number_field must be a hash")
         end
       end
 
@@ -305,10 +304,7 @@ RSpec.describe "POST /api/requests", type: :request do
         source_app: "Mainstream",
         source_id: existing_request.source_id,
         source_title: "Updated Title",
-        current_content: {
-          "heading": "Some title words",
-          "body": "Updated body goes here",
-        },
+        current_content: { "part_id" => { "heading" => "heading", "body" => "Updated body goes here" } },
       }
     end
 
@@ -329,7 +325,7 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.source_app).to eq("publisher")
         expect(request.source_id).to be_present
         expect(request.source_title).to eq("Updated Title")
-        expect(request.current_content).to eq({ "body" => "Updated body goes here", "heading" => "Some title words" })
+        expect(request.current_content).to eq("part_id" => { "heading" => "heading", "body" => "Updated body goes here" })
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("Malcolm Tucker")
         expect(request.requester_email).to eq("m.tucker@gov.uk")
@@ -419,7 +415,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
         json = JSON.parse(response.body)
         expect(json["errors"]).to include(
-          "Current content value for body must be a string",
+          "Current content value for body must be a hash",
         )
       end
     end

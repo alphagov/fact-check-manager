@@ -1,21 +1,67 @@
 require "rails_helper"
 
 RSpec.shared_examples "test JSON content" do |content_field|
-  context "when #{content_field} contains non string values" do
+  context "when #{content_field} is not a hash" do
     it "is invalid" do
-      invalid_hash_content = { "illegal_boolean": false }
-      record = FactoryBot.build(:request, **{ content_field => invalid_hash_content })
+      invalid_content = false
+      record = FactoryBot.build(:request, **{ content_field => invalid_content })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("value for illegal_boolean must be a string")
+      expect(record.errors.messages[content_field]).to include("#{content_field} must be a hash")
     end
 
     it "adds an error to #{content_field}" do
-      invalid_hash_content = "[\"apple\", \"banana\", \"kiwi\"]"
-      record = FactoryBot.build(:request, **{ content_field => invalid_hash_content })
+      invalid_content = "[\"apple\", \"banana\", \"kiwi\"]"
+      record = FactoryBot.build(:request, **{ content_field => invalid_content })
 
       expect(record).not_to be_valid
-      expect(record.errors.messages[content_field]).to include("#{content_field} is not a hash")
+      expect(record.errors.messages[content_field]).to include("#{content_field} must be a hash")
+    end
+  end
+
+  context "when #{content_field} contains non hash values as top level value" do
+    it "is invalid" do
+      invalid_content = false
+      record = FactoryBot.build(:request, **{ content_field => { "id": invalid_content } })
+
+      expect(record).not_to be_valid
+      expect(record.errors.messages[content_field]).to include("value for id must be a hash")
+    end
+
+    it "adds an error to #{content_field}" do
+      invalid_content = "[\"apple\", \"banana\", \"kiwi\"]"
+      record = FactoryBot.build(:request, **{ content_field => { "id": invalid_content } })
+
+      expect(record).not_to be_valid
+      expect(record.errors.messages[content_field]).to include("value for id must be a hash")
+    end
+  end
+
+  context "when #{content_field} contains non string values as bottom level values" do
+    it "is invalid" do
+      invalid_content = { "illegal_boolean": false }
+      record = FactoryBot.build(:request, **{ content_field => { "id1": { "heading1": invalid_content } } })
+
+      expect(record).not_to be_valid
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
+    end
+
+    it "adds an error to #{content_field}" do
+      invalid_content = %w[apple banana kiwi]
+      record = FactoryBot.build(:request, **{ content_field => { "id1": { "heading1": invalid_content } } })
+
+      expect(record).not_to be_valid
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
+    end
+  end
+
+  context "when #{content_field} bottom level hash contains too many items" do
+    it "is invalid and adds an error to #{content_field}" do
+      overpopulated_content = { "heading1": "content", "heading2": "content" }
+      record = FactoryBot.build(:request, **{ content_field => { "id1": overpopulated_content } })
+
+      expect(record).not_to be_valid
+      expect(record.errors.messages[content_field]).to include("block id1 must contain exactly one heading:body pair")
     end
   end
 end
