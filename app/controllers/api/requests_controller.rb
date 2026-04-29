@@ -52,6 +52,8 @@ module Api
         :requester_name,
         :requester_email,
         :deadline,
+        :reason_for_change,
+        :zendesk_number,
         :draft_content_id, # optional
         :draft_auth_bypass_id, # optional
         :draft_slug, # optional

@@ -4,6 +4,10 @@ class Request < ApplicationRecord
   has_one :response
 
   validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
+  validates :zendesk_number, numericality: { only_integer: true,
+                                             greater_than: 999_999,
+                                             message: "Zendesk number must be a number at least 7 digits long",
+                                             allow_blank: true }
   validate :content_fields_are_correctly_structured
 
   def self.most_recent_for_source(source_app:, source_id:)

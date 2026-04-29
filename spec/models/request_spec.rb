@@ -103,6 +103,22 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  context "when zendesk_number is not a number" do
+    it "is not valid" do
+      record = FactoryBot.build(:request, zendesk_number: "not a number")
+
+      expect(record).not_to be_valid
+    end
+  end
+
+  context "when zendesk_number is too short" do
+    it "is not valid" do
+      record = FactoryBot.build(:request, zendesk_number: 1)
+
+      expect(record).not_to be_valid
+    end
+  end
+
   context "when content hashes contain multiple key-value-pairs" do
     it "is valid" do
       record = FactoryBot.build(:request, :with_more_complex_content_data)
