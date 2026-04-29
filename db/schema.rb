@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_15_175153) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_29_090254) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -35,6 +35,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_175153) do
     t.uuid "draft_content_id"
     t.string "draft_slug"
     t.json "previous_content"
+    t.string "reason_for_change"
     t.string "requester_email", null: false
     t.string "requester_name", null: false
     t.string "source_app", null: false
@@ -43,6 +44,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_15_175153) do
     t.string "source_url"
     t.string "status", default: "new", null: false
     t.datetime "updated_at", null: false
+    t.integer "zendesk_number"
     t.index ["created_at"], name: "index_requests_on_created_at"
     t.index ["source_app", "source_id", "created_at"], name: "index_requests_on_source_app_id_source_id_and_created_at", unique: true
   end
