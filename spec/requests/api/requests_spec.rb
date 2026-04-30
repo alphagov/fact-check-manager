@@ -17,6 +17,8 @@ RSpec.describe "POST /api/requests", type: :request do
           "heading" => "heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
         } },
         previous_content: {},
+        reason_for_change: "a reason",
+        zendesk_number: 1_234_567,
         deadline: 1.week.from_now.iso8601,
         recipients: ["recipient1@example.com", "recipient2@example.com"],
         draft_content_id:,
@@ -44,9 +46,37 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(request.status).to eq("new")
         expect(request.requester_name).to eq("GDS Content Designer")
         expect(request.requester_email).to eq("gds-content-designer@example.com")
+        expect(request.reason_for_change).to eq("a reason")
+        expect(request.zendesk_number).to eq(1_234_567)
         expect(request.draft_content_id).to eq(draft_content_id)
         expect(request.draft_auth_bypass_id).to eq(draft_auth_bypass_id)
         expect(request.draft_slug).to eq("test-edition-slug")
+      end
+
+      it "creates a Request without zendesk_number" do
+        payload_without_zendesk = valid_payload.except(:zendesk_number)
+
+        expect {
+          post "/api/requests", params: payload_without_zendesk, as: :json
+        }.to change(Request, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+
+        request = Request.last
+        expect(request.zendesk_number).to be_nil
+      end
+
+      it "creates a Request without reason_for_change" do
+        payload_without_zendesk = valid_payload.except(:reason_for_change)
+
+        expect {
+          post "/api/requests", params: payload_without_zendesk, as: :json
+        }.to change(Request, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+
+        request = Request.last
+        expect(request.reason_for_change).to be_nil
       end
 
       it "creates a Request without draft fields" do
@@ -155,8 +185,8 @@ RSpec.describe "POST /api/requests", type: :request do
       context "if current_content value is not a hash" do
         let(:dynamic_current_content) do
           {
-            "normal_field" => "This should pass",
-            "bad_number_field" => 123,
+            "id": { heading: "normal_field", body: "This should pass" },
+            "id2": { heading: "bad_number_field", body: 123 },
           }
         end
 
@@ -165,15 +195,15 @@ RSpec.describe "POST /api/requests", type: :request do
 
           expect(response).to have_http_status(:unprocessable_content)
           json = JSON.parse(response.body)
-          expect(json["errors"]).to include("Current content value for bad_number_field must be a hash")
+          expect(json["errors"]).to include("Current content body in id2 must be a string")
         end
       end
 
       context "if current_content contains nested data" do
         let(:dynamic_current_content) do
           {
-            "normal_field" => "This should pass",
-            "sneaky_nested_hash" => { "naughty" => "This should fail" },
+            "id": { heading: "normal_field", body: "This should pass" },
+            "id2": { heading: "sneaky_nested_hash", body: { "naughty" => "This should fail" } },
           }
         end
 
@@ -218,6 +248,16 @@ RSpec.describe "POST /api/requests", type: :request do
           expect(response).to have_http_status(:bad_request)
           expect(JSON.parse(response.body)["errors"])
             .to include("At least one recipient email is required")
+        end
+      end
+
+      context "if zendesk_number is not an number" do
+        it "returns an error" do
+          post "/api/requests", params: valid_payload.merge(zendesk_number: "not a number"), as: :json
+
+          expect(response).to have_http_status(:unprocessable_content)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include("Zendesk number Zendesk number must be a number at least 7 digits long")
         end
       end
     end
