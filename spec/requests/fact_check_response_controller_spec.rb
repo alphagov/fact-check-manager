@@ -130,8 +130,13 @@ RSpec.describe "FactCheckResponse", type: :request do
     end
     let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
-      FactoryBot.create(:request, :with_collaborator, collaborator: test_user, previous_content: { "body" => "<div>Previous content</div>" },
-                                                      current_content: { "body" => "<div>Current content</div>" })
+      FactoryBot.create(
+        :request,
+        :with_collaborator,
+        collaborator: test_user,
+        previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+        current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
+      )
     end
 
     describe "GET /respond" do
@@ -176,8 +181,13 @@ RSpec.describe "FactCheckResponse", type: :request do
     end
     let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
-      FactoryBot.create(:request, :with_collaborator, collaborator: test_user, previous_content: { "body" => "<div>Previous content</div>" },
-                                                      current_content: { "body" => "<div>Current content</div>" })
+      FactoryBot.create(
+        :request,
+        :with_collaborator,
+        collaborator: test_user,
+        previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+        current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
+      )
     end
 
     describe "GET /respond" do

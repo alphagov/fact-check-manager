@@ -15,7 +15,7 @@ FactoryBot.define do
     draft_slug { "test-slug" }
     current_content do
       { "id_value" => {
-        "heading" => "test_heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
+        "heading" => "test_heading", "body" => "<p>Many lines of data for the content. Many changes that need fact checking</p>"
       } }
     end
     deadline { Time.zone.now + 1.week }
