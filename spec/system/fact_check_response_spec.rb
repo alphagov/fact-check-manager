@@ -6,9 +6,12 @@ RSpec.describe "FactCheckResponse", type: :system do
                               .and_return(double(code: 200))
   end
 
+  let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
   let(:request) do
-    create(
+    FactoryBot.create(
       :request,
+      :with_collaborator,
+      collaborator: current_user,
       previous_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
       current_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
     )

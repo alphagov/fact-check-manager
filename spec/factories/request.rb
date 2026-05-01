@@ -1,5 +1,9 @@
 FactoryBot.define do
   factory :request do
+    transient do
+      collaborator { FactoryBot.create(:user) }
+    end
+
     source_id { SecureRandom.uuid }
     source_app { "publisher" }
     status { "new" }
@@ -13,7 +17,7 @@ FactoryBot.define do
     draft_slug { "test-slug" }
     current_content do
       { "id_value" => {
-        "heading" => "test_heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
+        "heading" => "test_heading", "body" => "<p>Many lines of data for the content. Many changes that need fact checking</p>"
       } }
     end
     deadline { Time.zone.now + 1.week }
@@ -41,6 +45,14 @@ FactoryBot.define do
                                       } }
       previous_content { multi_part_previous_content }
       current_content { multi_part_current_content }
+    end
+
+    trait :with_collaborator do
+      after(:build) do |request, evaluator|
+        FactoryBot.create(:collaboration,
+                          user: evaluator.collaborator,
+                          request: request)
+      end
     end
   end
 end

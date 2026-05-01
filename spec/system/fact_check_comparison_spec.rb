@@ -1,9 +1,12 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :system do
+  let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
   let(:request) do
-    create(
+    FactoryBot.create(
       :request,
+      :with_collaborator,
+      collaborator: current_user,
       source_title: "Example title",
       deadline: Time.zone.now + 5.days,
       previous_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
