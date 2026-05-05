@@ -5,8 +5,8 @@ RSpec.describe "Token Bypass Access", type: :request do
 
   let(:request_record) { FactoryBot.create(:request) }
 
-  describe "GET /requests/:source_app/:source_id/preview" do
-    let(:url) { "/requests/#{request_record.source_app}/#{request_record.source_id}/preview" }
+  describe "GET /requests/:source_app/:source_id/compare" do
+    let(:url) { "/requests/#{request_record.source_app}/#{request_record.source_id}/compare" }
 
     context "with a valid token" do
       before { GDS::SSO.test_user = nil }
@@ -19,7 +19,7 @@ RSpec.describe "Token Bypass Access", type: :request do
         get url, params: { token: token }
 
         expect(response).to have_http_status(:success)
-        expect(response.body).to include("shareable preview page")
+        expect(response.body).not_to include("Respond to fact check")
       end
     end
 

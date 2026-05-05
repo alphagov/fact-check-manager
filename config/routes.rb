@@ -11,7 +11,6 @@ Rails.application.routes.draw do
         get  "respond", to: "fact_check_response#respond_to_fact_check"
         post "verify-response", to: "fact_check_response#validate_fact_check_response"
         post "confirm-response", to: "fact_check_response#send_response"
-        get "/preview", to: "application#preview"
       end
     end
   end

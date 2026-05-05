@@ -5,12 +5,86 @@ RSpec.describe "FactCheckComparison", type: :request do
   include FormattedDiffHelpers
 
   describe "GET /compare" do
+    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
+
     let(:request) do
-      create(
+      FactoryBot.create(
         :request,
+        :with_collaborator,
+        collaborator: current_user,
+        source_title: "Example title",
+        deadline: Time.zone.now + 5.days,
         previous_content: previous_content,
         current_content: current_content,
       )
+    end
+
+    context "signed in user who is an admin" do
+      before do
+        GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin govuk_admin])
+      end
+      let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
+      let(:request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: test_user,
+          source_title: "Example title",
+          deadline: Time.zone.now + 5.days,
+          previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+          current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
+        )
+      end
+
+      describe "GET /compare" do
+        it "renders the respond to fact check button" do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_comparison.respond_to_button"))
+        end
+      end
+    end
+
+    context "signed in user who is not admin or collaborator" do
+      before do
+        GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin])
+      end
+      let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
+      let(:request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: test_user,
+          source_title: "Example title",
+          deadline: Time.zone.now + 5.days,
+          previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+          current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
+        )
+      end
+
+      describe "GET /compare" do
+        it "does not render the Response button" do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).not_to include(I18n.t("fact_check_comparison.respond_to_button"))
+        end
+
+        it "does not render the Response by field" do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).not_to include(I18n.t("fact_check_comparison.respond_by"))
+        end
+
+        it "does render a warning callout" do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include("Only the person coordinating the fact check can submit it to GDS.")
+        end
+      end
     end
 
     context "when draft origin fields are present" do
