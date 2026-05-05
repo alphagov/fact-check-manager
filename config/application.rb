@@ -44,6 +44,7 @@ module FactCheckManager
     # when router is proxying to this app but asset proxying isn't set up.
     config.asset_host = ENV.fetch("ASSET_HOST", nil)
 
+    # Only required if we integrate Notify with ActionMailer?
     # config.action_mailer.notify_settings = {
     #   api_key: ENV["GOVUK_NOTIFY_API_KEY"] || "fake-test-api-key",
     # }
