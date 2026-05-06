@@ -1,9 +1,10 @@
 module TokenHelper
-  def generate_compare_preview_link(request)
-    path = compare_path(request.source_app, request.source_id)
-    path << "?token=#{compare_preview_jwt_token(request)}"
+  def generate_compare_link(request)
+    Plek.external_url_for("fact-check-manager") + compare_path(request.source_app, request.source_id)
+  end
 
-    path
+  def generate_compare_preview_link(request)
+    "#{generate_compare_link(request)}?token=#{compare_preview_jwt_token(request)}"
   end
 
   def draft_origin_preview_url(request)
