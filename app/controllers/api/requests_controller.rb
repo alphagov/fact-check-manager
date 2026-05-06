@@ -1,6 +1,7 @@
 module Api
   class RequestsController < Api::BaseController
     include ApiErrorHandlerConcern
+    include TokenHelper
 
     wrap_parameters include: Request.attribute_names + [:recipients]
     before_action :set_request_record, only: %i[update resend_emails]
@@ -17,10 +18,11 @@ module Api
       end
 
       if fact_check_request.save
+        personalisation_hash = build_personalisation_hash(fact_check_request)
         fact_check_request.users.each do |user|
-          # TODO: Personalisation hash is specific to the test template on Notify - update
-          NotifyApiService.send_email_to_recipient(user, fact_check_request, NotifyApiService::NOTIFY_TEST_TEMPLATE_ID, { greeting: "Hello from RequestsController" })
+          NotifyApiService.send_new_fact_check_request_email(user, fact_check_request, personalisation_hash)
         end
+
         render json: { id: fact_check_request.id, source_id: fact_check_request.source_id }, status: :created
       else
         render json: { errors: fact_check_request.errors.full_messages }, status: :unprocessable_entity
@@ -99,6 +101,19 @@ module Api
       unless @request_record
         render json: { errors: ["Request with ID #{params[:source_id]} not found for app #{params[:source_app]}"] }, status: :not_found
       end
+    end
+
+    def build_personalisation_hash(request)
+      {
+        title: request.source_title,
+        show_reason: request.reason_for_change.present? ? "yes" : "no",
+        reason_for_change: request.reason_for_change.presence || "",
+        show_zendesk_number: request.zendesk_number.present? ? "yes" : "no",
+        zendesk_number: request.zendesk_number.presence || "",
+        deadline: request.formatted_deadline,
+        tokenised_link: generate_compare_preview_link(request),
+        non_tokenised_link: generate_compare_link(request),
+      }
     end
   end
 end

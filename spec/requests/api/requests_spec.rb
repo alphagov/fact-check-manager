@@ -146,6 +146,11 @@ RSpec.describe "POST /api/requests", type: :request do
       end
 
       context "Notify" do
+        before do
+          allow(ENV).to receive(:fetch).and_call_original
+          allow(ENV).to receive(:fetch).with("GOVUK_NOTIFY_NEW_FACT_CHECK_REQUEST_TEMPLATE_ID", nil).and_return("test-template-id")
+        end
+
         context "successfully sends emails" do
           it "to each recipient" do
             allow(@notify_client_spy).to receive(:send_email)
@@ -155,9 +160,125 @@ RSpec.describe "POST /api/requests", type: :request do
             }.to change(Request, :count).by(1)
 
             expect(response).to have_http_status(:created)
-            expect(@notify_client_spy).to have_received(:send_email).exactly(2).times
+            expect(@notify_client_spy).to have_received(:send_email).with(hash_including(template_id: "test-template-id")).exactly(2).times
             expect(@notify_client_spy).to have_received(:send_email).with(hash_including(email_address: "recipient1@example.com"))
             expect(@notify_client_spy).to have_received(:send_email).with(hash_including(email_address: "recipient2@example.com"))
+          end
+        end
+
+        context "personalisation" do
+          before { allow(@notify_client_spy).to receive(:send_email) }
+
+          it "sets the title from the source_title" do
+            payload = valid_payload.merge(source_title: "An interesting article")
+
+            post "/api/requests", params: payload, as: :json
+
+            expect(@notify_client_spy).to have_received(:send_email)
+              .with(hash_including(personalisation: hash_including(title: "An interesting article"))).exactly(2).times
+          end
+
+          it "formats the deadline as a long date" do
+            deadline = Time.zone.parse("2026-06-12T09:00:00Z")
+            payload = valid_payload.merge(deadline: deadline.iso8601)
+
+            post "/api/requests", params: payload, as: :json
+
+            expect(@notify_client_spy).to have_received(:send_email)
+              .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+          end
+
+          it "includes a tokenised compare link with the fact-check-manager URL prefix" do
+            post "/api/requests", params: valid_payload, as: :json
+
+            request_record = Request.last
+            expected_prefix = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare?token="
+
+            expect(@notify_client_spy).to have_received(:send_email).with(
+              hash_including(
+                personalisation: hash_including(
+                  tokenised_link: start_with(expected_prefix),
+                ),
+              ),
+            ).exactly(2).times
+          end
+
+          it "includes a non-tokenised compare link without a token" do
+            post "/api/requests", params: valid_payload, as: :json
+
+            request_record = Request.last
+            expected_link = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare"
+
+            expect(@notify_client_spy).to have_received(:send_email)
+              .with(hash_including(personalisation: hash_including(non_tokenised_link: expected_link))).exactly(2).times
+          end
+
+          context "when reason_for_change is present" do
+            it "sets show_reason to yes and includes the reason" do
+              payload = valid_payload.merge(reason_for_change: "Important update")
+
+              post "/api/requests", params: payload, as: :json
+
+              expect(@notify_client_spy).to have_received(:send_email).with(
+                hash_including(
+                  personalisation: hash_including(
+                    show_reason: "yes",
+                    reason_for_change: "Important update",
+                  ),
+                ),
+              ).exactly(2).times
+            end
+          end
+
+          context "when reason_for_change is blank" do
+            it "sets show_reason to no and reason_for_change to an empty string" do
+              payload = valid_payload.merge(reason_for_change: "")
+
+              post "/api/requests", params: payload, as: :json
+
+              expect(@notify_client_spy).to have_received(:send_email).with(
+                hash_including(
+                  personalisation: hash_including(
+                    show_reason: "no",
+                    reason_for_change: "",
+                  ),
+                ),
+              ).exactly(2).times
+            end
+          end
+
+          context "when zendesk_number is present" do
+            it "sets show_zendesk_number to yes and includes the number" do
+              payload = valid_payload.merge(zendesk_number: 9_876_543)
+
+              post "/api/requests", params: payload, as: :json
+
+              expect(@notify_client_spy).to have_received(:send_email).with(
+                hash_including(
+                  personalisation: hash_including(
+                    show_zendesk_number: "yes",
+                    zendesk_number: 9_876_543,
+                  ),
+                ),
+              ).exactly(2).times
+            end
+          end
+
+          context "when zendesk_number is blank" do
+            it "sets show_zendesk_number to no and zendesk_number to an empty string" do
+              payload = valid_payload.except(:zendesk_number)
+
+              post "/api/requests", params: payload, as: :json
+
+              expect(@notify_client_spy).to have_received(:send_email).with(
+                hash_including(
+                  personalisation: hash_including(
+                    show_zendesk_number: "no",
+                    zendesk_number: "",
+                  ),
+                ),
+              ).exactly(2).times
+            end
           end
         end
 
