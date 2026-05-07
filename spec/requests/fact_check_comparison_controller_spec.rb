@@ -180,6 +180,18 @@ RSpec.describe "FactCheckComparison", type: :request do
           expect(response.body).not_to include("heading_not_shown")
         end
       end
+
+      context "with empty previous_content" do
+        let(:previous_content) { {} }
+
+        it "correctly renders the formatted diff" do
+          verify_static_elements
+          verify_unchanged(parsed, ["This is the unchanged line.", "This line has changes"])
+          expect(parsed[:del]).to eq([])
+          expect(parsed[:ins]).to eq([])
+          expect(response.body).not_to include("heading_not_shown")
+        end
+      end
     end
 
     context "with two parts" do

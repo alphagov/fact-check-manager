@@ -12,7 +12,7 @@ class FactCheckComparisonController < ApplicationController
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
 
     @current_content = @request.current_content.deep_symbolize_keys
-    @previous_content = @request.previous_content&.deep_symbolize_keys || @current_content.deep_dup
+    @previous_content = @request.previous_content&.deep_symbolize_keys.presence || @current_content.deep_dup
 
     mark_current_content
     @differ = create_diff
@@ -26,7 +26,7 @@ private
 
   def mark_current_content
     # Both have a single content block, we can diff it directly
-    if @current_content == 1 && @previous_content == 1
+    if @current_content.size == 1 && @previous_content.size == 1
       return
     end
 
