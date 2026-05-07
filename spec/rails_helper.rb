@@ -20,6 +20,9 @@ require_relative "./helpers/api_helpers"
 
 require "capybara/rails"
 
+# Ensure Rake tasks are loaded for testing
+Rails.application.load_tasks
+
 GovukTest.configure
 
 Capybara.register_driver :headless_chrome do |app|
