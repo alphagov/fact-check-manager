@@ -153,6 +153,14 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "#formatted_deadline" do
+    it "formats the deadline as a long date" do
+      record = FactoryBot.build(:request, deadline: Time.zone.parse("2026-06-12"))
+
+      expect(record.formatted_deadline).to eq("Friday 12 June 2026")
+    end
+  end
+
   describe ".most_recent_for_source" do
     it "returns the most recent request for the given source app and source ID" do
       source_id = SecureRandom.uuid

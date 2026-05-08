@@ -19,7 +19,7 @@ RSpec.describe "FactCheckComparison", type: :system do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(page).to have_text(request.source_title)
-      expect(page).to have_text(request.deadline.to_date)
+      expect(page).to have_text(request.formatted_deadline)
     end
 
     it "displays deleted and added content in the diff" do

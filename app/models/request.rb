@@ -14,6 +14,10 @@ class Request < ApplicationRecord
     where(source_app: source_app, source_id: source_id).order(created_at: :desc).first
   end
 
+  def formatted_deadline
+    deadline.strftime("%A %-e %B %Y")
+  end
+
 private
 
   def content_fields_are_correctly_structured

@@ -5,12 +5,21 @@ RSpec.describe TokenHelper, type: :helper do
 
   let(:request_record) { FactoryBot.build(:request) }
 
-  describe "#generate_preview_link" do
-    it "returns the correctly nested path with the token" do
+  describe "#generate_compare_preview_link" do
+    it "returns the correct link with the token" do
       allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
 
       link = helper.generate_compare_preview_link(request_record)
-      expect(link).to include("/requests/publisher/123/compare?token=#{helper.compare_preview_jwt_token(request_record)}")
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare?token=#{helper.compare_preview_jwt_token(request_record)}")
+    end
+  end
+
+  describe "#generate_compare_link" do
+    it "returns the correct link" do
+      allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
+
+      link = helper.generate_compare_link(request_record)
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare")
     end
   end
 

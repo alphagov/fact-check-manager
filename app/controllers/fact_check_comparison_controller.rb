@@ -17,7 +17,7 @@ class FactCheckComparisonController < ApplicationController
     mark_current_content
     @differ = create_diff
     @article_title = @request.source_title
-    @deadline = @request.deadline.to_date.to_s
+    @deadline = @request.formatted_deadline
     @draft_url = draft_origin_preview_url(@request)
     render "fact_check_comparison"
   end

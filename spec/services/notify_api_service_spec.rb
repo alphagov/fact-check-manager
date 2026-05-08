@@ -25,4 +25,22 @@ RSpec.describe NotifyApiService do
       )
     end
   end
+
+  context ".send_new_fact_check_request_email" do
+    it "sends with the template_id from GOVUK_NOTIFY_NEW_FACT_CHECK_REQUEST_TEMPLATE_ID" do
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:fetch).with("GOVUK_NOTIFY_NEW_FACT_CHECK_REQUEST_TEMPLATE_ID", nil).and_return("test-template-id")
+
+      @service.send_new_fact_check_request_email(@user, @request, @personalisation_hash)
+
+      expect(@notify_client_spy).to have_received(:send_email).with(
+        hash_including(
+          email_address: @user.email,
+          template_id: "test-template-id",
+          reference: "#{@request.source_app}/#{@request.source_id}",
+          personalisation: @personalisation_hash,
+        ),
+      )
+    end
+  end
 end
