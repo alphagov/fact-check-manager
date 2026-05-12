@@ -1,6 +1,12 @@
 require "rails_helper"
+require "notifications/client"
 
 RSpec.describe "FactCheckResponse", type: :request do
+  before do
+    @notify_client_spy = instance_spy(Notifications::Client)
+    allow(Services).to receive(:notify_api).and_return(@notify_client_spy)
+  end
+
   context "signed in user who is a collaborator" do
     let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
     let(:request) do
@@ -73,7 +79,8 @@ RSpec.describe "FactCheckResponse", type: :request do
     describe "POST /confirm-response" do
       before do
         allow(PublisherApiService).to receive(:post_fact_check_response)
-          .and_return(double(code: 200))
+                                        .and_return(double(code: 200))
+        allow(@notify_client_spy).to receive(:send_email)
       end
 
       it "returns 404 when no request exists for the given source_app and source_id" do
@@ -99,16 +106,30 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(PublisherApiService).to have_received(:post_fact_check_response)
       end
 
-      it "rolls back the response when the API fails" do
-        allow(PublisherApiService).to receive(:post_fact_check_response)
-          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
+      context "Publisher API failure" do
+        it "rolls back the response when the API fails" do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
 
-        post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
-             params: { fact_check_response: { accepted: "true", body: "" } }
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
 
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_verification.api_submission_error"))
-        expect(Response.count).to eq(0)
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_verification.api_submission_error"))
+          expect(Response.count).to eq(0)
+        end
+
+        it "does not trigger Notify to send the emails when the API fails" do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
+          allow(@notify_client_spy).to receive(:send_email)
+
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(response).to have_http_status(:ok)
+          expect(@notify_client_spy).not_to have_received(:send_email)
+        end
       end
 
       it "renders errors when a response has already been submitted for the request" do
@@ -120,6 +141,51 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("has already been responded to")
         expect(Response.count).to eq(1)
+      end
+
+      context "Notify success" do
+        before do
+          full_user = GDS::SSO.test_user = create(:user, :full)
+          @request = create(:request, :with_collaborator, collaborator: full_user)
+          allow(@notify_client_spy).to receive(:send_email)
+        end
+
+        context "personalisation" do
+          it "sends the source title" do
+            post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
+                 params: { fact_check_response: { accepted: "true", body: "" } }
+
+            expect(@notify_client_spy).to have_received(:send_email)
+                                            .with(hash_including(personalisation: hash_including(content_title: "Important update")))
+                                            .exactly(1).times
+          end
+
+          it "sends the users signon name" do
+            post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
+                 params: { fact_check_response: { accepted: "true", body: "" } }
+
+            expect(@notify_client_spy).to have_received(:send_email)
+                                            .with(hash_including(personalisation: hash_including(responder_name: "Douglas Adams")))
+                                            .exactly(1).times
+          end
+        end
+      end
+
+      context "Notify failure" do
+        it "displays an error if the accepted response email fails to send" do
+          fake_response = double("response", code: 500, body: "Simulated Notify Error")
+          specific_error = Notifications::Client::RequestError.new(fake_response)
+          allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+
+          full_user = GDS::SSO.test_user = create(:user, :full)
+          @request = create(:request, :with_collaborator, collaborator: full_user)
+
+          post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+        end
       end
     end
   end

@@ -6,6 +6,7 @@ FactoryBot.define do
 
     source_id { SecureRandom.uuid }
     source_app { "publisher" }
+    source_title { "Important update" }
     status { "new" }
     requester_name { "Malcolm Tucker" }
     requester_email { "m.tucker@gov.uk" }
