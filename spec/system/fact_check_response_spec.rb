@@ -4,6 +4,7 @@ RSpec.describe "FactCheckResponse", type: :system do
   before do
     allow(PublisherApiService).to receive(:post_fact_check_response)
                               .and_return(double(code: 200))
+    allow(NotifyApiService).to receive(:send_email_to_recipient).and_return(double(code: 200))
   end
 
   let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
