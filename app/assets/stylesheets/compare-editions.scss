@@ -4,6 +4,27 @@
   & > div {
     @extend .govuk-body; // stylelint-disable-line scss/at-extend-no-missing-placeholder
   }
+
+  // Styling for edition titles in the content diff
+  h1 {
+    @extend %govuk-heading-xl;
+  }
+
+  & > .diff del h1 {
+    @extend %govuk-heading-xl;
+
+    .diff-marker { 
+      font-weight: bold; 
+    }
+  }
+
+  & > .diff ins h1 {
+    @extend %govuk-heading-xl;
+
+    .diff-marker { 
+      font-weight: bold; 
+    }
+  }
 }
 
 .part-heading .govuk-heading-l {
