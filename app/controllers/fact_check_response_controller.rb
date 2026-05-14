@@ -40,6 +40,13 @@ class FactCheckResponseController < ApplicationController
           @errors << t("fact_check_verification.api_submission_error")
           raise ActiveRecord::Rollback
         end
+
+        begin
+          NotifyApiService.send_response_accepted_email(response, build_personalisation_hash(response))
+        rescue Notifications::Client::RequestError
+          # We don't roll back the DB or Publisher if the email fails, but we do display an error
+          @errors << t("fact_check_verification.notify_submission_error")
+        end
       else
         @errors = response.errors.full_messages
       end
@@ -81,5 +88,12 @@ private
     end
 
     errors
+  end
+
+  def build_personalisation_hash(response)
+    {
+      content_title: response.request.source_title,
+      responder_name: response.user.name,
+    }
   end
 end
