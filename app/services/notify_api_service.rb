@@ -22,9 +22,14 @@ class NotifyApiService
 
   def self.send_response_accepted_email(response, personalisation_hash)
     template_id = ENV.fetch("GOVUK_NOTIFY_RESPONSE_ACCEPTED_TEMPLATE_ID", nil)
-    request = response.request
 
-    send_email_to_recipient(response.user, request, template_id, personalisation_hash)
+    send_email_to_recipient(response.user, response.request, template_id, personalisation_hash)
+  end
+
+  def self.send_response_rejected_email(response, personalisation_hash)
+    template_id = ENV.fetch("GOVUK_NOTIFY_RESPONSE_REJECTED_TEMPLATE_ID", nil)
+
+    send_email_to_recipient(response.user, response.request, template_id, personalisation_hash)
   end
 
   def self.resend_emails(_request_record)
