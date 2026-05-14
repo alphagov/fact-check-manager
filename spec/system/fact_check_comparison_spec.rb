@@ -57,7 +57,7 @@ RSpec.describe "FactCheckComparison", type: :system do
 
     context "when no draft preview link can be generated" do
       before do
-        allow_any_instance_of(TokenHelper).to receive(:draft_origin_preview_url).and_return(nil)
+        allow_any_instance_of(AuthenticationHelper).to receive(:draft_origin_preview_url).and_return(nil)
       end
 
       it "does not render the preview section or link" do

@@ -1,7 +1,7 @@
 module Api
   class RequestsController < Api::BaseController
     include ApiErrorHandlerConcern
-    include TokenHelper
+    include AuthenticationHelper
 
     wrap_parameters include: Request.attribute_names + [:recipients]
     before_action :set_request_record, only: %i[update resend_emails]

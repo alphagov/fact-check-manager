@@ -1,5 +1,7 @@
 class FactCheckResponseController < ApplicationController
-  before_action :set_request, :check_permissions, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+  include AuthenticationHelper
+
+  before_action :set_request, :check_access, only: %i[respond_to_fact_check validate_fact_check_response send_response]
 
   def respond_to_fact_check
     session.delete(:fact_check_response) unless params[:back]
@@ -67,11 +69,8 @@ private
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
   end
 
-  def check_permissions
-    return if current_user.govuk_admin? || @request.users.include?(current_user)
-
-    flash[:danger] = "You do not have permission to see this page."
-    redirect_to compare_path(@request.source_app, @request.source_id)
+  def check_access
+    check_permissions(current_user, @request)
   end
 
   def permitted_params

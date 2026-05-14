@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Token Bypass Access", type: :request do
-  include TokenHelper
+  include AuthenticationHelper
 
   let(:request_record) { FactoryBot.create(:request) }
 
@@ -49,7 +49,64 @@ RSpec.describe "Token Bypass Access", type: :request do
       end
     end
 
-    context "when logged in as a GDS user" do
+    context "when logged in as a GDS user who is not a collaborator or admin" do
+      before { GDS::SSO.test_user = FactoryBot.create(:user) }
+
+      it "prevents access with no token" do
+        get url
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "allows access with a valid token" do
+        token = compare_preview_jwt_token(request_record)
+
+        get url, params: { token: token }
+        expect(response).to have_http_status(:success)
+      end
+
+      it "prevents access with an invalid token" do
+        token = "invalid-token"
+
+        get url, params: { token: token }
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when logged in as a GDS user who is a collaborator" do
+      let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
+      let(:request_record) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+        )
+      end
+
+      it "allows access with no token" do
+        get url
+        expect(response).to have_http_status(:success)
+      end
+
+      it "allows access with a valid token" do
+        token = compare_preview_jwt_token(request_record)
+
+        get url, params: { token: token }
+        expect(response).to have_http_status(:success)
+      end
+
+      it "allows access with an invalid token" do
+        token = "invalid-token"
+
+        get url, params: { token: token }
+        expect(response).to have_http_status(:success)
+      end
+    end
+
+    context "when logged in as a GDS user who is an admin" do
+      before do
+        GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin govuk_admin])
+      end
+
       it "allows access with no token" do
         get url
         expect(response).to have_http_status(:success)

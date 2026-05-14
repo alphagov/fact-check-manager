@@ -1,4 +1,10 @@
-module TokenHelper
+module AuthenticationHelper
+  def check_permissions(user, request)
+    return true if user.govuk_admin? || request.users.include?(current_user)
+
+    raise GDS::SSO::PermissionDeniedError, "You do not have permission to see this page."
+  end
+
   def generate_compare_link(request)
     Plek.external_url_for("fact-check-manager") + compare_path(request.source_app, request.source_id)
   end

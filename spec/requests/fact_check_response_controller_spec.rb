@@ -260,7 +260,7 @@ RSpec.describe "FactCheckResponse", type: :request do
       it "redirects to the compare page" do
         get respond_path(source_app: request.source_app, source_id: request.source_id)
 
-        expect(response).to redirect_to("/requests/#{request.source_app}/#{request.source_id}/compare")
+        expect(response).to have_http_status(:forbidden)
       end
     end
 
@@ -269,7 +269,7 @@ RSpec.describe "FactCheckResponse", type: :request do
         post verify_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true" } }
 
-        expect(response).to redirect_to("/requests/#{request.source_app}/#{request.source_id}/compare")
+        expect(response).to have_http_status(:forbidden)
       end
     end
 
@@ -283,7 +283,7 @@ RSpec.describe "FactCheckResponse", type: :request do
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 
-        expect(response).to redirect_to("/requests/#{request.source_app}/#{request.source_id}/compare")
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

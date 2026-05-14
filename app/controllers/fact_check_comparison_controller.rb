@@ -2,7 +2,7 @@ class FactCheckComparisonController < ApplicationController
   require "nokodiff"
   require "nokogiri"
 
-  include TokenHelper
+  include AuthenticationHelper
 
   before_action :authenticate_user!, unless: :token_bypass?, only: :compare
 
@@ -10,6 +10,8 @@ class FactCheckComparisonController < ApplicationController
     @default_content = ""
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
+
+    return unless token_bypass? || check_permissions(current_user, @request)
 
     @current_content = @request.current_content.deep_symbolize_keys
     @previous_content = @request.previous_content&.deep_symbolize_keys.presence || @current_content.deep_dup
