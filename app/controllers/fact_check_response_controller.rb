@@ -44,9 +44,14 @@ class FactCheckResponseController < ApplicationController
         end
 
         begin
-          NotifyApiService.send_response_accepted_email(response, build_personalisation_hash(response))
+          personalisation_hash = build_personalisation_hash(response)
+          if response.accepted
+            NotifyApiService.send_response_accepted_email(response, personalisation_hash)
+          else
+            NotifyApiService.send_response_rejected_email(response, personalisation_hash)
+          end
         rescue Notifications::Client::RequestError
-          # We don't roll back the DB or Publisher if the email fails, but we do display an error
+          # We don't roll back the DB or Publisher if the confirmation email fails, but we do display an error
           @errors << t("fact_check_verification.notify_submission_error")
         end
       else
@@ -93,6 +98,10 @@ private
     {
       content_title: response.request.source_title,
       responder_name: response.user.name,
-    }
+    }.tap do |hash|
+      unless response.accepted
+        hash[:reason_for_rejection] = response.body
+      end
+    end
   end
 end

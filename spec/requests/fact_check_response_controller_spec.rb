@@ -7,8 +7,71 @@ RSpec.describe "FactCheckResponse", type: :request do
     allow(Services).to receive(:notify_api).and_return(@notify_client_spy)
   end
 
+  RSpec.shared_examples "Notify email service" do
+    context "Notify email success" do
+      context "personalisation" do
+        it "sends the source title" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(@notify_client_spy).to have_received(:send_email)
+                                          .with(hash_including(personalisation: hash_including(content_title: "Important update")))
+                                          .exactly(1).times
+        end
+
+        it "sends the users signon name" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(@notify_client_spy).to have_received(:send_email)
+                                          .with(hash_including(personalisation: hash_including(responder_name: "Douglas Adams")))
+                                          .exactly(1).times
+        end
+
+        it "includes response body if the fact check is not accepted" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "false", body: "The fact check is not acceptable" } }
+
+          expect(@notify_client_spy).to have_received(:send_email)
+                                          .with(hash_including(
+                                                  personalisation: hash_including(
+                                                    reason_for_rejection: "The fact check is not acceptable",
+                                                  ),
+                                                ))
+                                          .exactly(1).times
+        end
+
+        it "does not include the response body if the fact check is accepted" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "The fact check is not acceptable" } }
+
+          expect(@notify_client_spy).not_to have_received(:send_email)
+                                          .with(hash_including(
+                                                  personalisation: hash_including(
+                                                    reason_for_rejection: "The fact check is not acceptable",
+                                                  ),
+                                                ))
+        end
+      end
+    end
+
+    context "Notify email failure" do
+      it "displays an error if the accepted response email fails to send" do
+        fake_response = double("response", code: 500, body: "Simulated Notify Error")
+        specific_error = Notifications::Client::RequestError.new(fake_response)
+        allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+
+        post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "true", body: "" } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+      end
+    end
+  end
+
   context "signed in user who is a collaborator" do
-    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
+    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user, :full) }
     let(:request) do
       FactoryBot.create(
         :request,
@@ -83,6 +146,8 @@ RSpec.describe "FactCheckResponse", type: :request do
         allow(@notify_client_spy).to receive(:send_email)
       end
 
+      include_examples "Notify email service"
+
       it "returns 404 when no request exists for the given source_app and source_id" do
         post confirm_response_path(source_app: "invalid", source_id: "invalid"),
              params: { fact_check_response: { accepted: "true" } }
@@ -142,57 +207,12 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(response.body).to include("has already been responded to")
         expect(Response.count).to eq(1)
       end
-
-      context "Notify success" do
-        before do
-          full_user = GDS::SSO.test_user = create(:user, :full)
-          @request = create(:request, :with_collaborator, collaborator: full_user)
-          allow(@notify_client_spy).to receive(:send_email)
-        end
-
-        context "personalisation" do
-          it "sends the source title" do
-            post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
-                 params: { fact_check_response: { accepted: "true", body: "" } }
-
-            expect(@notify_client_spy).to have_received(:send_email)
-                                            .with(hash_including(personalisation: hash_including(content_title: "Important update")))
-                                            .exactly(1).times
-          end
-
-          it "sends the users signon name" do
-            post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
-                 params: { fact_check_response: { accepted: "true", body: "" } }
-
-            expect(@notify_client_spy).to have_received(:send_email)
-                                            .with(hash_including(personalisation: hash_including(responder_name: "Douglas Adams")))
-                                            .exactly(1).times
-          end
-        end
-      end
-
-      context "Notify failure" do
-        it "displays an error if the accepted response email fails to send" do
-          fake_response = double("response", code: 500, body: "Simulated Notify Error")
-          specific_error = Notifications::Client::RequestError.new(fake_response)
-          allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
-
-          full_user = GDS::SSO.test_user = create(:user, :full)
-          @request = create(:request, :with_collaborator, collaborator: full_user)
-
-          post confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
-               params: { fact_check_response: { accepted: "true", body: "" } }
-
-          expect(response).to have_http_status(:ok)
-          expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
-        end
-      end
     end
   end
 
   context "signed in user who is an admin" do
     before do
-      GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin govuk_admin])
+      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin govuk_admin])
     end
     let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
@@ -228,7 +248,10 @@ RSpec.describe "FactCheckResponse", type: :request do
       before do
         allow(PublisherApiService).to receive(:post_fact_check_response)
                                         .and_return(double(code: 200))
+        allow(@notify_client_spy).to receive(:send_email)
       end
+
+      include_examples "Notify email service"
 
       it "creates a response and renders the submitted page on success" do
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
