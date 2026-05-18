@@ -61,4 +61,23 @@ RSpec.describe NotifyApiService do
       end
     end
   end
+
+  context ".send_response_rejected_email" do
+    it "sends the correct data to Notify for a fact check rejected (changes requested) response" do
+      ClimateControl.modify(GOVUK_NOTIFY_RESPONSE_REJECTED_TEMPLATE_ID: "test-rejected-template-id") do
+        response = build(:response, request: @request)
+        personalisation_hash = { content_title: @request.source_title, responder_name: response.user.name, reason_for_rejection: "MyText" }
+        @service.send_response_rejected_email(response, personalisation_hash)
+
+        expect(@notify_client_spy).to have_received(:send_email).with(
+          hash_including(
+            email_address: response.user.email,
+            template_id: "test-rejected-template-id",
+            reference: "#{@request.source_app}/#{@request.source_id}",
+            personalisation: personalisation_hash,
+          ),
+        )
+      end
+    end
+  end
 end
