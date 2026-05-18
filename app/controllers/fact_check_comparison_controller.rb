@@ -86,6 +86,8 @@ private
   end
 
   def token_bypass?
+    return false if bypass_params[:token].blank?
+
     current_request = Request.most_recent_for_source(source_app: bypass_params[:source_app], source_id: bypass_params[:source_id])
     return unless current_request
 
