@@ -126,7 +126,7 @@ RSpec.describe "FactCheckComparison", type: :request do
         ins: doc.css("div.compare-editions ins").map { |n| n.text.strip },
         del: doc.css("div.compare-editions del").map { |n| n.text.strip },
         diff: doc.css("div.compare-editions div").map { |n| n.text.squish }.reject(&:empty?),
-        heading: doc.css("div.gem-c-govspeak h3").map { |n| n.text.strip },
+        heading: doc.css("div.gem-c-govspeak h2").map { |n| n.text.strip },
       }
     end
 

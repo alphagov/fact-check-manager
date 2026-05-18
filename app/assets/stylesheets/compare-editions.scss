@@ -1,5 +1,26 @@
 .compare-editions {
-  & > div {
+  margin-bottom: govuk-spacing(5);
+
+  p {
     @extend .govuk-body; // stylelint-disable-line scss/at-extend-no-missing-placeholder
   }
+
+  // Styling for edition titles in the content diff
+  .edition-title {
+    @extend %govuk-heading-xl;
+  }
+
+  .diff :is(ins, del) {
+    white-space: pre-wrap;
+
+    // Ensure headings in diff markers are bold
+    :is(h2, h3, h4, h5, h6) .diff-marker {
+      font-weight: bold;
+    }
+  }
 }
+
+.part-heading .govuk-heading-l {
+  @extend %govuk-heading-l;
+}
+
