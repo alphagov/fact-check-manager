@@ -46,7 +46,7 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
     end
 
-    context "signed in user who is not admin or collaborator" do
+    context "signed in user who is not admin or collaborator and has no JWT token" do
       before do
         GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin])
       end
@@ -64,25 +64,10 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       describe "GET /compare" do
-        it "does not render the Response button" do
+        it "does not render the page" do
           get compare_path(source_app: request.source_app, source_id: request.source_id)
 
-          expect(response).to have_http_status(:ok)
-          expect(response.body).not_to include(I18n.t("fact_check_comparison.respond_to_button"))
-        end
-
-        it "does not render the Response by field" do
-          get compare_path(source_app: request.source_app, source_id: request.source_id)
-
-          expect(response).to have_http_status(:ok)
-          expect(response.body).not_to include(I18n.t("fact_check_comparison.respond_by"))
-        end
-
-        it "does render a warning callout" do
-          get compare_path(source_app: request.source_app, source_id: request.source_id)
-
-          expect(response).to have_http_status(:ok)
-          expect(response.body).to include("Only the person coordinating the fact check can submit it to GDS.")
+          expect(response).to have_http_status(:forbidden)
         end
       end
     end
@@ -103,6 +88,8 @@ RSpec.describe "FactCheckComparison", type: :request do
       let(:request) do
         create(
           :request,
+          :with_collaborator,
+          collaborator: current_user,
           draft_content_id: nil,
           draft_auth_bypass_id: nil,
           draft_slug: nil,

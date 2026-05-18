@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe TokenHelper, type: :helper do
+RSpec.describe AuthenticationHelper, type: :helper do
   include ActiveSupport::Testing::TimeHelpers
 
   let(:request_record) { FactoryBot.build(:request) }
