@@ -18,10 +18,7 @@ module Api
       end
 
       if fact_check_request.save
-        personalisation_hash = build_personalisation_hash(fact_check_request)
-        fact_check_request.users.each do |user|
-          NotifyApiService.send_new_fact_check_request_email(user, fact_check_request, personalisation_hash)
-        end
+        send_new_fact_check_request_emails(fact_check_request)
 
         render json: { id: fact_check_request.id, source_id: fact_check_request.source_id }, status: :created
       else
@@ -42,11 +39,9 @@ module Api
     end
 
     def resend_emails
-      if NotifyApiService.resend_emails(@request_record)
-        render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
-      else
-        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
-      end
+      send_new_fact_check_request_emails(@request_record)
+
+      render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
     end
 
   private
@@ -100,6 +95,13 @@ module Api
 
       unless @request_record
         render json: { errors: ["Request with ID #{params[:source_id]} not found for app #{params[:source_app]}"] }, status: :not_found
+      end
+    end
+
+    def send_new_fact_check_request_emails(request)
+      personalisation_hash = build_personalisation_hash(request)
+      request.users.each do |user|
+        NotifyApiService.send_new_fact_check_request_email(user, request, personalisation_hash)
       end
     end
 

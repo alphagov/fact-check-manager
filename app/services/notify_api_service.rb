@@ -26,9 +26,4 @@ class NotifyApiService
 
     send_email_to_recipient(response.user, request, template_id, personalisation_hash)
   end
-
-  def self.resend_emails(_request_record)
-    # TODO: Complete and test?
-    true
-  end
 end
