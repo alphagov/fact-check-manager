@@ -28,14 +28,27 @@ RSpec.describe "FactCheckResponse", type: :request do
                                           .exactly(1).times
         end
 
-        it "includes response body if the fact check is not accepted" do
+        it "includes the formatted response body if the fact check is not accepted" do
           post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
                params: { fact_check_response: { accepted: "false", body: "The fact check is not acceptable" } }
 
           expect(@notify_client_spy).to have_received(:send_email)
                                           .with(hash_including(
                                                   personalisation: hash_including(
-                                                    reason_for_rejection: "The fact check is not acceptable",
+                                                    reason_for_rejection: "^The fact check is not acceptable",
+                                                  ),
+                                                ))
+                                          .exactly(1).times
+        end
+
+        it "prefixes each line of a multi-line response body with `^` so Notify renders it as a block quote" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "false", body: "First problem\nSecond problem\nThird problem" } }
+
+          expect(@notify_client_spy).to have_received(:send_email)
+                                          .with(hash_including(
+                                                  personalisation: hash_including(
+                                                    reason_for_rejection: "^First problem\n^Second problem\n^Third problem",
                                                   ),
                                                 ))
                                           .exactly(1).times

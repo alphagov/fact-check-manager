@@ -100,7 +100,8 @@ private
       responder_name: response.user.name,
     }.tap do |hash|
       unless response.accepted
-        hash[:reason_for_rejection] = response.body
+        formatted_body = response.body.lines(chomp: true).map { |line| "^#{line}" }.join("\n")
+        hash[:reason_for_rejection] = formatted_body
       end
     end
   end
