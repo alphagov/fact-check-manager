@@ -10,6 +10,20 @@ updates:
       default-days: 3
       exclude:
         - govuk_*
+    groups:
+      test-dependencies:
+        patterns:
+          - rspec*
+          - factory_bot*
+          - capybara
+          - selenium-webdriver
+          - simplecov*
+          - govuk_test
+
+      linting:
+        patterns:
+          - rubocop*
+          - erb_lint
 
   - package-ecosystem: npm
     directory: /
@@ -17,6 +31,17 @@ updates:
       interval: daily
     cooldown:
       default-days: 3
+    groups:
+      test-dependencies:
+        patterns:
+          - jasmine*
+
+      linting:
+        patterns:
+          - standardx
+          - stylelint
+          - stylelint*
+          - postcss
 
   # Ruby needs to be upgraded manually in multiple places, so cannot
   # be upgraded by Dependabot. That effectively makes the below
@@ -38,3 +63,7 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 3
+    groups:
+      github-actions:
+        patterns:
+          - "*"
