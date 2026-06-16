@@ -127,4 +127,32 @@ RSpec.describe "Token Bypass Access", type: :request do
       end
     end
   end
+
+  describe "sign out link" do
+    let(:url) { "/requests/#{request_record.source_app}/#{request_record.source_id}/compare" }
+
+    context "when there is a current user" do
+      before { GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin govuk_admin]) }
+
+      it "renders the sign out link" do
+        get url
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include('href="/auth/gds/sign_out"')
+      end
+    end
+
+    context "when there is no current user (token bypass)" do
+      before { GDS::SSO.test_user = nil }
+
+      it "does not render the sign out link" do
+        token = compare_preview_jwt_token(request_record)
+
+        get url, params: { token: token }
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include('href="/auth/gds/sign_out"')
+      end
+    end
+  end
 end
