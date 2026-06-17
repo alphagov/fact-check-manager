@@ -21,7 +21,7 @@
   <%= render "govuk_publishing_components/components/layout_header", {
     product_name: "Fact Check Manager",
     environment: environment,
-    signout_link: true,
+    signout_link: current_user.present?,
   } %>
 
   <div class="govuk-width-container">
