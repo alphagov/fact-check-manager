@@ -43,3 +43,7 @@ en:
     when_questions: "if we have any questions"
     what_do_you_think: "What do you think of this service?"
     thirty_sec: "(takes 30 seconds)"
+  fact_check_already_submitted:
+    heading: "Response already submitted"
+    fact_check_already_completed: "This fact check request has already been completed."
+    questions: "You can send any questions on the"
