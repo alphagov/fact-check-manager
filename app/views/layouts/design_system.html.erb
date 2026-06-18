@@ -1,13 +1,10 @@
 <% environment = GovukPublishingComponents::AppHelpers::Environment.current_acceptance_environment %>
 
-<%# data_module_main = ga4_form_tracking? ? "ga4-link-tracker ga4-form-setup ga4-index-section-setup" : "ga4-link-tracker" %>
-
 <% content_for :head do %>
   <meta name="govuk:components_gem_version" content="<%= GovukPublishingComponents::VERSION %>">
   <%= javascript_include_tag "es6-components", type: "module" %>
+  <%= javascript_include_tag "govuk_publishing_components/load-analytics" %>
 <% end %>
-
-<% sanitized_title = sanitize((yield(:page_title).presence || yield(:title))) %>
 
 <%= render "govuk_publishing_components/components/layout_for_admin", {
   product_title: "Fact Check Manager",
