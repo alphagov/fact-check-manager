@@ -2,6 +2,10 @@
 
 <% content_for :head do %>
   <meta name="govuk:components_gem_version" content="<%= GovukPublishingComponents::VERSION %>">
+  <meta name="govuk:user_id" content="<%= current_user&.anonymous_user_id %>">
+  <meta name="govuk:user-created-at" content="<%= current_user&.created_at&.to_date %>">
+  <meta name="govuk:user-organisation-name" content="<%= current_user&.organisation_slug %>">
+  <meta name="govuk:content-id" content="<%= @request.source_id %>" %>>
   <%= javascript_include_tag "es6-components", type: "module" %>
   <%= javascript_include_tag "govuk_publishing_components/load-analytics" %>
 <% end %>
@@ -12,7 +16,7 @@
   environment: environment,
   head: yield(:head),
 } do %>
-  
+
   <%= render "govuk_publishing_components/components/skip_link" %>
 
   <%= render "govuk_publishing_components/components/layout_header", {
@@ -29,6 +33,8 @@
       id="main-content"
       class="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
       role="main"
+      data-module="ga4-form-setup"
+      data-ga4-do-not-redact
     >
       <%#= render "shared/flash", flash: flash %>
       <% if content_for?(:error_summary) %>
