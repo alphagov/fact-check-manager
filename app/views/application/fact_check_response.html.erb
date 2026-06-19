@@ -11,7 +11,8 @@
   <div class="govuk-grid-column-two-thirds">
     <%= form_with url: verify_response_path(source_app: @request.source_app, source_id: @request.source_id),
                   method: :post,
-                  scope: :fact_check_response do |f| %>
+                  scope: :fact_check_response,
+                  data: { module: "ga4-form-tracker ga4-index-section-setup", ga4_section: t("fact_check_response.heading") } do |f| %>
       <%= render "govuk_publishing_components/components/radio", {
         name: "fact_check_response[accepted]",
         heading: t("fact_check_response.form_heading"),
