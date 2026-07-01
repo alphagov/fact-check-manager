@@ -72,6 +72,30 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
     end
 
+    context "when request already has a response" do
+      let(:current_user) { FactoryBot.create(:user, permissions: %w[signin govuk_admin]) }
+
+      let(:request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+        )
+      end
+
+      before do
+        GDS::SSO.test_user = current_user
+        create(:response, request: request)
+      end
+
+      it "renders the already submitted template" do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_already_submitted.heading"))
+      end
+    end
+
     context "when draft origin fields are present" do
       let(:previous_content) { { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } } }
       let(:current_content) { { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } } }

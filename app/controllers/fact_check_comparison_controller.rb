@@ -5,12 +5,10 @@ class FactCheckComparisonController < ApplicationController
   include AuthenticationHelper
 
   before_action :authenticate_user!, unless: :token_bypass?, only: :compare
+  before_action :set_request, only: :compare
+  before_action :check_already_responded, only: :compare
 
   def compare
-    @default_content = ""
-    @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
-    raise ActiveRecord::RecordNotFound, "No request found" unless @request
-
     return unless token_bypass? || check_permissions(current_user, @request)
 
     @current_content = @request.current_content.deep_symbolize_keys
@@ -25,6 +23,17 @@ class FactCheckComparisonController < ApplicationController
   end
 
 private
+
+  def set_request
+    @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
+    raise ActiveRecord::RecordNotFound, "No request found" unless @request
+  end
+
+  def check_already_responded
+    return if @request.response.blank?
+
+    render "application/fact_check_already_submitted"
+  end
 
   def mark_current_content
     # Both have a single content block, we can diff it directly

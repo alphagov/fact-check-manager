@@ -182,23 +182,12 @@ RSpec.describe "FactCheckResponse", type: :system do
     end
 
     context "when a response has already been submitted for the request" do
-      let!(:response) { create(:response, request:) }
+      let!(:response) { create(:response, request: request) }
 
-      it "shows an error on the verification page" do
-        visit compare_path(source_app: request.source_app, source_id: request.source_id)
-        click_link(I18n.t("fact_check_comparison.respond_to_button"))
-        expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
+      it "shows the already submitted page when trying to start the response flow" do
+        visit respond_path(source_app: request.source_app, source_id: request.source_id)
 
-        choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
-        click_button(I18n.t("fact_check_response.continue_button"))
-        expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text(I18n.t("fact_check_verification.heading"))
-
-        click_button(I18n.t("fact_check_verification.confirm_button"))
-        expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text("Request has already been responded to")
+        expect(page).to have_text(I18n.t("fact_check_already_submitted.heading"))
       end
     end
 

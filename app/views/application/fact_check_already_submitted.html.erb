@@ -1,0 +1,18 @@
+<% content_for :title_context, @request.source_title %>
+<% content_for :title, t("fact_check_already_submitted.heading") %>
+<% content_for :page_title, t("fact_check_already_submitted.heading") %>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+      <p class="govuk-body"> <%= t("fact_check_already_submitted.fact_check_already_completed") %> </p>
+      <p class="govuk-body"> <%= t("fact_check_already_submitted.questions") %>
+        <% if @request.zendesk_number.present? %>
+          <%= link_to "Zendesk ticket",
+              "https://govuk.zendesk.com/tickets/#{@request.zendesk_number}",
+               class: "govuk-link--no-visited-state govuk-link" %>.
+        <% else %>
+          Zendesk ticket.
+        <% end %>
+      </p>
+  </div>
+</div>
