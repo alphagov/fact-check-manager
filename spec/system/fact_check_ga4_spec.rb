@@ -1,6 +1,5 @@
 require "rails_helper"
 
-# Much of this can probably be removed for this test
 RSpec.describe "FactCheckGA4", type: :system do
   let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
   let(:request) do
@@ -15,18 +14,141 @@ RSpec.describe "FactCheckGA4", type: :system do
     )
   end
 
+  describe "Site wide navigation events" do
+    it "pushes the correct values to the dataLayer on interactions with header links" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+      disable_links
+
+      find("header").click_link("Fact Check Manager")
+      click_link("Sign out")
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["type"]).to eq("header")
+      expect(event_data[0]["url"]).to eq("/")
+      expect(event_data[0]["text"]).to eq("Fact Check Manager")
+      expect(event_data[0]["link_domain"]).to eq(current_host)
+      expect(event_data[0]["index"]["index_link"]).to eq("1")
+      expect(event_data[0]["index"]["index_section"]).to eq("1")
+      expect(event_data[0]["index"]["index_section_count"]).to eq("2")
+      expect(event_data[0]["index_total"]).to eq("2")
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("false")
+      expect(event_data[0]["section"]).to eq("Fact Check Manager")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["type"]).to eq("header")
+      expect(event_data[1]["url"]).to eq("/auth/gds/sign_out")
+      expect(event_data[1]["text"]).to eq("Sign out")
+      expect(event_data[1]["link_domain"]).to eq(current_host)
+      expect(event_data[1]["index"]["index_link"]).to eq("2")
+      expect(event_data[1]["index"]["index_section"]).to eq("2")
+      expect(event_data[1]["index"]["index_section_count"]).to eq("2")
+      expect(event_data[1]["index_total"]).to eq("2")
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("false")
+      expect(event_data[1]["section"]).to eq("Sign out")
+    end
+
+    it "pushes the correct values to the dataLayer on interactions with footer links" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+      disable_links
+
+      click_link("Report a technical fault to GDS")
+      click_link("Give feedback on Fact Check Manager")
+      click_link("Check if publishing apps are working or if there’s any maintenance planned")
+      click_link("Privacy notice")
+      click_link("Open Government Licence v3.0")
+      click_link("© Crown copyright")
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["type"]).to eq("footer")
+      expect(event_data[0]["url"]).to end_with("/technical_fault_report/new")
+      expect(event_data[0]["text"]).to eq("Report a technical fault to GDS")
+      expect(event_data[0]["link_domain"]).to eq("http://support.dev.gov.uk")
+      expect(event_data[0]["index"]["index_link"]).to eq("1")
+      expect(event_data[0]["index"]["index_section"]).to eq("1")
+      expect(event_data[0]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[0]["index_total"]).to eq("4")
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("true")
+      expect(event_data[0]["section"]).to eq("Support and feedback")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["type"]).to eq("footer")
+      expect(event_data[1]["url"]).to end_with("/done/fact-check-manager")
+      expect(event_data[1]["text"]).to eq("Give feedback on Fact Check Manager")
+      expect(event_data[1]["link_domain"]).to eq("http://www.dev.gov.uk")
+      expect(event_data[1]["index"]["index_link"]).to eq("2")
+      expect(event_data[1]["index"]["index_section"]).to eq("1")
+      expect(event_data[1]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[1]["index_total"]).to eq("4")
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("true")
+      expect(event_data[1]["section"]).to eq("Support and feedback")
+
+      expect(event_data[2]["event_name"]).to eq("navigation")
+      expect(event_data[2]["type"]).to eq("footer")
+      expect(event_data[2]["url"]).to eq("https://status.publishing.service.gov.uk/")
+      expect(event_data[2]["text"]).to eq("Check if publishing apps are working or if there’s any maintenance planned")
+      expect(event_data[2]["link_domain"]).to eq("https://status.publishing.service.gov.uk")
+      expect(event_data[2]["index"]["index_link"]).to eq("3")
+      expect(event_data[2]["index"]["index_section"]).to eq("1")
+      expect(event_data[2]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[2]["index_total"]).to eq("4")
+      expect(event_data[2]["method"]).to eq("primary click")
+      expect(event_data[2]["external"]).to eq("true")
+      expect(event_data[2]["section"]).to eq("Support and feedback")
+
+      expect(event_data[3]["event_name"]).to eq("navigation")
+      expect(event_data[3]["type"]).to eq("footer")
+      expect(event_data[3]["url"]).to end_with("/privacy-notice")
+      expect(event_data[3]["text"]).to eq("Privacy notice")
+      expect(event_data[3]["link_domain"]).to eq("http://signon.dev.gov.uk")
+      expect(event_data[3]["index"]["index_link"]).to eq("4")
+      expect(event_data[3]["index"]["index_section"]).to eq("1")
+      expect(event_data[3]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[3]["index_total"]).to eq("4")
+      expect(event_data[3]["method"]).to eq("primary click")
+      expect(event_data[3]["external"]).to eq("true")
+      expect(event_data[3]["section"]).to eq("Support and feedback")
+
+      expect(event_data[4]["event_name"]).to eq("navigation")
+      expect(event_data[4]["type"]).to eq("footer")
+      expect(event_data[4]["url"]).to end_with("/doc/open-government-licence/version/3/")
+      expect(event_data[4]["text"]).to eq("Open Government Licence v3.0")
+      expect(event_data[4]["link_domain"]).to eq("https://www.nationalarchives.gov.uk")
+      expect(event_data[4]["index"]["index_link"]).to eq("1")
+      expect(event_data[4]["index"]["index_section"]).to eq("2")
+      expect(event_data[4]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[4]["index_total"]).to eq("1")
+      expect(event_data[4]["method"]).to eq("primary click")
+      expect(event_data[4]["external"]).to eq("true")
+      expect(event_data[4]["section"]).to eq("Licence")
+
+      expect(event_data[5]["event_name"]).to eq("navigation")
+      expect(event_data[5]["type"]).to eq("footer")
+      expect(event_data[5]["url"]).to end_with("/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/")
+      expect(event_data[5]["text"]).to eq("© Crown copyright")
+      expect(event_data[5]["link_domain"]).to eq("https://www.nationalarchives.gov.uk")
+      expect(event_data[5]["index"]["index_link"]).to eq("1")
+      expect(event_data[5]["index"]["index_section"]).to eq("3")
+      expect(event_data[5]["index"]["index_section_count"]).to eq("3")
+      expect(event_data[5]["index_total"]).to eq("1")
+      expect(event_data[5]["method"]).to eq("primary click")
+      expect(event_data[5]["external"]).to eq("true")
+      expect(event_data[5]["section"]).to eq("Copyright")
+    end
+  end
+
   describe "Confirm the changes are factually correct page" do
     it "pushes the correct values to the dataLayer on load" do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
 
-      data_layer_items = get_data_layer_items
-      page_view = {}
-
-      data_layer_items.each do |item|
-        if item["page_view"]
-          page_view = item["page_view"]
-        end
-      end
+      page_view = get_page_view_data
 
       expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
       expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
@@ -45,14 +167,7 @@ RSpec.describe "FactCheckGA4", type: :system do
       click_link("Back")
       click_button(I18n.t("fact_check_response.continue_button"))
 
-      data_layer_items = get_data_layer_items
-      event_data = []
-
-      data_layer_items.each do |item|
-        if item["event_data"]
-          event_data << item["event_data"]
-        end
-      end
+      event_data = get_event_data
 
       expect(event_data[0]["action"]).to eq("select")
       expect(event_data[0]["event_name"]).to eq("select_content")
@@ -92,14 +207,36 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   def disable_links
-    execute_script("document.addEventListener('click',function(e){if(e.target.href)(e.preventDefault())})")
+    execute_script("document.addEventListener('click',function(e){if(e.target.closest('a'))(e.preventDefault())})")
   end
 
   def disable_form_submit
     execute_script("document.querySelector('form').addEventListener('submit',function(e){e.preventDefault()})")
   end
 
-  def get_data_layer_items
-    evaluate_script("window.dataLayer")
+  def get_event_data
+    event_data = []
+    data_layer_items = evaluate_script("window.dataLayer")
+
+    data_layer_items.each do |item|
+      if item["event_data"]
+        event_data << item["event_data"]
+      end
+    end
+
+    event_data
+  end
+
+  def get_page_view_data
+    page_view = {}
+    data_layer_items = evaluate_script("window.dataLayer")
+
+    data_layer_items.each do |item|
+      if item["page_view"]
+        page_view = item["page_view"]
+      end
+    end
+
+    page_view
   end
 end
