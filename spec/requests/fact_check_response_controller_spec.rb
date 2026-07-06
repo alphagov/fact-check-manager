@@ -108,6 +108,15 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_response.heading"))
       end
+
+      it "shows the already submitted page when visiting respond for a request with a response" do
+        create(:response, request: request)
+
+        get respond_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_already_submitted.heading"))
+      end
     end
 
     describe "POST /verify-response" do
@@ -210,14 +219,14 @@ RSpec.describe "FactCheckResponse", type: :request do
         end
       end
 
-      it "renders errors when a response has already been submitted for the request" do
+      it "does not create a duplicate response or send notifications when response already exists" do
         create(:response, request: request)
 
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("has already been responded to")
+        expect(@notify_client_spy).not_to have_received(:send_email)
         expect(Response.count).to eq(1)
       end
     end

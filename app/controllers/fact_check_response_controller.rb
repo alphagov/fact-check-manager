@@ -2,6 +2,7 @@ class FactCheckResponseController < ApplicationController
   include AuthenticationHelper
 
   before_action :set_request, :check_access, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+  before_action :check_already_responded, only: %i[respond_to_fact_check validate_fact_check_response send_response]
 
   def respond_to_fact_check
     session.delete(:fact_check_response) unless params[:back]
@@ -76,6 +77,12 @@ private
 
   def check_access
     check_permissions(current_user, @request)
+  end
+
+  def check_already_responded
+    return if @request.response.blank?
+
+    render "application/fact_check_already_submitted"
   end
 
   def permitted_params
