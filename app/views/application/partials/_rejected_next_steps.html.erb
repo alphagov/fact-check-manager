@@ -1,0 +1,29 @@
+<p class="govuk-body">
+  <%= t("fact_check_submitted.look_at_response") %>
+</p>
+
+<% items = [
+     t("fact_check_submitted.make_changes"),
+  t("fact_check_submitted.send_new_content"),
+   ] %>
+
+<% if @request.zendesk_number.present? %>
+  <% items << safe_join([
+       t("fact_check_submitted.rejected_contact_you_with_zendesk_link"),
+    link_to(
+      t("fact_check_submitted.rejected_zendesk_link"),
+      "https://govuk.zendesk.com/tickets/#{@request.zendesk_number}",
+      class: "govuk-link--no-visited-state govuk-link",
+      target: "_blank",
+      rel: "noopener",
+    ),
+    t("fact_check_submitted.rejected_if_we_have_questions"),
+     ], " ") %>
+<% else %>
+  <% items << t("fact_check_submitted.rejected_contact_you") %>
+<% end %>
+
+<%= render "govuk_publishing_components/components/list", {
+  visible_counters: true,
+  items: items,
+} %>

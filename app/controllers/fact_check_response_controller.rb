@@ -28,7 +28,7 @@ class FactCheckResponseController < ApplicationController
     @errors = []
     @form_data = permitted_params
 
-    response = Response.new(
+    @response = Response.new(
       request: @request,
       user: current_user,
       accepted: @form_data[:accepted],
@@ -36,27 +36,27 @@ class FactCheckResponseController < ApplicationController
     )
 
     ActiveRecord::Base.transaction do
-      if response.save
+      if @response.save
         begin
-          PublisherApiService.post_fact_check_response(response)
+          PublisherApiService.post_fact_check_response(@response)
         rescue GdsApi::HTTPErrorResponse
           @errors << t("fact_check_verification.api_submission_error")
           raise ActiveRecord::Rollback
         end
 
         begin
-          personalisation_hash = build_personalisation_hash(response)
-          if response.accepted
-            NotifyApiService.send_response_accepted_email(response, personalisation_hash)
+          personalisation_hash = build_personalisation_hash(@response)
+          if @response.accepted
+            NotifyApiService.send_response_accepted_email(@response, personalisation_hash)
           else
-            NotifyApiService.send_response_rejected_email(response, personalisation_hash)
+            NotifyApiService.send_response_rejected_email(@response, personalisation_hash)
           end
         rescue Notifications::Client::RequestError
           # We don't roll back the DB or Publisher if the confirmation email fails, but we do display an error
           @errors << t("fact_check_verification.notify_submission_error")
         end
       else
-        @errors = response.errors.full_messages
+        @errors = @response.errors.full_messages
       end
     end
 
