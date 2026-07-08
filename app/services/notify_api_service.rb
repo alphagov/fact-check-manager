@@ -11,6 +11,8 @@ class NotifyApiService
       personalisation: personalisation_hash,
     )
 
+    Rails.logger.info(notify_response.to_json)
+
     notify_response.instance_of?(Notifications::Client::ResponseNotification)
   end
 
