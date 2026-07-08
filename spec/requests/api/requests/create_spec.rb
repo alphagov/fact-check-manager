@@ -252,8 +252,7 @@ RSpec.describe "POST /api/requests", type: :request do
             expect(@notify_client_spy).to have_received(:send_email).with(
               hash_including(
                 personalisation: hash_including(
-                  show_zendesk_number: "yes",
-                  zendesk_number: 9_876_543,
+                  zendesk_link: "Zendesk link: [9876543](https://govuk.zendesk.com/agent/tickets/9876543)",
                 ),
               ),
             ).exactly(2).times
@@ -269,8 +268,7 @@ RSpec.describe "POST /api/requests", type: :request do
             expect(@notify_client_spy).to have_received(:send_email).with(
               hash_including(
                 personalisation: hash_including(
-                  show_zendesk_number: "no",
-                  zendesk_number: "",
+                  zendesk_link: "",
                 ),
               ),
             ).exactly(2).times
