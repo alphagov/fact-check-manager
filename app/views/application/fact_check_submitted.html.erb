@@ -15,7 +15,7 @@
       <%= render @response.accepted? ? "application/partials/accepted_next_steps" : "application/partials/rejected_next_steps" %>
       <p class="govuk-body"><%= link_to t("fact_check_submitted.what_do_you_think"),
           "https://www.gov.uk/done/fact-check-manager",
-          class: "govuk-link--no-visited-state govuk-link",
+          class: "govuk-link",
           target: "_blank",
           rel: "noopener" %>
           <%= t("fact_check_submitted.thirty_sec") %></p>
