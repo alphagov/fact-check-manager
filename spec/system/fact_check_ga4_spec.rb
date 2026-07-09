@@ -144,6 +144,54 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
   end
 
+  describe "Fact check the changes page" do
+    it "pushes the correct values to the dataLayer on load" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+      disable_links
+
+      click_link("Respond to fact check")
+      click_link("Preview the draft page (opens in new tab)")
+      click_link("Fact checking guidance (opens in new tab)")
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["link_domain"]).to eq(current_host)
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("false")
+      expect(event_data[0]["text"]).to eq("Respond to fact check")
+      expect(event_data[0]["type"]).to eq("generic_link")
+      expect(event_data[0]["url"]).to eq("/requests/publisher/#{request.source_id}/respond")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["link_domain"]).to start_with("http://draft-origin")
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("true")
+      expect(event_data[1]["text"]).to eq("Preview the draft page (opens in new tab)")
+      expect(event_data[1]["type"]).to eq("generic_link")
+      expect(event_data[1]["url"]).to include(request.draft_slug.to_s)
+
+      expect(event_data[2]["event_name"]).to eq("navigation")
+      expect(event_data[2]["link_domain"]).to eq("https://gov.uk")
+      expect(event_data[2]["method"]).to eq("primary click")
+      expect(event_data[2]["external"]).to eq("true")
+      expect(event_data[2]["text"]).to eq("Fact checking guidance (opens in new tab)")
+      expect(event_data[2]["type"]).to eq("generic_link")
+      expect(event_data[2]["url"]).to eq("https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk")
+    end
+  end
+
   describe "Confirm the changes are factually correct page" do
     it "pushes the correct values to the dataLayer on load" do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
