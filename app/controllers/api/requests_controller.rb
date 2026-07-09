@@ -105,13 +105,16 @@ module Api
       end
     end
 
+    def set_zendesk_link(zendesk_number)
+      zendesk_number.present? ? "Zendesk link: [#{zendesk_number}](https://govuk.zendesk.com/agent/tickets/#{zendesk_number})" : ""
+    end
+
     def build_personalisation_hash(request)
       {
         title: request.source_title,
         show_reason: request.reason_for_change.present? ? "yes" : "no",
         reason_for_change: request.reason_for_change.presence || "",
-        show_zendesk_number: request.zendesk_number.present? ? "yes" : "no",
-        zendesk_number: request.zendesk_number.presence || "",
+        zendesk_link: set_zendesk_link(request.zendesk_number),
         deadline: request.formatted_deadline,
         tokenised_link: generate_compare_preview_link(request),
         non_tokenised_link: generate_compare_link(request),

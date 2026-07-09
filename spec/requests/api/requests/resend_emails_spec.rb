@@ -108,7 +108,7 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
         make_request
 
         expect(@notify_client_spy).to have_received(:send_email)
-          .with(hash_including(personalisation: hash_including(show_zendesk_number: "yes", zendesk_number: 9_876_543))).exactly(2).times
+          .with(hash_including(personalisation: hash_including(zendesk_link: "Zendesk link: [9876543](https://govuk.zendesk.com/agent/tickets/9876543)"))).exactly(2).times
       end
 
       it "sets show_zendesk_number to no and zendesk_number to an empty string when zendesk_number is blank" do
@@ -117,7 +117,7 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
         make_request
 
         expect(@notify_client_spy).to have_received(:send_email)
-          .with(hash_including(personalisation: hash_including(show_zendesk_number: "no", zendesk_number: ""))).exactly(2).times
+          .with(hash_including(personalisation: hash_including(zendesk_link: ""))).exactly(2).times
       end
     end
 
