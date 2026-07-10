@@ -12,7 +12,7 @@ FactoryBot.define do
     requester_email { "m.tucker@gov.uk" }
     auth_bypass_id { SecureRandom.uuid }
     reason_for_change { "a reason" }
-    zendesk_number { 1_234_567 }
+    zendesk_number { "1234567" }
     draft_content_id { SecureRandom.uuid }
     draft_auth_bypass_id { SecureRandom.uuid }
     draft_slug { "test-slug" }

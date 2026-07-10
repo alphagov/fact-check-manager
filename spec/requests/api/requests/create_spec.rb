@@ -23,7 +23,7 @@ RSpec.describe "POST /api/requests", type: :request do
       } },
       previous_content: {},
       reason_for_change: "a reason",
-      zendesk_number: 1_234_567,
+      zendesk_number: "1234567",
       deadline: 1.week.from_now.iso8601,
       recipients: ["recipient1@example.com", "recipient2@example.com"],
       draft_content_id:,
@@ -52,7 +52,7 @@ RSpec.describe "POST /api/requests", type: :request do
       expect(request.requester_name).to eq("GDS Content Designer")
       expect(request.requester_email).to eq("gds-content-designer@example.com")
       expect(request.reason_for_change).to eq("a reason")
-      expect(request.zendesk_number).to eq(1_234_567)
+      expect(request.zendesk_number).to eq("1234567")
       expect(request.draft_content_id).to eq(draft_content_id)
       expect(request.draft_auth_bypass_id).to eq(draft_auth_bypass_id)
       expect(request.draft_slug).to eq("test-edition-slug")
@@ -245,7 +245,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
         context "when zendesk_number is present" do
           it "sets show_zendesk_number to yes and includes the number" do
-            payload = valid_payload.merge(zendesk_number: 9_876_543)
+            payload = valid_payload.merge(zendesk_number: "9876543")
 
             post "/api/requests", params: payload, as: :json
 
@@ -436,13 +436,23 @@ RSpec.describe "POST /api/requests", type: :request do
       end
     end
 
-    context "if zendesk_number is not an number" do
+    context "if zendesk_number is not a string of digits" do
       it "returns an error" do
         post "/api/requests", params: valid_payload.merge(zendesk_number: "not a number"), as: :json
 
         expect(response).to have_http_status(:unprocessable_content)
         json = JSON.parse(response.body)
-        expect(json["errors"]).to include("Zendesk number Zendesk number must be a number at least 7 digits long")
+        expect(json["errors"]).to include("Zendesk number must be at least 7 digits long")
+      end
+    end
+
+    context "if zendesk_number starts with zero" do
+      it "returns an error" do
+        post "/api/requests", params: valid_payload.merge(zendesk_number: "0123456"), as: :json
+
+        expect(response).to have_http_status(:unprocessable_content)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Zendesk number cannot start with zero")
       end
     end
   end

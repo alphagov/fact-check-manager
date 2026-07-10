@@ -103,7 +103,7 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
       end
 
       it "sets show_zendesk_number to yes and includes the number when zendesk_number is present" do
-        existing_request.update!(zendesk_number: 9_876_543)
+        existing_request.update!(zendesk_number: "9876543")
 
         make_request
 

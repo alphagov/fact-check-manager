@@ -3,12 +3,13 @@ class Request < ApplicationRecord
   has_many :users, through: :collaborations
   has_one :response
 
+  ZENDESK_NUMBER_REGEX = /\A\d{7,}\z/
+
+  normalizes :zendesk_number, with: ->(value) { value.presence }
+
   validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
-  validates :zendesk_number, numericality: { only_integer: true,
-                                             greater_than: 999_999,
-                                             message: "Zendesk number must be a number at least 7 digits long",
-                                             allow_blank: true }
   validate :content_fields_are_correctly_structured
+  validate :valid_zendesk_number
 
   def self.most_recent_for_source(source_app:, source_id:)
     where(source_app: source_app, source_id: source_id).order(created_at: :desc).first
@@ -19,6 +20,16 @@ class Request < ApplicationRecord
   end
 
 private
+
+  def valid_zendesk_number
+    return if zendesk_number.blank?
+
+    if !zendesk_number.match?(ZENDESK_NUMBER_REGEX)
+      errors.add(:zendesk_number, "must be at least 7 digits long")
+    elsif zendesk_number.start_with?("0")
+      errors.add(:zendesk_number, "cannot start with zero")
+    end
+  end
 
   def content_fields_are_correctly_structured
     # The structure being validated here is { "string_id": { "heading" => "string_heading": "body" => "content_string" }, ... }

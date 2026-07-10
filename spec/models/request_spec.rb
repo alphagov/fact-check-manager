@@ -103,19 +103,51 @@ RSpec.describe Request, type: :model do
     end
   end
 
-  context "when zendesk_number is not a number" do
+  context "when zendesk_number is not a string of digits" do
     it "is not valid" do
-      record = FactoryBot.build(:request, zendesk_number: "not a number")
+      ["not a number", "123invalid4", "#1234567", "1234567#"].each do |zendesk_number|
+        record = FactoryBot.build(:request, zendesk_number: zendesk_number)
 
-      expect(record).not_to be_valid
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Zendesk number must be at least 7 digits long")
+      end
     end
   end
 
   context "when zendesk_number is too short" do
     it "is not valid" do
-      record = FactoryBot.build(:request, zendesk_number: 1)
+      record = FactoryBot.build(:request, zendesk_number: "123456")
 
       expect(record).not_to be_valid
+      expect(record.errors.full_messages).to include("Zendesk number must be at least 7 digits long")
+    end
+  end
+
+  context "when zendesk_number starts with zero" do
+    it "is not valid" do
+      record = FactoryBot.build(:request, zendesk_number: "0123456")
+
+      expect(record).not_to be_valid
+      expect(record.errors.full_messages).to include("Zendesk number cannot start with zero")
+    end
+  end
+
+  context "when zendesk_number is an empty string" do
+    it "is normalized to nil" do
+      record = FactoryBot.build(:request, zendesk_number: "")
+
+      expect(record).to be_valid
+      expect(record.zendesk_number).to be_nil
+    end
+  end
+
+  context "when zendesk_number is more than 10 digits" do
+    it "is valid and stored without overflowing" do
+      record = FactoryBot.build(:request, zendesk_number: "21474836470123456789")
+
+      expect(record).to be_valid
+      record.save!
+      expect(record.reload.zendesk_number).to eq("21474836470123456789")
     end
   end
 
