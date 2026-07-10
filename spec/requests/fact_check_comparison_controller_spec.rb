@@ -184,7 +184,7 @@ RSpec.describe "FactCheckComparison", type: :request do
         let(:previous_content) { nil }
 
         it "correctly renders the formatted diff" do
-          verify_static_elements
+          verify_static_elements(first_edition: true)
           verify_unchanged(parsed, ["This is the unchanged line.", "This line has changes"])
           expect(parsed[:del]).to eq([])
           expect(parsed[:ins]).to eq([])
@@ -196,7 +196,7 @@ RSpec.describe "FactCheckComparison", type: :request do
         let(:previous_content) { {} }
 
         it "correctly renders the formatted diff" do
-          verify_static_elements
+          verify_static_elements(first_edition: true)
           verify_unchanged(parsed, ["This is the unchanged line.", "This line has changes"])
           expect(parsed[:del]).to eq([])
           expect(parsed[:ins]).to eq([])

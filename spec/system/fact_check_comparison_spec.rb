@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :system do
   let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
+  let(:previous_content) { { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } } }
   let(:request) do
     FactoryBot.create(
       :request,
@@ -9,7 +10,7 @@ RSpec.describe "FactCheckComparison", type: :system do
       collaborator: current_user,
       source_title: "Example title",
       deadline: Time.zone.now + 5.days,
-      previous_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } },
+      previous_content:,
       current_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
     )
   end
@@ -53,6 +54,18 @@ RSpec.describe "FactCheckComparison", type: :system do
       expect(page).to have_text(I18n.t("fact_check_comparison.guidance_deleted"))
       expect(page).to have_text(I18n.t("fact_check_comparison.guidance_added"))
       expect(page).to have_link(I18n.t("fact_check_comparison.guidance_link"))
+    end
+
+    context "when the request has no previous content" do
+      let(:previous_content) { {} }
+
+      it "displays the guidance sidebar with the first edition text" do
+        visit compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(page).to have_text(I18n.t("fact_check_comparison.guidance_heading"))
+        expect(page).to have_text(I18n.t("fact_check_comparison.guidance_first_edition"))
+        expect(page).to have_link(I18n.t("fact_check_comparison.guidance_link"))
+      end
     end
 
     context "when no draft preview link can be generated" do
