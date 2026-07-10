@@ -23,12 +23,13 @@
     product_name: "Fact Check Manager",
     environment: environment,
     signout_link: current_user.present?,
+    data_attributes: {
+      module: "ga4-link-tracker ga4-links-setup",
+      "ga4-do-not-redact": "",
+    },
   } %>
 
   <div class="govuk-width-container">
-    <% if content_for?(:back_link) %>
-      <%= render "govuk_publishing_components/components/back_link", { href: yield(:back_link) } %>
-    <% end %>
     <main
       id="main-content"
       class="govuk-main-wrapper govuk-main-wrapper--auto-spacing"
@@ -36,7 +37,12 @@
       data-module="ga4-form-setup"
       data-ga4-do-not-redact
     >
+      <% if content_for?(:back_link) %>
+        <%= render "govuk_publishing_components/components/back_link", { href: yield(:back_link) } %>
+      <% end %>
+
       <%#= render "shared/flash", flash: flash %>
+
       <% if content_for?(:error_summary) %>
         <div class="govuk-grid-row">
           <div class="govuk-grid-column-two-thirds">
