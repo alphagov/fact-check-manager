@@ -18,6 +18,10 @@ class Request < ApplicationRecord
     deadline.strftime("%A %-e %B %Y")
   end
 
+  def first_edition?
+    previous_content.blank?
+  end
+
 private
 
   def content_fields_are_correctly_structured

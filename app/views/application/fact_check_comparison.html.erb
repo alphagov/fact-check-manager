@@ -51,7 +51,7 @@
           font_size: "s",
           padding: true,
       } %>
-      <% if @request.previous_content.blank? %>
+      <% if @request.first_edition? %>
         <p class="govuk-body"><%= t("fact_check_comparison.guidance_first_edition") %></p>
       <% else %>
         <%= render "govuk_publishing_components/components/list", {

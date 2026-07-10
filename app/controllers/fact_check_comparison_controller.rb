@@ -12,7 +12,9 @@ class FactCheckComparisonController < ApplicationController
     return unless token_bypass? || check_permissions(current_user, @request)
 
     @current_content = @request.current_content.deep_symbolize_keys
-    @previous_content = @request.previous_content&.deep_symbolize_keys.presence || @current_content.deep_dup
+    # First editions have no previous version, so diff current content against
+    # a copy of itself - the diff renders as unchanged.
+    @previous_content = @request.first_edition? ? @current_content.deep_dup : @request.previous_content.deep_symbolize_keys
 
     mark_current_content
     @differ = create_diff
