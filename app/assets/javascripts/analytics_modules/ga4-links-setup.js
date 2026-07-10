@@ -5,22 +5,20 @@ window.GOVUK.analyticsGa4 = window.GOVUK.analyticsGa4 || {}
 window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analyticsModules || {}
 
 ;(function (Modules) {
-  function Ga4LinksSetup () {}
+  function Ga4LinksSetup (module) {
+    this.module = module
+  }
 
   Ga4LinksSetup.prototype.init = function () {
-    var modules = document.querySelectorAll(
-      "[data-module~='ga4-links-setup']"
-    )
-
-    Array.from(modules).forEach(function (module) {
-      this.addDataAttributes(module)
-    }.bind(this))
+    this.addDataAttributes(this.module)
   }
 
   Ga4LinksSetup.prototype.addDataAttributes = function (module) {
+    var linkData
+    var links = module.querySelectorAll('a')
+
     if (module.tagName.toLowerCase() === 'header') {
-      var links = module.querySelectorAll('a')
-      var linkData = {
+      linkData = {
         event_name: 'navigation',
         type: 'header',
         index_link: '',
@@ -40,6 +38,15 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
           linkData.section = 'Sign out'
         }
 
+        link.setAttribute('data-ga4-link', JSON.stringify(linkData))
+      })
+    } else {
+      linkData = {
+        event_name: 'navigation',
+        type: 'generic_link'
+      }
+
+      Array.from(links).forEach(function (link, index) {
         link.setAttribute('data-ga4-link', JSON.stringify(linkData))
       })
     }
