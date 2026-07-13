@@ -1,5 +1,5 @@
 module FormattedDiffHelpers
-  def verify_static_elements
+  def verify_static_elements(first_edition: false)
     expect(response).to have_http_status(:ok)
     expect(response.body).to include(I18n.t("fact_check_comparison.heading"))
     expect(response.body).to include(I18n.t("fact_check_comparison.respond_by"))
@@ -7,8 +7,9 @@ module FormattedDiffHelpers
     expect(response.body).to include(I18n.t("fact_check_comparison.preview_heading"))
     expect(response.body).to include(I18n.t("fact_check_comparison.preview_link"))
     expect(response.body).to include(I18n.t("fact_check_comparison.guidance_heading"))
-    expect(response.body).to include(I18n.t("fact_check_comparison.guidance_deleted"))
-    expect(response.body).to include(I18n.t("fact_check_comparison.guidance_added"))
+    expect(response.body).to include(I18n.t("fact_check_comparison.guidance_deleted")) unless first_edition
+    expect(response.body).to include(I18n.t("fact_check_comparison.guidance_added")) unless first_edition
+    expect(response.body).to include(I18n.t("fact_check_comparison.guidance_first_edition")) if first_edition
     expect(response.body).to include(I18n.t("fact_check_comparison.guidance_link"))
   end
 

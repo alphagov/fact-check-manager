@@ -161,6 +161,26 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "#first_edition?" do
+    it "returns true when previous_content is nil" do
+      record = FactoryBot.build(:request, previous_content: nil)
+
+      expect(record.first_edition?).to be(true)
+    end
+
+    it "returns true when previous_content is an empty hash" do
+      record = FactoryBot.build(:request, previous_content: {})
+
+      expect(record.first_edition?).to be(true)
+    end
+
+    it "returns false when previous_content is present" do
+      record = FactoryBot.build(:request, previous_content: { "id_value" => { "heading" => "test_heading", "body" => "<p>Previous content</p>" } })
+
+      expect(record.first_edition?).to be(false)
+    end
+  end
+
   describe ".most_recent_for_source" do
     it "returns the most recent request for the given source app and source ID" do
       source_id = SecureRandom.uuid

@@ -51,13 +51,17 @@
           font_size: "s",
           padding: true,
       } %>
-      <%= render "govuk_publishing_components/components/list", {
-        visible_counters: true,
-        items: [
-          t("fact_check_comparison.guidance_deleted"),
-          t("fact_check_comparison.guidance_added"),
-        ],
-      } %>
+      <% if @request.first_edition? %>
+        <p class="govuk-body"><%= t("fact_check_comparison.guidance_first_edition") %></p>
+      <% else %>
+        <%= render "govuk_publishing_components/components/list", {
+          visible_counters: true,
+          items: [
+            t("fact_check_comparison.guidance_deleted"),
+            t("fact_check_comparison.guidance_added"),
+          ],
+        } %>
+      <% end %>
       <p class="govuk-body">
         <%= link_to t("fact_check_comparison.guidance_link"), 
           "https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk",
