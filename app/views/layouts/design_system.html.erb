@@ -5,7 +5,7 @@
   <meta name="govuk:user_id" content="<%= current_user&.anonymous_user_id %>">
   <meta name="govuk:user-created-at" content="<%= current_user&.created_at&.to_date %>">
   <meta name="govuk:user-organisation-name" content="<%= current_user&.organisation_slug %>">
-  <meta name="govuk:content-id" content="<%= @request.source_id %>" %>>
+  <meta name="govuk:content-id" content="<%= @request.source_id %>" %>
   <%= javascript_include_tag "es6-components", type: "module" %>
   <%= javascript_include_tag "govuk_publishing_components/load-analytics" %>
 <% end %>
