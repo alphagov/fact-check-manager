@@ -62,7 +62,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_text(I18n.t("fact_check_submitted.fact_check_description"))
         expect(page).to have_text(I18n.t("fact_check_submitted.sent_a_confirmation_email"))
         expect(page).to have_text(I18n.t("fact_check_submitted.what_happens_next"))
-        expect(page).to have_text(I18n.t("fact_check_submitted.contact_you_with_zendesk_link"))
+        expect(page).to have_text("We'll contact you on the Zendesk ticket (opens in new tab):")
         expect(page).to have_text(I18n.t("fact_check_submitted.when_changes"))
         expect(page).to have_text(I18n.t("fact_check_submitted.when_questions"))
         expect(page).to have_text(I18n.t("fact_check_submitted.what_do_you_think"))
@@ -184,8 +184,7 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(page).to have_text(I18n.t("fact_check_submitted.rejected_contact_you"))
           expect(page).to have_text(I18n.t("fact_check_submitted.make_changes"))
           expect(page).to have_text(I18n.t("fact_check_submitted.send_new_content"))
-          expect(page).to have_text(I18n.t("fact_check_submitted.rejected_if_we_have_questions"))
-
+          expect(page).to have_text(I18n.t("fact_check_submitted.rejected_contact_you"))
           expect(page).not_to have_link(I18n.t("fact_check_submitted.rejected_zendesk_link"))
         end
       end
@@ -204,9 +203,9 @@ RSpec.describe "FactCheckResponse", type: :system do
             confirm_response_path(source_app: request.source_app, source_id: request.source_id),
           )
 
-          expect(page).to have_text(
-            I18n.t("fact_check_submitted.rejected_contact_you_with_zendesk_link"),
-          )
+          expect(page).to have_text("contact you on the")
+          expect(page).to have_link("Zendesk ticket (opens in new tab)")
+          expect(page).to have_text("if we have any questions")
 
           link = page.find_link(I18n.t("fact_check_submitted.rejected_zendesk_link"))
 
