@@ -34,8 +34,7 @@ end
 
 group :test do
   gem "climate_control"
-  gem "simplecov", "~>0.22"
-  gem "simplecov-html", "~>0.12"
+  gem "simplecov", "~>1.0"
 end
 
 group :development, :test do
