@@ -296,11 +296,11 @@ GEM
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.5)
-    nokodiff (0.4.2)
+    nokodiff (1.0.0.rc1)
       actionview (>= 6, < 8.1.4)
       byebug
       diff-lcs
-      gds-api-adapters (>= 101.0, < 103.3)
+      gds-api-adapters (>= 101.0, < 103.4)
       govspeak (>= 10.6.3)
       rails (>= 6, < 8.1.4)
       view_component (~> 4)
@@ -796,7 +796,7 @@ DEPENDENCIES
   govuk_sidekiq
   govuk_test
   listen
-  nokodiff
+  nokodiff (= 1.0.0.rc1)
   notifications-ruby-client
   pg
   plek
@@ -813,4 +813,4 @@ DEPENDENCIES
   uglifier
 
 BUNDLED WITH
-   4.0.12
+  4.0.12
