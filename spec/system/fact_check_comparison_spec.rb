@@ -26,8 +26,8 @@ RSpec.describe "FactCheckComparison", type: :system do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(page).to have_text("This is the unchanged line.")
-      expect(page).to have_css("del", text: "This line will be changed")
-      expect(page).to have_css("ins", text: "This line has changes")
+      expect(page).to have_css(".del", text: "This line will be changed")
+      expect(page).to have_css(".ins", text: "This line has changes")
     end
 
     it "has a link to respond to the fact check" do

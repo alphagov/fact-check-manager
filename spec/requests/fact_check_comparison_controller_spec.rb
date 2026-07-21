@@ -134,8 +134,8 @@ RSpec.describe "FactCheckComparison", type: :request do
     let(:parsed) do
       doc = Nokogiri::HTML(response.body)
       {
-        ins: doc.css("div.compare-editions ins").map { |n| n.text.strip },
-        del: doc.css("div.compare-editions del").map { |n| n.text.strip },
+        ins: doc.css("div.compare-editions .ins").map { |n| n.text.strip },
+        del: doc.css("div.compare-editions .del").map { |n| n.text.strip },
         diff: doc.css("div.compare-editions div").map { |n| n.text.squish }.reject(&:empty?),
         heading: doc.css("div.gem-c-govspeak h2").map { |n| n.text.strip },
       }
@@ -273,7 +273,8 @@ RSpec.describe "FactCheckComparison", type: :request do
         end
 
         it "displays the part as added" do
-          expect(parsed[:ins]).to eq(["Part 1 new part"])
+          expect(parsed[:ins].first).to include("Added content")
+          expect(parsed[:ins].first).to include("Part 1 new part")
         end
       end
 
@@ -289,7 +290,8 @@ RSpec.describe "FactCheckComparison", type: :request do
         end
 
         it "displays the part as added" do
-          expect(parsed[:ins]).to eq(["Part 2 new part"])
+          expect(parsed[:ins].first).to include("Added content")
+          expect(parsed[:ins].first).to include("Part 2 new part")
         end
       end
 
