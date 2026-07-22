@@ -14,7 +14,11 @@ module FormattedDiffHelpers
   end
 
   def verify_ins(parsed, expected)
-    expect(parsed[:ins]).to eq(expected)
+    parsed[:ins].each do |diff|
+      expect(diff).to include("Added content")
+    end
+
+    expect(parsed[:ins].map { |text| text.gsub("Added content", "").strip }).to eq(expected)
 
     expected.each do |element|
       expect(parsed[:del]).not_to include(element)
@@ -22,7 +26,11 @@ module FormattedDiffHelpers
   end
 
   def verify_del(parsed, expected)
-    expect(parsed[:del]).to eq(expected)
+    parsed[:del].each do |diff|
+      expect(diff).to include("Removed content")
+    end
+
+    expect(parsed[:del].map { |text| text.gsub("Removed content", "").strip }).to eq(expected)
 
     expected.each do |element|
       expect(parsed[:ins]).not_to include(element)
