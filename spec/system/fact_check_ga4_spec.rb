@@ -254,6 +254,20 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
   end
 
+  describe "Fact check submitted page" do
+    it "pushes the correct values to the dataLayer on load" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+      click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+  end
+
   def disable_links
     execute_script("document.addEventListener('click',function(e){if(e.target.closest('a'))(e.preventDefault())})")
   end
