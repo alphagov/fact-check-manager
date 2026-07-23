@@ -256,8 +256,12 @@ RSpec.describe "FactCheckGA4", type: :system do
 
   describe "Fact check submitted page" do
     it "pushes the correct values to the dataLayer on load" do
+      # There must be a better way to get to the page
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
       click_link(I18n.t("fact_check_comparison.respond_to_button"))
+      choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+      click_button(I18n.t("fact_check_response.continue_button"))
+      click_button(I18n.t("fact_check_verification.confirm_button"))
 
       page_view = get_page_view_data
 
