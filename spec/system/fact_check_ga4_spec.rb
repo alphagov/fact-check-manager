@@ -266,6 +266,45 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
       expect(page_view["content_id"]).to eq(request.source_id)
     end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      # There must be a better way to get to the page
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+      click_link(I18n.t("fact_check_comparison.respond_to_button"))
+      choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+      click_button(I18n.t("fact_check_response.continue_button"))
+      click_button(I18n.t("fact_check_verification.confirm_button"))
+
+      # For sanity only
+      expect(page).to have_text(I18n.t("fact_check_submitted.fact_check_submitted"))
+
+      disable_links
+
+      click_link("Zendesk ticket (opens in new tab)")
+      click_link("What do you think of this service?")
+
+      event_data = get_event_data
+
+      puts "++event_data++"
+      puts event_data
+      puts "++++"
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["link_domain"]).to eq("https://govuk.zendesk.com")
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("true")
+      expect(event_data[0]["text"]).to eq("Zendesk ticket (opens in new tab)")
+      expect(event_data[0]["type"]).to eq("generic_link")
+      expect(event_data[0]["url"]).to end_with("/tickets/1234567")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["link_domain"]).to eq("https://www.gov.uk")
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("true")
+      expect(event_data[1]["text"]).to eq("What do you think of this service?")
+      expect(event_data[1]["type"]).to eq("generic_link")
+      expect(event_data[1]["url"]).to end_with("/done/fact-check-manager")
+    end
   end
 
   def disable_links
