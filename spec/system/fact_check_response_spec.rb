@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe "FactCheckResponse", type: :system do
   before do
     allow(PublisherApiService).to receive(:post_fact_check_response)
-                              .and_return(double(code: 200))
+                                    .and_return(double(code: 200))
     allow(NotifyApiService).to receive(:send_email_to_recipient).and_return(double(code: 200))
   end
 
@@ -254,75 +254,81 @@ RSpec.describe "FactCheckResponse", type: :system do
       end
     end
 
-    context "when the API fails because the edition is not in fact check state" do
-      before do
-        allow(PublisherApiService).to receive(:post_fact_check_response)
-          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "errors" => ["State Edition is not in a state where fact check can be submitted"]))
+    describe "API failures" do
+      context "when the API fails because the edition is not in fact check state" do
+        before do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "errors" => [{ "state": "The edition is not in fact check state" }]))
+        end
+
+        it "shows the user an error explaining that the request has been cancelled" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+          expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
+
+          expect(page).to have_text(I18n.t("fact_check_response.heading"))
+          expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
+          expect(page).to have_text(I18n.t("fact_check_response.correct"))
+          expect(page).to have_text(I18n.t("fact_check_response.incorrect"))
+          expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
+
+          choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
+
+          expect(page).to have_text(I18n.t("fact_check_verification.heading"))
+          expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
+          expect(page).to have_text(I18n.t("fact_check_response.correct"))
+          expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
+          expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
+          expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
+          expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
+
+          click_button(I18n.t("fact_check_verification.confirm_button"))
+          expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
+          expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
+          expect(page).to have_text(I18n.t("fact_check_verification.api_submission_request_cancelled"))
+
+          expect(page).not_to have_text(I18n.t("fact_check_verification.api_submission_error"))
+        end
       end
 
-      it "shows the user and error explaining that the request has been cancelled" do
-        visit compare_path(source_app: request.source_app, source_id: request.source_id)
-        click_link(I18n.t("fact_check_comparison.respond_to_button"))
-        expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
+      context "when the API fails for any other reason" do
+        before do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
+        end
 
-        expect(page).to have_text(I18n.t("fact_check_response.heading"))
-        expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
-        expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_response.incorrect"))
-        expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
+        it "shows the user an error prompt suggesting to try submitting again" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+          expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
 
-        choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
-        click_button(I18n.t("fact_check_response.continue_button"))
-        expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
+          expect(page).to have_text(I18n.t("fact_check_response.heading"))
+          expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
+          expect(page).to have_text(I18n.t("fact_check_response.correct"))
+          expect(page).to have_text(I18n.t("fact_check_response.incorrect"))
+          expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
 
-        expect(page).to have_text(I18n.t("fact_check_verification.heading"))
-        expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
-        expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
-        expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
-        expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
-        expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
+          choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
-        click_button(I18n.t("fact_check_verification.confirm_button"))
-        expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
-        expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
-        expect(page).to have_text(I18n.t("fact_check_verification.api_submission_request_cancelled"))
-      end
-    end
+          expect(page).to have_text(I18n.t("fact_check_verification.heading"))
+          expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
+          expect(page).to have_text(I18n.t("fact_check_response.correct"))
+          expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
+          expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
+          expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
+          expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
 
-    context "when the API fails for any other reason" do
-      before do
-        allow(PublisherApiService).to receive(:post_fact_check_response)
-        .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
-      end
+          click_button(I18n.t("fact_check_verification.confirm_button"))
+          expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
+          expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
+          expect(page).to have_text(I18n.t("fact_check_verification.api_submission_error"))
 
-      it "shows the user an error prompt suggesting to try submitting again" do
-        visit compare_path(source_app: request.source_app, source_id: request.source_id)
-        click_link(I18n.t("fact_check_comparison.respond_to_button"))
-        expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text(I18n.t("fact_check_response.heading"))
-        expect(page).to have_text(I18n.t("fact_check_response.form_heading"))
-        expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_response.incorrect"))
-        expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
-
-        choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
-        click_button(I18n.t("fact_check_response.continue_button"))
-        expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text(I18n.t("fact_check_verification.heading"))
-        expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
-        expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
-        expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
-        expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
-        expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
-
-        click_button(I18n.t("fact_check_verification.confirm_button"))
-        expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
-        expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
-        expect(page).to have_text(I18n.t("fact_check_verification.api_submission_error"))
+          expect(page).not_to have_text(I18n.t("fact_check_verification.api_submission_request_cancelled"))
+        end
       end
     end
   end

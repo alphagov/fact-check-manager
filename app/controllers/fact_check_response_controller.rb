@@ -40,12 +40,18 @@ class FactCheckResponseController < ApplicationController
         begin
           PublisherApiService.post_fact_check_response(@response)
         rescue GdsApi::HTTPErrorResponse => e
-          errors = e&.error_details&.[]("errors")
-          @errors << if errors&.include?("State Edition is not in a state where fact check can be submitted")
-                       t("fact_check_verification.api_submission_request_cancelled")
-                     else
-                       t("fact_check_verification.api_submission_error")
-                     end
+          if e.error_details&.empty? || e.error_details.is_a?(String)
+            @errors << t("fact_check_verification.api_submission_error")
+          else
+            received_errors = e.error_details&.dig("errors")
+            @errors << if state_error_present?(received_errors)
+                         t("fact_check_verification.api_submission_request_cancelled")
+                       else
+                         # Error is probably a hash (Model error) but not a state error
+                         # We may deal with more error types here in future
+                         t("fact_check_verification.api_submission_error")
+                       end
+          end
 
           raise ActiveRecord::Rollback
         end
@@ -116,6 +122,12 @@ private
         formatted_body = response.body.lines(chomp: true).map { |line| "^#{line}" }.join("\n")
         hash[:reason_for_rejection] = formatted_body
       end
+    end
+  end
+
+  def state_error_present?(errors)
+    Array(errors).any? do |error|
+      error.is_a?(Hash) && (error.key?("state") || error.key?(:state))
     end
   end
 end
