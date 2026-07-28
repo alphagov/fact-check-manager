@@ -1,6 +1,11 @@
 require "rails_helper"
 
 RSpec.describe "FactCheckGA4", type: :system do
+  before do
+    allow(PublisherApiService).to receive(:post_fact_check_response).and_return(double(code: 200))
+    allow(NotifyApiService).to receive(:send_email_to_recipient).and_return(double(code: 200))
+  end
+
   let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
   let(:request) do
     FactoryBot.create(
@@ -251,6 +256,49 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(event_data[4]["section"]).to eq("Confirm the changes are factually correct")
       expect(event_data[4]["text"]).to eq("{\"Are the changes factually correct?\":\"No, there's an error\",\"What are the factual errors?\":\"11\"}")
       expect(event_data[4]["type"]).to eq("new")
+    end
+  end
+
+  describe "Fact check submitted page" do
+    setup do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+      choose(I18n.t("fact_check_response.correct"), allow_label_click: true)
+      click_button(I18n.t("fact_check_response.continue_button"))
+      click_button(I18n.t("fact_check_verification.confirm_button"))
+    end
+
+    it "pushes the correct values to the dataLayer on load" do
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      disable_links
+
+      click_link("Zendesk ticket (opens in new tab)")
+      click_link("What do you think of this service?")
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["link_domain"]).to eq("https://govuk.zendesk.com")
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("true")
+      expect(event_data[0]["text"]).to eq("Zendesk ticket (opens in new tab)")
+      expect(event_data[0]["type"]).to eq("generic_link")
+      expect(event_data[0]["url"]).to end_with("/tickets/1234567")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["link_domain"]).to eq("https://www.gov.uk")
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("true")
+      expect(event_data[1]["text"]).to eq("What do you think of this service?")
+      expect(event_data[1]["type"]).to eq("generic_link")
+      expect(event_data[1]["url"]).to end_with("/done/fact-check-manager")
     end
   end
 
