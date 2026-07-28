@@ -39,8 +39,14 @@ class FactCheckResponseController < ApplicationController
       if @response.save
         begin
           PublisherApiService.post_fact_check_response(@response)
-        rescue GdsApi::HTTPErrorResponse
-          @errors << t("fact_check_verification.api_submission_error")
+        rescue GdsApi::HTTPErrorResponse => e
+          errors = e&.error_details&.[]("errors")
+          @errors << if errors&.include?("State Edition is not in a state where fact check can be submitted")
+                       t("fact_check_verification.api_submission_request_cancelled")
+                     else
+                       t("fact_check_verification.api_submission_error")
+                     end
+
           raise ActiveRecord::Rollback
         end
 
