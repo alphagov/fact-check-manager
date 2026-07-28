@@ -24,7 +24,6 @@ gem "notifications-ruby-client"
 gem "pg"
 gem "plek"
 gem "sentry-sidekiq"
-gem "sidekiq"
 gem "terser"
 gem "uglifier"
 

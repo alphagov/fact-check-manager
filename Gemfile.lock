@@ -801,7 +801,6 @@ DEPENDENCIES
   rspec-rails
   rubocop-govuk
   sentry-sidekiq
-  sidekiq
   simplecov (~> 1.0)
   sprockets-rails
   terser
