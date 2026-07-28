@@ -31,7 +31,8 @@ en:
     send_response: "Now send your response"
     send_response_warning: "Only one fact check response can be submitted. Make sure you’ve discussed this with colleagues first."
     confirm_button: "Confirm and send"
-    error_heading: "There was a problem"
+    error_heading: "There is a problem"
+    api_submission_request_cancelled: "We have cancelled this request. Contact us on the Zendesk ticket if you have any other questions."
     api_submission_error: "Please try submitting again"
     notify_submission_error: "Failed to send response confirmation email"
   fact_check_submitted:
