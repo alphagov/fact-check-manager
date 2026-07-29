@@ -3,7 +3,7 @@
 <% content_for :page_title, t("fact_check_already_submitted.heading") %>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div class="govuk-grid-column-two-thirds" data-module="ga4-links-setup ga4-link-tracker">
       <p class="govuk-body"> <%= t("fact_check_already_submitted.fact_check_already_completed") %> </p>
       <p class="govuk-body"> <%= t("fact_check_already_submitted.questions") %>
         <% if @request.zendesk_number.present? %>
