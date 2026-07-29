@@ -260,11 +260,14 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   describe "Check your answers before sending your response page" do
-    it "pushes the correct values to the dataLayer on load" do
+    setup do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
       choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+      fill_in(I18n.t("fact_check_response.factual_errors"), with: "It is wrong")
       click_button(I18n.t("fact_check_response.continue_button"))
+    end
 
+    it "pushes the correct values to the dataLayer on load" do
       page_view = get_page_view_data
 
       expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
@@ -274,8 +277,20 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
 
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
-      visit respond_path(source_app: request.source_app, source_id: request.source_id)
       disable_links
+      disable_form_submit
+
+      click_link("Back")
+      # Reference these from i18 values
+      click_link("Confirm the changes are factually correct")
+      click_link("What are the factual errors?")
+      click_button("Confirm and send")
+
+      event_data = get_event_data
+
+      puts "++event_data++"
+      puts event_data
+      puts "++++"
     end
   end
 
