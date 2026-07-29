@@ -259,6 +259,26 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
   end
 
+  describe "Check your answers before sending your response page" do
+    it "pushes the correct values to the dataLayer on load" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+      choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+      click_button(I18n.t("fact_check_response.continue_button"))
+
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+      disable_links
+    end
+  end
+
   describe "Fact check submitted page" do
     setup do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
