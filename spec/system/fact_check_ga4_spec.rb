@@ -259,6 +259,75 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
   end
 
+  describe "Check your answers before sending your response page" do
+    setup do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
+      click_link(I18n.t("fact_check_comparison.respond_to_button"))
+      choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+      page.fill_in "fact_check_details", with: "It is wrong"
+      click_button(I18n.t("fact_check_response.continue_button"))
+    end
+
+    it "pushes the correct values to the dataLayer on load" do
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      disable_links
+      disable_form_submit
+
+      expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
+      expect(page).to have_text(I18n.t("fact_check_verification.factual_errors"))
+      summary_rows = find_all(".govuk-summary-list__actions")
+
+      click_link("Back")
+      within(summary_rows[0]) do
+        click_link("Change")
+      end
+      within(summary_rows[1]) do
+        click_link("Change")
+      end
+      click_button(I18n.t("fact_check_verification.confirm_button"))
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["link_domain"]).to eq(current_host)
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("false")
+      expect(event_data[0]["text"]).to eq("Back")
+      expect(event_data[0]["type"]).to eq("back")
+      expect(event_data[0]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
+
+      expect(event_data[1]["event_name"]).to eq("navigation")
+      expect(event_data[1]["link_domain"]).to start_with(current_host)
+      expect(event_data[1]["method"]).to eq("primary click")
+      expect(event_data[1]["external"]).to eq("false")
+      expect(event_data[1]["text"]).to eq("Change Confirm the changes are factually correct")
+      expect(event_data[1]["type"]).to eq("generic_link")
+      expect(event_data[1]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
+
+      expect(event_data[2]["event_name"]).to eq("navigation")
+      expect(event_data[2]["link_domain"]).to start_with(current_host)
+      expect(event_data[2]["method"]).to eq("primary click")
+      expect(event_data[2]["external"]).to eq("false")
+      expect(event_data[2]["text"]).to eq("Change What are the factual errors?")
+      expect(event_data[2]["type"]).to eq("generic_link")
+      expect(event_data[2]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
+
+      expect(event_data[3]["action"]).to eq("confirm and send")
+      expect(event_data[3]["event_name"]).to eq("form_response")
+      expect(event_data[3]["section"]).to eq("Check your answers before sending your response")
+      expect(event_data[3]["text"]).to eq("No answer given")
+      expect(event_data[3]["type"]).to eq("new")
+    end
+  end
+
   describe "Fact check submitted page" do
     setup do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
