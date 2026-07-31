@@ -6,11 +6,19 @@ class User < ApplicationRecord
   has_many :requests, through: :collaborations
   has_many :responses
 
+  before_save :downcase_email
+
   def signin?
     permissions.include?("signin")
   end
 
   def govuk_admin?
     permissions.include?("govuk_admin")
+  end
+
+  def downcase_email
+    unless email.nil?
+      email.downcase!
+    end
   end
 end
