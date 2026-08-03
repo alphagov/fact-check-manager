@@ -8,7 +8,11 @@
 <% end %>
 
 <div class="govuk-grid-row">
-  <div class="govuk-grid-column-two-thirds">
+  <div
+    class="govuk-grid-column-two-thirds"
+    data-module="ga4-links-setup ga4-link-tracker ga4-form-tracker"
+    data-ga4-section='<%= t("fact_check_verification.heading") %>'
+  >
     <%= form_with url: confirm_response_path(source_app: @request.source_app, source_id: @request.source_id),
                   method: :post,
                   scope: :fact_check_response do |f| %>
