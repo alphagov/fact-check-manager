@@ -266,6 +266,11 @@ RSpec.describe "FactCheckGA4", type: :system do
       choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
       page.fill_in "fact_check_details", with: "It is wrong"
       click_button(I18n.t("fact_check_response.continue_button"))
+
+      page.has_css?("h1", text: "Check your answers before sending your response")
+
+      disable_links
+      disable_form_submit
     end
 
     it "pushes the correct values to the dataLayer on load" do
@@ -278,20 +283,9 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
 
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
-      disable_links
-      disable_form_submit
-
-      expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
-      expect(page).to have_text(I18n.t("fact_check_verification.factual_errors"))
-      summary_rows = find_all(".govuk-summary-list__actions")
-
       click_link("Back")
-      within(summary_rows[0]) do
-        click_link("Change")
-      end
-      within(summary_rows[1]) do
-        click_link("Change")
-      end
+      page.find("a", text: "Change\n#{I18n.t('fact_check_verification.confirm_changes')}").click
+      page.find("a", text: "Change\n#{I18n.t('fact_check_verification.factual_errors')}").click
       click_button(I18n.t("fact_check_verification.confirm_button"))
 
       event_data = get_event_data
