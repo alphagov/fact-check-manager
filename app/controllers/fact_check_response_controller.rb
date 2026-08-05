@@ -126,7 +126,7 @@ private
   end
 
   def state_error_present?(errors)
-    Array(errors).any? do |error|
+    Array.wrap(errors).any? do |error|
       error.is_a?(Hash) && (error.key?("state") || error.key?(:state))
     end
   end

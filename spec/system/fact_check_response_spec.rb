@@ -258,7 +258,7 @@ RSpec.describe "FactCheckResponse", type: :system do
       context "when the API fails because the edition is not in fact check state" do
         before do
           allow(PublisherApiService).to receive(:post_fact_check_response)
-                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "errors" => [{ "state": "The edition is not in fact check state" }]))
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", { "errors" => { "state" => ["Edition is not in a state where fact check can be submitted"] } }))
         end
 
         it "shows the user an error explaining that the request has been cancelled" do
