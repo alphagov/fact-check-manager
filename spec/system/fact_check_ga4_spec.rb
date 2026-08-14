@@ -198,6 +198,22 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   describe "Confirm the changes are factually correct page" do
+    it "pushes the correct values to the dataLayer on load where there are errors" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+
+      click_button(I18n.t("fact_check_response.continue_button"))
+
+      event_data = get_event_data
+
+      puts "++event_data++"
+      puts event_data
+      puts "++++"
+
+      # assert_equal "danger_alerts", event_data[0]["action"]
+      # assert_equal "flash_danger", event_data[0]["event_name"]
+      # assert_equal "You do not have permission to see this page.", event_data[0]["text"]
+    end
+
     it "pushes the correct values to the dataLayer on load" do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
 
