@@ -1,10 +1,21 @@
 <%= render "govuk_publishing_components/components/error_summary", {
-    id: "error-summary",
-    title: t("fact_check_response.error_heading"),
-    items: [
-      {
-        text: @errors[:accepted] || @errors[:body],
-        href: @errors[:accepted].present? ? "#selection_radio_buttons" : "#fact_check_details",
+  id: "error-summary",
+  title: t("fact_check_response.error_heading"),
+  items: [
+    {
+      text: @errors[:accepted] || @errors[:body],
+      href: @errors[:accepted].present? ? "#selection_radio_buttons" : "#fact_check_details",
+      data_attributes: {
+        module: "ga4-auto-tracker",
+        "ga4-auto": {
+          event_name: "form_error",
+          # type: "Edit edition",
+          # text: error.message,
+          # section: error.attribute.to_s.humanize,
+          # action: "error",
+          # tool_name: @edition ? @edition.format : "Publisher",
+        },
       },
-    ],
-    } %>
+    },
+  ],
+} %>
