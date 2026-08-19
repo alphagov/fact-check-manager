@@ -198,7 +198,7 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   describe "Confirm the changes are factually correct page" do
-    it "pushes the correct values to the dataLayer on load where there are errors" do
+    it "pushes the correct values to the dataLayer on load where there are errors caused by the user not selecting an option" do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
 
       click_button(I18n.t("fact_check_response.continue_button"))
@@ -212,6 +212,27 @@ RSpec.describe "FactCheckGA4", type: :system do
       assert_equal "form_error", event_data[0]["event_name"]
       assert_equal "Confirm the changes are factually correct", event_data[0]["type"]
       assert_equal "Please select one option", event_data[0]["text"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["section"]
+      assert_equal "error", event_data[0]["action"]
+    end
+
+    it "pushes the correct values to the dataLayer on load where there are errors caused by the user leaving the 'What are the factual errors?' text field blank" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+
+      choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+      click_button(I18n.t("fact_check_response.continue_button"))
+
+      page.has_css?("h1", text: "Confirm the changes are factually correct")
+
+      event_data = get_event_data
+
+      # puts "++event_data++"
+      # puts event_data
+      # puts "++++"
+
+      assert_equal "form_error", event_data[0]["event_name"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["type"]
+      assert_equal "Please could you provide more detail", event_data[0]["text"]
       assert_equal "Confirm the changes are factually correct", event_data[0]["section"]
       assert_equal "error", event_data[0]["action"]
     end
