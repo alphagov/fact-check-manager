@@ -1,4 +1,4 @@
-<%# @errors %>
+<%= @errors %>
 
 <%= render "govuk_publishing_components/components/error_summary", {
   id: "error-summary",
@@ -12,7 +12,7 @@
         "ga4-auto": {
           event_name: "form_error",
           type: t("fact_check_response.heading"),
-          text: @errors[:accepted],
+          text: @errors[:accepted] || @errors[:body],
           section: t("fact_check_response.heading"),
           action: "error",
         },
