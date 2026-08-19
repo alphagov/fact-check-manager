@@ -288,10 +288,12 @@ RSpec.describe "FactCheckGA4", type: :system do
       page.has_css?("h1", text: "Check your answers before sending your response")
 
       disable_links
-      disable_form_submit
+      # disable_form_submit
     end
 
     it "pushes the correct values to the dataLayer on load" do
+      disable_form_submit
+
       page_view = get_page_view_data
 
       expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
@@ -301,6 +303,8 @@ RSpec.describe "FactCheckGA4", type: :system do
     end
 
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      disable_form_submit
+
       click_link("Back")
       page.find("a", text: "Change\n#{I18n.t('fact_check_verification.confirm_changes')}").click
       page.find("a", text: "Change\n#{I18n.t('fact_check_verification.factual_errors')}").click
@@ -337,6 +341,30 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(event_data[3]["section"]).to eq("Check your answers before sending your response")
       expect(event_data[3]["text"]).to eq("No answer given")
       expect(event_data[3]["type"]).to eq("new")
+    end
+
+    context "when the API fails" do
+      before do
+        allow(PublisherApiService).to receive(:post_fact_check_response).and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
+      end
+
+      it "pushes the correct values to the dataLayer on submission where there are errors" do
+        click_button(I18n.t("fact_check_verification.confirm_button"))
+
+        expect(page).to have_text(I18n.t("fact_check_verification.error_heading"))
+
+        event_data = get_event_data
+
+        # puts "++event_data++"
+        # puts event_data
+        # puts "++++"
+
+        assert_equal "form_error", event_data[0]["event_name"]
+        assert_equal "Check your answers before sending your response", event_data[0]["type"]
+        assert_equal "Please try submitting again", event_data[0]["text"]
+        assert_equal "Check your answers before sending your response", event_data[0]["section"]
+        assert_equal "error", event_data[0]["action"]
+      end
     end
   end
 
