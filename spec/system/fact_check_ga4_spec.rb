@@ -205,13 +205,15 @@ RSpec.describe "FactCheckGA4", type: :system do
 
       event_data = get_event_data
 
-      puts "++event_data++"
-      puts event_data
-      puts "++++"
+      # puts "++event_data++"
+      # puts event_data
+      # puts "++++"
 
-      # assert_equal "danger_alerts", event_data[0]["action"]
-      # assert_equal "flash_danger", event_data[0]["event_name"]
-      # assert_equal "You do not have permission to see this page.", event_data[0]["text"]
+      assert_equal "form_error", event_data[0]["event_name"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["type"]
+      assert_equal "Please select one option", event_data[0]["text"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["section"]
+      assert_equal "error", event_data[0]["action"]
     end
 
     it "pushes the correct values to the dataLayer on load" do
