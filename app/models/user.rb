@@ -6,7 +6,7 @@ class User < ApplicationRecord
   has_many :requests, through: :collaborations
   has_many :responses
 
-  before_save :downcase_email
+  normalizes :email, with: ->(email) { email.strip.downcase }
 
   def signin?
     permissions.include?("signin")
@@ -14,11 +14,5 @@ class User < ApplicationRecord
 
   def govuk_admin?
     permissions.include?("govuk_admin")
-  end
-
-  def downcase_email
-    unless email.nil?
-      email.downcase!
-    end
   end
 end
