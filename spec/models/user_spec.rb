@@ -36,8 +36,7 @@ RSpec.describe User, type: :model do
 
     context "creating a user" do
       it "saves the user's email as lowercase" do
-        user = build(:user)
-        user.email = "VALID_UPPERCASE_EMAIL@example-ORG.co.uk"
+        user = build(:user, email: "VALID_UPPERCASE_EMAIL@example-ORG.co.uk")
         user.save!
 
         expect(user.email).to eq("valid_uppercase_email@example-org.co.uk")

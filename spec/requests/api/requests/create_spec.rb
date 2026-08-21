@@ -120,6 +120,20 @@ RSpec.describe "POST /api/requests", type: :request do
       expect(User.where(email: recipient1_email).count).to eq(1)
     end
 
+    it "does not create any new user records if they already exist for given email addresses (case insensitive)" do
+      recipient1_email = "recipient1@example.com"
+      recipient1 = create(:user, email: recipient1_email)
+
+      recipient1_upcased = "RECIPIENT1@EXAMPLE.COM"
+
+      expect {
+        post "/api/requests", params: valid_payload.merge({ recipients: [recipient1_upcased] }), as: :json
+      }.to change(User, :count).by(0)
+
+      expect(User.find_by(email: recipient1_upcased).id).to eq(recipient1.id)
+      expect(User.where(email: recipient1_email).count).to eq(1)
+    end
+
     it "creates a user record which contains only the email, ID, timestamps and defaults" do
       post "/api/requests", params: valid_payload, as: :json
 
