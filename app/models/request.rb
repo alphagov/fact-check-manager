@@ -7,7 +7,15 @@ class Request < ApplicationRecord
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
-  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
+  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, presence: true
+  validates :deadline,
+            presence: true,
+            comparison: {
+              greater_than: -> { Time.zone.now },
+              less_than: -> { 10.years.from_now },
+              message: "must be a date between now and 10 years in the future",
+            }
+
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 

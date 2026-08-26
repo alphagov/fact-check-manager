@@ -189,13 +189,13 @@ RSpec.describe "POST /api/requests", type: :request do
         end
 
         it "formats the deadline as a long date" do
-          deadline = Time.zone.parse("2026-06-12T09:00:00Z")
+          deadline = Time.zone.parse("2030-06-12T09:00:00Z")
           payload = valid_payload.merge(deadline: deadline.iso8601)
 
           post "/api/requests", params: payload, as: :json
 
           expect(@notify_client_spy).to have_received(:send_email)
-            .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+            .with(hash_including(personalisation: hash_including(deadline: "Wednesday 12 June 2030"))).exactly(2).times
         end
 
         it "includes a tokenised compare link with the fact-check-manager URL prefix" do
