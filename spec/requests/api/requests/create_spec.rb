@@ -52,6 +52,7 @@ RSpec.describe "POST /api/requests", type: :request do
       expect(request.requester_name).to eq("GDS Content Designer")
       expect(request.requester_email).to eq("gds-content-designer@example.com")
       expect(request.reason_for_change).to eq("a reason")
+      expect(request.deadline).to eq(1.week.from_now.iso8601)
       expect(request.zendesk_number).to eq("1234567")
       expect(request.draft_content_id).to eq(draft_content_id)
       expect(request.draft_auth_bypass_id).to eq(draft_auth_bypass_id)
@@ -189,13 +190,13 @@ RSpec.describe "POST /api/requests", type: :request do
         end
 
         it "formats the deadline as a long date" do
-          deadline = Time.zone.parse("2026-06-12T09:00:00Z")
+          deadline = Time.zone.parse("2030-06-12T09:00:00Z")
           payload = valid_payload.merge(deadline: deadline.iso8601)
 
           post "/api/requests", params: payload, as: :json
 
           expect(@notify_client_spy).to have_received(:send_email)
-            .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+            .with(hash_including(personalisation: hash_including(deadline: "Wednesday 12 June 2030"))).exactly(2).times
         end
 
         it "includes a tokenised compare link with the fact-check-manager URL prefix" do
@@ -355,7 +356,8 @@ RSpec.describe "POST /api/requests", type: :request do
 
     it "returns errors for missing required fields" do
       payload_missing_required_fields = { requester_name: "Alice",
-                                          recipients: ["recipient1@example.com", "recipient2@example.com"] }
+                                          recipients: ["recipient1@example.com", "recipient2@example.com"],
+                                          deadline: 1.week.from_now.iso8601 }
 
       expect {
         post "/api/requests", params: payload_missing_required_fields, as: :json
@@ -369,7 +371,6 @@ RSpec.describe "POST /api/requests", type: :request do
         "Source app can't be blank",
         "Requester email can't be blank",
         "Current content can't be blank",
-        "Deadline can't be blank",
       )
     end
 
@@ -379,6 +380,60 @@ RSpec.describe "POST /api/requests", type: :request do
       expect {
         post "/api/requests", params: payload_missing_required_fields, as: :json
       }.not_to change(Collaboration, :count)
+    end
+
+    context "if deadline is not a valid datetime string" do
+      let(:dynamic_current_content) do
+        { "part_id" => {
+          "heading" => "heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
+        } }
+      end
+
+      it "returns 400 if deadline is missing" do
+        missing_deadline_payload = base_payload
+        missing_deadline_payload.delete(:deadline)
+
+        expect {
+          post "/api/requests", params: missing_deadline_payload, as: :json
+        }.to change(Request, :count).by(0)
+                                    .and change(Collaboration, :count).by(0)
+
+        expect(response).to have_http_status(:bad_request)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include(
+          "Deadline must be a valid datetime string",
+        )
+      end
+
+      it "returns 400 if deadline is not a string" do
+        integer_deadline_payload = base_payload.merge(deadline: 1_234_51)
+
+        expect {
+          post "/api/requests", params: integer_deadline_payload, as: :json
+        }.to change(Request, :count).by(0)
+                                    .and change(Collaboration, :count).by(0)
+
+        expect(response).to have_http_status(:bad_request)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include(
+          "Deadline must be a valid datetime string",
+        )
+      end
+
+      it "returns 400 if deadline string does not represent a date" do
+        integer_deadline_payload = base_payload.merge(deadline: "Not a date")
+
+        expect {
+          post "/api/requests", params: integer_deadline_payload, as: :json
+        }.to change(Request, :count).by(0)
+                                    .and change(Collaboration, :count).by(0)
+
+        expect(response).to have_http_status(:bad_request)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include(
+          "Deadline must be a valid datetime string",
+        )
+      end
     end
 
     context "if current_content value is not a hash" do
