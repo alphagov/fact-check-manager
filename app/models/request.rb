@@ -15,7 +15,13 @@ class Request < ApplicationRecord
               less_than: -> { 10.years.from_now },
               message: "must be a date between now and 10 years in the future",
             }
-
+  validates :requester_email,
+            presence: true,
+            format: {
+              with: URI::MailTo::EMAIL_REGEXP,
+              message: "must be a valid email address",
+            }
+  validate :requester_email_has_tld
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
@@ -32,6 +38,13 @@ class Request < ApplicationRecord
   end
 
 private
+
+  def requester_email_has_tld
+    domain = requester_email.to_s.split("@").last
+    return if domain&.include?(".")
+
+    errors.add(:requester_email, "must be a valid email address")
+  end
 
   def valid_zendesk_number
     return if zendesk_number.blank?

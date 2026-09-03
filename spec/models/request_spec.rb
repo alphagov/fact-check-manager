@@ -159,6 +159,33 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "requester_email" do
+    context "when the email address is not in a valid format" do
+      it "is not valid" do
+        %w[user@-example.com user@example-.com invalid@@example.com gemma@government].each do |invalid_email|
+          record = FactoryBot.build(:request, requester_email: invalid_email)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Requester email must be a valid email address")
+        end
+      end
+    end
+
+    context "when the email address is in a valid format" do
+      it "is valid" do
+        %w[o'connor@example.com
+           john.smith@example.com
+           john+newsletter@example.com
+           foo_bar@example.com
+           phoebe.smith@digital.this-dept.gov.uk].each do |valid_email|
+          record = FactoryBot.build(:request, requester_email: valid_email)
+
+          expect(record).to be_valid
+        end
+      end
+    end
+  end
+
   describe "deadline" do
     context "when blank" do
       it "is not valid" do
