@@ -223,6 +223,37 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "source_url" do
+    it "is valid when it is has a valid URL format" do
+      %w[https://www.gov.uk/help
+         https://www.gov.uk/government/organisations/dsit
+         https://www.gov.uk/search?q=ruby
+         https://example.com?page=1&sort=name].each do |valid_url|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: valid_url)
+
+        expect(record).to be_valid
+      end
+    end
+
+    it "is invalid when it does not have a valid URL format" do
+      %w[www.gov.uk example.com ://example.com https//example.com].each do |invalid_url|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: invalid_url)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Source URL must be a valid URL")
+      end
+    end
+
+    it "is invalid if it doesn't use either http or https" do
+      %w[ftp://example.com file:///tmp/report.pdf mailto:test@example.com ssh://server.internal].each do |url_with_bad_scheme|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: url_with_bad_scheme)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Source URL must use either http or https")
+      end
+    end
+  end
+
   describe "searching by source_id" do
     it "can save and retrieve multiple requests that share the same source_id" do
       shared_uuid = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"

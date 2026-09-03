@@ -4,6 +4,7 @@ class Request < ApplicationRecord
   has_one :response
 
   ZENDESK_NUMBER_REGEX = /\A\d{7,}\z/
+  ALLOWED_SCHEMES = %w[http https].freeze
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
@@ -22,6 +23,16 @@ class Request < ApplicationRecord
               message: "must be a valid email address",
             }
   validate :requester_email_has_tld
+
+  validates :source_url,
+            allow_blank: true,
+            format: {
+              with: URI::DEFAULT_PARSER.make_regexp,
+              message: "must be a valid URL",
+            }
+
+  validate :source_url_uses_allowed_scheme
+
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
@@ -38,6 +49,15 @@ class Request < ApplicationRecord
   end
 
 private
+
+  def source_url_uses_allowed_scheme
+    return if source_url.blank?
+    return if ALLOWED_SCHEMES.include?(URI.parse(source_url.to_s).scheme)
+
+    errors.add(:source_url, "must use either http or https")
+  rescue URI::InvalidURIError
+    errors.add(:source_url, "must be a valid URL")
+  end
 
   def requester_email_has_tld
     domain = requester_email.to_s.split("@").last
