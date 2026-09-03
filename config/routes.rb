@@ -9,6 +9,7 @@ Rails.application.routes.draw do
       scope ":source_id" do
         get "compare", to: "fact_check_comparison#compare"
         get  "respond", to: "fact_check_response#respond_to_fact_check"
+        post "respond", to: "fact_check_response#change_answers"
         post "verify-response", to: "fact_check_response#validate_fact_check_response"
         post "confirm-response", to: "fact_check_response#send_response"
       end

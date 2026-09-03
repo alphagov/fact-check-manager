@@ -1,14 +1,19 @@
 class FactCheckResponseController < ApplicationController
   include AuthenticationHelper
 
-  before_action :set_request, :check_access, only: %i[respond_to_fact_check validate_fact_check_response send_response]
-  before_action :check_already_responded, only: %i[respond_to_fact_check validate_fact_check_response send_response]
+  before_action :set_request, :check_access, only: %i[respond_to_fact_check validate_fact_check_response send_response change_answers]
+  before_action :check_already_responded, only: %i[respond_to_fact_check validate_fact_check_response send_response change_answers]
 
   def respond_to_fact_check
-    session.delete(:fact_check_response) unless params[:back]
     @errors = {}
-    @form_data = session.fetch(:fact_check_response, {}).with_indifferent_access
+    @form_data = {}
 
+    render :fact_check_response
+  end
+
+  def change_answers
+    @errors = {}
+    @form_data = permitted_params
     render :fact_check_response
   end
 
@@ -19,7 +24,6 @@ class FactCheckResponseController < ApplicationController
     if @errors.any?
       render :fact_check_response
     else
-      session[:fact_check_response] = @form_data
       render :fact_check_verify_response
     end
   end

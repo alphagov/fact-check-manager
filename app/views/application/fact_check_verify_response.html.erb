@@ -1,7 +1,15 @@
 <% content_for :page_title, @request.source_title %>
 <% content_for :title_context, @request.source_title %>
-<% content_for :back_link, respond_path(source_app: @request.source_app, source_id: @request.source_id, back: :true) %>
 <% content_for :title, t("fact_check_verification.heading") %>
+<% content_for :back_control do %>
+  <%= button_to "Back", 
+                respond_path(source_app: @request.source_app, source_id: @request.source_id),
+                class: "gem-c-back-link govuk-back-link govuk-!-display-none-print",
+                params: { 
+                  fact_check_response: { 
+                    accepted: @form_data[:accepted],
+                    body: @form_data[:body] } } %>
+<% end %>
 
 <% if @errors.present? %>
   <% content_for :error_summary, render(partial: "application/errors/submission_error_summary") %>
