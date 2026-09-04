@@ -12,12 +12,21 @@ class FactCheckComparisonController < ApplicationController
     return unless token_bypass? || check_permissions(current_user, @request)
 
     @current_content = @request.current_content.deep_symbolize_keys
-    # First editions have no previous version, so diff current content against
-    # a copy of itself - the diff renders as unchanged.
-    @previous_content = @request.first_edition? ? @current_content.deep_dup : @request.previous_content.deep_symbolize_keys
+    @current_markdown = @request.current_markdown&.deep_symbolize_keys
+
+    # First editions diff against a copy of themselves to render as unchanged.
+    if @request.first_edition?
+      @previous_content  = @current_content.deep_dup
+      @previous_markdown = @current_markdown&.deep_dup
+    else
+      @previous_content  = @request.previous_content&.deep_symbolize_keys
+      @previous_markdown = @request.previous_markdown&.deep_symbolize_keys
+    end
 
     mark_current_content
     @differ = create_diff
+    # byebug
+    @markdown_differ = create_markdown_diff if @current_markdown
     @article_title = @request.source_title
     @deadline = @request.formatted_deadline
     @draft_url = draft_origin_preview_url(@request)
@@ -91,6 +100,23 @@ private
       heading = @current_content.size == 1 ? nil : current_part_heading
 
       diff_hash[heading] = Nokodiff.diff(previous_part_content, current_part_content)
+    end
+
+    diff_hash
+  end
+
+  def create_markdown_diff
+    diff_hash = {}
+
+    @current_markdown.each do |part_id, current_part|
+      current_part_heading = current_part[:heading]
+      current_part_content = current_part[:body]
+
+      previous_part_content = @previous_markdown.dig(part_id, :body)
+
+      heading = @current_markdown.size == 1 ? nil : current_part_heading
+
+      diff_hash[heading] = Diffy::Diff.new(previous_part_content, current_part_content, allow_empty_diff: false).to_s(:html).html_safe
     end
 
     diff_hash
