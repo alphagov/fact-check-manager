@@ -1,6 +1,6 @@
 <% content_for :page_title, @request.source_title %>
 <% content_for :title_context, @request.source_title %>
-<% content_for :back_link, compare_path(source_app: @request.source_app, source_id: @request.source_id) %>
+<% content_for :back_link, compare_path(source_app: @request.source_app, source_id: @request.source_id, anchor: params[:previousPageTab]) %>
 <% content_for :title, t("fact_check_response.heading") %>
 
 <% if @errors.any? %>
