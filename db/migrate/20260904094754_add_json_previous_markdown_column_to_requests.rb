@@ -1,0 +1,5 @@
+class AddJsonPreviousMarkdownColumnToRequests < ActiveRecord::Migration[8.0]
+  def change
+    add_column :requests, :previous_markdown, :json
+  end
+end
