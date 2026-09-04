@@ -115,6 +115,7 @@ GEM
       sass-embedded (~> 1.63)
     date (3.5.1)
     diff-lcs (1.6.2)
+    diffy (3.4.4)
     domain_name (0.6.20240107)
     drb (2.2.3)
     erb (6.0.7)
@@ -786,6 +787,7 @@ DEPENDENCIES
   byebug
   climate_control
   dartsass-rails
+  diffy
   erb_lint
   factory_bot_rails
   gds-api-adapters
