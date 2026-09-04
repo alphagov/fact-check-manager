@@ -9,6 +9,7 @@
 //= require analytics_modules/ga4-form-setup
 //= require analytics_modules/ga4-index-section-setup
 //= require analytics_modules/ga4-links-setup
+//= require last-tab-clicked.js
 
 window.GOVUK.approveAllCookieTypes()
 window.GOVUK.cookie('cookies_preferences_set', 'true', { days: 365 })
