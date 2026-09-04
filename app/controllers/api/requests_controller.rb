@@ -64,6 +64,8 @@ module Api
         # dynamic hash fields at the end
         current_content: {},
         previous_content: {}, # optional
+        current_markdown: {}, #optional
+        previous_markdown: {}, #optional
       )
     end
 

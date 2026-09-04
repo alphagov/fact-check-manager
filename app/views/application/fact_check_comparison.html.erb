@@ -29,11 +29,21 @@
 </div>
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
-    <div class="gem-c-govspeak gem-c-govspeak--direction-ltr">
-      <% @differ.each do |heading, content| %>
-        <%= render "application/partials/comparison_diff_block", heading: heading, content: content %>
-      <% end %>
-    </div>
+      <%= render "govuk_publishing_components/components/tabs", {
+        panel_border: false,
+        tabs: [
+          {
+            id: "simple-view",
+            label: "Simple view",
+            content: render(partial: "application/partials/html_diff"),
+          },
+          {
+            id: "govspeak-view",
+            label: "Govspeak view",
+            content: render(partial: "application/partials/govspeak_diff"),
+          },
+        ],
+      } %>
   </div>
   <div
     class="govuk-grid-column-one-third options-sidebar"
@@ -69,9 +79,9 @@
         } %>
       <% end %>
       <p class="govuk-body">
-        <%= link_to t("fact_check_comparison.guidance_link"), 
+        <%= link_to t("fact_check_comparison.guidance_link"),
           "https://gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk",
-          class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener 
+          class: "govuk-link--no-visited-state govuk-link", target: :_blank, rel: :noopener
         %>
       </p>
     </div>

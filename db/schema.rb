@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_10_121953) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_04_093612) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -30,11 +30,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_10_121953) do
     t.uuid "auth_bypass_id", default: -> { "gen_random_uuid()" }, null: false
     t.datetime "created_at", null: false
     t.json "current_content", null: false
+    t.json "current_markdown"
     t.datetime "deadline", null: false
     t.uuid "draft_auth_bypass_id"
     t.uuid "draft_content_id"
     t.string "draft_slug"
     t.json "previous_content"
+    t.json "previous_markdown"
     t.string "reason_for_change"
     t.string "requester_email", null: false
     t.string "requester_name", null: false
