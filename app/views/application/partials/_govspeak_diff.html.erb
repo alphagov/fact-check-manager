@@ -1,0 +1,5 @@
+<div class="gem-c-govspeak govuk-body compare-markdown">
+  <% @markdown_differ.each do |heading, content| %>
+    <%= render "application/partials/comparison_govspeak_diff_block", heading: heading, content: content %>
+  <% end %>
+</div>
