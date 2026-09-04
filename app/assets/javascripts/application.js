@@ -5,6 +5,7 @@
 //= require govuk_publishing_components/analytics-ga4/ga4-auto-tracker
 //= require govuk_publishing_components/analytics-ga4/ga4-form-change-tracker
 //= require govuk_publishing_components/analytics-ga4/ga4-form-tracker
+//= require govuk_publishing_components/components/tabs
 //= require analytics_modules/ga4-form-setup
 //= require analytics_modules/ga4-index-section-setup
 //= require analytics_modules/ga4-links-setup

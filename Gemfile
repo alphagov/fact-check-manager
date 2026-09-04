@@ -13,6 +13,7 @@ gem "sprockets-rails"
 
 gem "bootsnap", require: false
 gem "dartsass-rails"
+gem "diffy"
 gem "erb_lint"
 gem "gds-api-adapters"
 gem "gds-sso"

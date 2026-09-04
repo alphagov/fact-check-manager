@@ -1,0 +1,5 @@
+<div class="gem-c-govspeak gem-c-govspeak--direction-ltr">
+  <% @differ.each do |heading, content| %>
+    <%= render "application/partials/comparison_diff_block", heading: heading, content: content %>
+  <% end %>
+</div>
