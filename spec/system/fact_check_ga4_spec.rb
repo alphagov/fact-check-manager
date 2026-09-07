@@ -322,7 +322,7 @@ RSpec.describe "FactCheckGA4", type: :system do
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
       disable_form_submit
 
-      click_link("Back")
+      click_button("Back")
       page.find("a", text: "Change\n#{I18n.t('fact_check_verification.confirm_changes')}").click
       page.find("a", text: "Change\n#{I18n.t('fact_check_verification.factual_errors')}").click
       click_button(I18n.t("fact_check_verification.confirm_button"))
@@ -335,7 +335,7 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(event_data[0]["external"]).to eq("false")
       expect(event_data[0]["text"]).to eq("Back")
       expect(event_data[0]["type"]).to eq("back")
-      expect(event_data[0]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
+      expect(event_data[0]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}")
 
       expect(event_data[1]["event_name"]).to eq("navigation")
       expect(event_data[1]["link_domain"]).to start_with(current_host)
