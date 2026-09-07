@@ -5,9 +5,8 @@ class FactCheckResponseController < ApplicationController
   before_action :check_already_responded, only: %i[respond_to_fact_check validate_fact_check_response send_response]
 
   def respond_to_fact_check
-    session.delete(:fact_check_response) unless params[:back]
     @errors = {}
-    @form_data = session.fetch(:fact_check_response, {}).with_indifferent_access
+    @form_data = permitted_params
 
     render :fact_check_response
   end
@@ -19,7 +18,6 @@ class FactCheckResponseController < ApplicationController
     if @errors.any?
       render :fact_check_response
     else
-      session[:fact_check_response] = @form_data
       render :fact_check_verify_response
     end
   end
@@ -75,7 +73,6 @@ class FactCheckResponseController < ApplicationController
     if @errors.present?
       render :fact_check_verify_response
     else
-      session.delete(:fact_check_response)
       render :fact_check_submitted
     end
   end
@@ -98,6 +95,8 @@ private
   end
 
   def permitted_params
+    return {} if params[:fact_check_response].blank?
+
     params.require(:fact_check_response)
           .permit(:accepted, :body)
   end
