@@ -32,7 +32,7 @@
   <div class="govuk-grid-column-two-thirds">
     <% if @markdown_differ %>
       <%= render "govuk_publishing_components/components/tabs", {
-        panel_border: false,
+        panel_border: true,
         tabs: [
           {
             id: "formatted-view",

@@ -9,15 +9,14 @@ $strong-removed-color: #f3aeac;
 
 .compare-markdown {
   .diff {
-    border: 1px solid govuk-colour("light-grey");
-    border-left: 40px solid govuk-colour("light-grey");
+    border-left: 40px solid govuk-colour("black", $variant: "tint-95");
     padding: 15px;
 
     ul {
       padding-left: 0;
 
       li {
-        margin: 0 -15px;
+        margin: 0 -35px;
         padding: 0 15px;
         overflow-wrap: break-word;
         list-style: none;
@@ -42,6 +41,8 @@ $strong-removed-color: #f3aeac;
       li.del {
         background-color: $removed-color;
         padding-bottom: 2px;
+        margin-right: 0;
+        margin-bottom: 15px;
 
         strong {
           font-weight: normal;
@@ -53,6 +54,7 @@ $strong-removed-color: #f3aeac;
       li.ins {
         background-color: $added-color;
         padding-bottom: 2px;
+        margin-right: 0;
 
         strong {
           font-weight: normal;
@@ -64,7 +66,7 @@ $strong-removed-color: #f3aeac;
       li.del::before,
       li.ins::before {
         position: absolute;
-        margin-left: -75px;
+        margin-left: -55px;
         width: 40px;
         text-align: center;
         top: 0;
