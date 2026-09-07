@@ -1,0 +1,12 @@
+.button-back-link {
+  @extend .govuk-back-link; // stylelint-disable-line scss/at-extend-no-missing-placeholder
+
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:focus {
+    background: $govuk-focus-colour;
+  }
+
+}
