@@ -1,13 +1,17 @@
-<%= render "govuk_publishing_components/components/textarea", {
-            label: {
+<%= render "govuk_publishing_components/components/character_count", {
+      textarea: {
+        label: {
               text: t("fact_check_response.factual_errors"),
               heading_size: "m",
             },
             name: "fact_check_response[body]",
-            textarea_id: "fact_check_details",
             hint: sanitize(t("fact_check_response.factual_errors_hint")),
             value: @form_data&.dig(:body),
             error: @errors[:body].presence,
             error_message: @errors[:body].present? ? t("fact_check_response.factual_errors_empty_field") : nil,
             rows: 18,
-          } %>
+          },
+      id: "fact_check_details",
+      maxlength: 9000,
+}
+%>
