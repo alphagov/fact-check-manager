@@ -110,7 +110,9 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
 
         choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+        expect(page).to have_text("You have 9,000 characters remaining")
         page.fill_in "fact_check_details", with: "Fact check error detail test string"
+        expect(page).to have_text("You have 8,965 characters remaining")
 
         click_button(I18n.t("fact_check_response.continue_button"))
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
@@ -215,6 +217,66 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(link[:target]).to eq("_blank")
         end
       end
+      context "when javascript is disabled", js: false do
+        it "uses the fallback character count message" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You can enter up to 9000 characters")
+          page.fill_in "fact_check_details", with: "a" * 9000
+          expect(page).to have_text("You can enter up to 9000 characters")
+        end
+
+        it "allows the user to submit the response" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          page.fill_in "fact_check_details", with: "Fact check error detail test string"
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          click_button(I18n.t("fact_check_verification.confirm_button"))
+
+          expect(page).to have_current_path(
+            confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+          )
+        end
+      end
+      context "when not entering body text" do
+        it "shows a factual errors empty field error" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+          expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
+
+          expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
+        end
+      end
+      context "when entering too much body text" do
+        it "warns the user when they are approaching the character limit" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You have 9,000 characters remaining")
+          page.fill_in "fact_check_details", with: "a" * 9000
+          expect(page).to have_text("You have 0 characters remaining")
+        end
+
+        it "warns the user when they have exceeded the character limit" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You have 9,000 characters remaining")
+          page.fill_in "fact_check_details", with: "a" * 9005
+          expect(page).to have_text("You have 5 characters too many")
+        end
+      end
     end
 
     context "when submitting without selecting a radio button" do
@@ -227,20 +289,6 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
         expect(page).to have_text(I18n.t("fact_check_response.selection_error"))
-      end
-    end
-
-    context "when submitting 'Incorrect' without entering body text" do
-      it "shows a factual errors empty field error" do
-        visit compare_path(source_app: request.source_app, source_id: request.source_id)
-        click_link(I18n.t("fact_check_comparison.respond_to_button"))
-        expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
-
-        choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
-        click_button(I18n.t("fact_check_response.continue_button"))
-        expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
       end
     end
 
