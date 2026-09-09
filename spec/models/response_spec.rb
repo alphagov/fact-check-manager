@@ -22,6 +22,23 @@ RSpec.describe Response, type: :model do
     expect(response).to be_valid
   end
 
+  describe "#accepted" do
+    %w[true false].each do |boolean_value|
+      it "is valid if either true or false" do
+        response = FactoryBot.build(:response, accepted: boolean_value)
+
+        expect(response).to be_valid
+      end
+    end
+
+    it "is invalid if nil" do
+      response = FactoryBot.build(:response, accepted: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:accepted]).to include("must be true or false")
+    end
+  end
+
   describe "validations" do
     it "validates that there can only be one response per request" do
       existing_response = FactoryBot.create(:response)
