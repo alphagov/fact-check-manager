@@ -161,6 +161,16 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(response.body).to include(I18n.t("fact_check_response.factual_errors_empty_field"))
       end
 
+      it "re-renders the response form with errors when body is over the maximum length" do
+        post verify_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "false", body: "a" * 9001 } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Your response must be 9000 characters or less")
+        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).not_to include(I18n.t("fact_check_verification.heading"))
+      end
+
       it "does not require body when accepted is true" do
         post verify_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }

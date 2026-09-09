@@ -37,23 +37,6 @@ RSpec.describe Response, type: :model do
       expect(response).not_to be_valid
       expect(response.errors[:accepted]).to include("must be true or false")
     end
-
-    context "if false and body is not present" do
-      it "is invalid" do
-        response = FactoryBot.build(:response, accepted: false, body: nil)
-
-        expect(response).not_to be_valid
-        expect(response.errors[:body]).to include("cannot be blank if accepted is false")
-      end
-    end
-
-    context "if true" do
-      it "is valid with an empty body" do
-        response = FactoryBot.build(:response, accepted: true)
-
-        expect(response).to be_valid
-      end
-    end
   end
 
   describe "#body" do
@@ -66,6 +49,19 @@ RSpec.describe Response, type: :model do
 
     it "can be empty if accepted is true" do
       response = FactoryBot.build(:response, accepted: true)
+
+      expect(response).to be_valid
+    end
+
+    it "must have a max length of 9000 characters" do
+      response = FactoryBot.build(:response, accepted: false, body: "a" * 9001)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include("length must be a maximum of 9000 characters")
+    end
+
+    it "can have a length of 8999 characters" do
+      response = FactoryBot.build(:response, accepted: false, body: "a" * 8999)
 
       expect(response).to be_valid
     end
