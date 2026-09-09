@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_04_094754) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_10_105923) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -52,7 +52,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_04_094754) do
   end
 
   create_table "responses", force: :cascade do |t|
-    t.boolean "accepted"
+    t.boolean "accepted", null: false
     t.text "body"
     t.datetime "created_at", null: false
     t.bigint "request_id", null: false

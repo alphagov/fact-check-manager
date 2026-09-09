@@ -4,4 +4,5 @@ class Response < ApplicationRecord
 
   validates :body, presence: true, unless: :accepted?
   validates :request_id, uniqueness: { message: "has already been responded to" }
+  validates :accepted, inclusion: { in: [true, false], message: "must be true or false" }
 end
