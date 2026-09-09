@@ -159,6 +159,52 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "deadline" do
+    context "when blank" do
+      it "is not valid" do
+        record = FactoryBot.build(:request, deadline: nil)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Deadline can't be blank")
+      end
+
+      context "when deadline is not a datetime" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 2_345_6)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a valid datetime")
+        end
+      end
+
+      context "when in the past" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 1.year.ago)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a date between now and 10 years in the future")
+        end
+      end
+
+      context "when over 10 years in the future" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 10.years.from_now + 1.day)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a date between now and 10 years in the future")
+        end
+      end
+    end
+
+    context "if is a future date within the next 10 years" do
+      it "should be valid" do
+        record = FactoryBot.build(:request, deadline: 1.week.from_now)
+
+        expect(record).to be_valid
+      end
+    end
+  end
+
   describe "searching by source_id" do
     it "can save and retrieve multiple requests that share the same source_id" do
       shared_uuid = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
