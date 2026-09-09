@@ -7,7 +7,7 @@ class Request < ApplicationRecord
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
-  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, presence: true
+  validates :source_id, :source_app, :requester_name, :status, :current_content, presence: true
 
   validates :deadline,
             presence: true,
@@ -19,6 +19,13 @@ class Request < ApplicationRecord
               if: -> { deadline.acts_like?(:time) },
             }
   validate :deadline_is_a_valid_datetime
+
+  validates :requester_email,
+            presence: true,
+            format: {
+              with: URI::MailTo::EMAIL_REGEXP,
+              message: "must be a valid email address",
+            }
 
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
