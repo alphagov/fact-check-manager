@@ -37,6 +37,38 @@ RSpec.describe Response, type: :model do
       expect(response).not_to be_valid
       expect(response.errors[:accepted]).to include("must be true or false")
     end
+
+    context "if false and body is not present" do
+      it "is invalid" do
+        response = FactoryBot.build(:response, accepted: false, body: nil)
+
+        expect(response).not_to be_valid
+        expect(response.errors[:body]).to include("cannot be blank if accepted is false")
+      end
+    end
+
+    context "if true" do
+      it "is valid with an empty body" do
+        response = FactoryBot.build(:response, accepted: true)
+
+        expect(response).to be_valid
+      end
+    end
+  end
+
+  describe "#body" do
+    it "must be present if accepted is false" do
+      response = FactoryBot.build(:response, accepted: false, body: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include("cannot be blank if accepted is false")
+    end
+
+    it "can be empty if accepted is true" do
+      response = FactoryBot.build(:response, accepted: true)
+
+      expect(response).to be_valid
+    end
   end
 
   describe "validations" do
