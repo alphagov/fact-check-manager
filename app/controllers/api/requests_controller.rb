@@ -78,8 +78,9 @@ module Api
 
     def validate_create_params
       errors = []
-
       errors << "At least one recipient email is required" if request_params[:recipients].blank?
+      deadline = request_params[:deadline]
+      errors << "Deadline must be a valid datetime string" unless deadline.is_a?(String) && Time.zone.parse(deadline)
 
       %i[current_content previous_content].each do |content_hash|
         if params.dig(:request, content_hash).present? && request_params[content_hash].blank?
