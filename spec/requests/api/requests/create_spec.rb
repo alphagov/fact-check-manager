@@ -2,6 +2,8 @@ require "rails_helper"
 require "notifications/client"
 
 RSpec.describe "POST /api/requests", type: :request do
+  include ActiveSupport::Testing::TimeHelpers
+
   before do
     @notify_client_spy = instance_spy(Notifications::Client)
     allow(Services).to receive(:notify_api).and_return(@notify_client_spy)
@@ -110,6 +112,14 @@ RSpec.describe "POST /api/requests", type: :request do
       expect(request.reason_for_change).to be_nil
     end
 
+    it "creates a Request with a deadline of today's date without a time, as sent by Publisher" do
+      expect {
+        post "/api/requests", params: valid_payload.merge(deadline: Date.current.iso8601), as: :json
+      }.to change(Request, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+    end
+
     it "creates a Request without draft fields" do
       payload_without_draft = valid_payload.except(:draft_content_id, :draft_auth_bypass_id, :draft_slug)
 
@@ -215,13 +225,15 @@ RSpec.describe "POST /api/requests", type: :request do
         end
 
         it "formats the deadline as a long date" do
-          deadline = Time.zone.parse("2026-06-12T09:00:00Z")
-          payload = valid_payload.merge(deadline: deadline.iso8601)
+          travel_to Time.zone.parse("2026-06-01T09:00:00Z") do
+            deadline = Time.zone.parse("2026-06-12T09:00:00Z")
+            payload = valid_payload.merge(deadline: deadline.iso8601)
 
-          post "/api/requests", params: payload, as: :json
+            post "/api/requests", params: payload, as: :json
 
-          expect(@notify_client_spy).to have_received(:send_email)
-            .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+            expect(@notify_client_spy).to have_received(:send_email)
+              .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+          end
         end
 
         it "includes a tokenised compare link with the fact-check-manager URL prefix" do

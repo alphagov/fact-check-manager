@@ -58,12 +58,12 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
       end
 
       it "formats the deadline as a long date" do
-        existing_request.update!(deadline: Time.zone.parse("2026-06-12T09:00:00Z"))
+        existing_request.update!(deadline: Time.zone.parse("2030-06-12T09:00:00Z"))
 
         make_request
 
         expect(@notify_client_spy).to have_received(:send_email)
-          .with(hash_including(personalisation: hash_including(deadline: "Friday 12 June 2026"))).exactly(2).times
+          .with(hash_including(personalisation: hash_including(deadline: "Wednesday 12 June 2030"))).exactly(2).times
       end
 
       it "includes a tokenised compare link with the fact-check-manager URL prefix" do

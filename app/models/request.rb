@@ -8,7 +8,19 @@ class Request < ApplicationRecord
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
-  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, :deadline, presence: true
+  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, presence: true
+
+  validates :deadline,
+            presence: true,
+            comparison: {
+              greater_than_or_equal_to: -> { Time.zone.now.beginning_of_day },
+              less_than: -> { 10.years.from_now },
+              message: "must be a date between today and 10 years in the future",
+              on: :create,
+              if: -> { deadline.acts_like?(:time) },
+            }
+  validate :deadline_is_a_valid_datetime
+
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
@@ -38,6 +50,12 @@ private
 
   def within_visibility_period?
     Date.current <= WorkingDaysCalculator.new(response.created_at.to_date).after(DIFF_ACCESS_DAYS)
+  end
+
+  def deadline_is_a_valid_datetime
+    return if deadline.blank?
+
+    errors.add(:deadline, "must be a valid datetime") unless deadline.acts_like?(:time)
   end
 
   def valid_zendesk_number
