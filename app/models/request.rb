@@ -27,6 +27,13 @@ class Request < ApplicationRecord
               message: "must be a valid email address",
             }
 
+  validates :source_url,
+            allow_blank: true,
+            format: {
+              with: /\A#{URI::DEFAULT_PARSER.make_regexp(%w[http https])}\z/,
+              message: "must be a valid URL (http: or https:)",
+            }
+
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
