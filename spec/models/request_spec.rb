@@ -262,6 +262,31 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "draft detail attributes" do
+    it "is valid if all draft details (draft_auth_bypass_id, draft_content_id, draft_slug) are present" do
+      record = FactoryBot.build(:request)
+
+      expect(record.draft_content_id).not_to be_blank
+      expect(record.draft_auth_bypass_id).not_to be_blank
+      expect(record.draft_slug).not_to be_blank
+      expect(record).to be_valid
+    end
+
+    it "is valid if no draft details (draft_auth_bypass_id, draft_content_id, draft_slug) are present" do
+      record = FactoryBot.build(:request, draft_auth_bypass_id: nil, draft_content_id: nil, draft_slug: nil)
+
+      expect(record).to be_valid
+    end
+
+    %i[draft_auth_bypass_id draft_content_id draft_slug].each do |draft_attribute|
+      it "are invalid if #{draft_attribute} is blank when the others are provided" do
+        record = FactoryBot.build(:request, draft_attribute => nil)
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("draft_auth_bypass_id, draft_content_id and draft_slug must all be provided together")
+      end
+    end
+  end
+
   describe "searching by source_id" do
     it "can save and retrieve multiple requests that share the same source_id" do
       shared_uuid = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"

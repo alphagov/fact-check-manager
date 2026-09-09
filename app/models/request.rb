@@ -33,6 +33,7 @@ class Request < ApplicationRecord
               message: "must be a valid URL (http: or https:)",
             }
 
+  validate :draft_details_are_complete
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
@@ -49,6 +50,14 @@ class Request < ApplicationRecord
   end
 
 private
+
+  def draft_details_are_complete
+    values = [draft_auth_bypass_id, draft_content_id, draft_slug]
+    return if values.all?(&:blank?)
+    return if values.all?(&:present?)
+
+    errors.add(:base, "draft_auth_bypass_id, draft_content_id and draft_slug must all be provided together")
+  end
 
   def requester_email_has_tld
     domain = requester_email.to_s.split("@").last
