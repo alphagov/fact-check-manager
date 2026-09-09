@@ -26,6 +26,13 @@ class Request < ApplicationRecord
             }
   validate :requester_email_has_tld
 
+  validates :source_url,
+            allow_blank: true,
+            format: {
+              with: URI::DEFAULT_PARSER.make_regexp(%w[http https]),
+              message: "must be a valid URL (http: or https:)",
+            }
+
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
 
