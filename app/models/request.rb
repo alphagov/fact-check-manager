@@ -7,7 +7,7 @@ class Request < ApplicationRecord
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
-  validates :source_id, :source_app, :requester_name, :requester_email, :status, :current_content, presence: true
+  validates :source_id, :source_app, :requester_name, :status, :current_content, presence: true
 
   validate :deadline_format_is_valid
   validates :deadline,
@@ -17,6 +17,14 @@ class Request < ApplicationRecord
               less_than: -> { 10.years.from_now },
               message: "must be a date between now and 10 years in the future",
             }, on: :create, unless: -> { errors.include?(:deadline) }
+
+  validates :requester_email,
+            presence: true,
+            format: {
+              with: URI::MailTo::EMAIL_REGEXP,
+              message: "must be a valid email address",
+            }
+  validate :requester_email_has_tld
 
   validate :content_fields_are_correctly_structured
   validate :valid_zendesk_number
@@ -34,6 +42,13 @@ class Request < ApplicationRecord
   end
 
 private
+
+  def requester_email_has_tld
+    domain = requester_email.to_s.split("@").last
+    return if domain&.include?(".")
+
+    errors.add(:requester_email, "must be a valid email address")
+  end
 
   def deadline_format_is_valid
     return errors.add(:deadline, "can't be blank") if deadline.blank?
