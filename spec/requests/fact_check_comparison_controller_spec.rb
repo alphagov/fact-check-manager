@@ -1,8 +1,11 @@
 require "rails_helper"
 require "helpers/formatted_diff_helpers"
+require "gds_api/test_helpers/calendars"
 
 RSpec.describe "FactCheckComparison", type: :request do
   include FormattedDiffHelpers
+  include GdsApi::TestHelpers::Calendars
+  include ActiveSupport::Testing::TimeHelpers
 
   describe "GET /compare" do
     let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
@@ -83,16 +86,47 @@ RSpec.describe "FactCheckComparison", type: :request do
         )
       end
 
+      let(:response_created_at) { Time.zone.parse("2026-09-03 15:00") }
+
       before do
         GDS::SSO.test_user = current_user
-        create(:response, request: request)
+        stub_calendars_has_no_bank_holidays(in_division: "england-and-wales")
+        create(:response, request: request, created_at: response_created_at)
       end
 
-      it "renders the already submitted template" do
-        get compare_path(source_app: request.source_app, source_id: request.source_id)
+      it "renders the comparison page within 3 business days of the response" do
+        travel_to Date.new(2026, 9, 8).beginning_of_day do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
 
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_already_submitted.heading"))
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_comparison.heading"))
+        end
+      end
+
+      it "does not show the respond button" do
+        travel_to Date.new(2026, 9, 8).beginning_of_day do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response.body).not_to include(I18n.t("fact_check_comparison.respond_to_button"))
+        end
+      end
+
+      it "shows the response submitted message" do
+        travel_to Date.new(2026, 9, 8).beginning_of_day do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response.body).to include(I18n.t("fact_check_comparison.response_submitted"))
+        end
+      end
+
+      it "renders the expired page after 3 business days" do
+        travel_to Date.new(2026, 9, 9).beginning_of_day do
+          get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_expired.heading"))
+          expect(response.body).to include(I18n.t("fact_check_expired.response_too_old"))
+        end
       end
     end
 

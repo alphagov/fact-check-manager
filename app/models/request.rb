@@ -25,12 +25,20 @@ class Request < ApplicationRecord
   end
 
   def diff_accessible?
-    return true if response.blank?
+    return true unless responded_to?
 
-    Date.current <= WorkingDaysCalculator.new(response.created_at.to_date).after(DIFF_ACCESS_DAYS)
+    within_visibility_period?
   end
 
 private
+
+  def responded_to?
+    response.present?
+  end
+
+  def within_visibility_period?
+    Date.current <= WorkingDaysCalculator.new(response.created_at.to_date).after(DIFF_ACCESS_DAYS)
+  end
 
   def valid_zendesk_number
     return if zendesk_number.blank?
