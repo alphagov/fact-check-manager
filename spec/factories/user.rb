@@ -1,9 +1,9 @@
 FactoryBot.define do
   factory :user do
-    email { "d.adams@department.gov.uk" }
+    sequence(:email) { |n| "d.adams#{n}@department.gov.uk" }
 
     trait :full do
-      name { "Douglas Adams" }
+      sequence(:name) { |n| "Douglas Adams #{n}" }
       uid { SecureRandom.uuid }
       organisation_slug { "another-gov-dept" }
       organisation_content_id { "another-gov-dept-id" }
