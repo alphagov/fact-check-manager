@@ -72,6 +72,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_105923) do
     t.boolean "remotely_signed_out", default: false
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
