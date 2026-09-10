@@ -6,6 +6,8 @@ class User < ApplicationRecord
   has_many :requests, through: :collaborations
   has_many :responses
 
+  validates :email, uniqueness: true
+
   normalizes :email, with: ->(email) { email.strip.downcase }
 
   def signin?
