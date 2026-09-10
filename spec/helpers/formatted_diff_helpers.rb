@@ -37,6 +37,22 @@ module FormattedDiffHelpers
     end
   end
 
+  def markdown_verify_ins(parsed, expected)
+    expect(parsed[:ins]).to eq(expected)
+
+    expected.each do |element|
+      expect(parsed[:del]).not_to include(element)
+    end
+  end
+
+  def markdown_verify_del(parsed, expected)
+    expect(parsed[:del]).to eq(expected)
+
+    expected.each do |element|
+      expect(parsed[:ins]).not_to include(element)
+    end
+  end
+
   def verify_unchanged(parsed, expected)
     expected.each do |element|
       expect(parsed[:diff]).to include(element)

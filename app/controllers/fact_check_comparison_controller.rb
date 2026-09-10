@@ -24,6 +24,8 @@ class FactCheckComparisonController < ApplicationController
     end
 
     mark_current_content
+    mark_current_markdown if @current_markdown
+
     @differ = create_diff
     # byebug
     @markdown_differ = create_markdown_diff if @current_markdown
@@ -57,6 +59,17 @@ private
     mark_added_in_current
   end
 
+  def mark_current_markdown
+    # Both have a single content block, we can diff it directly
+    if @current_markdown.size == 1 && @previous_markdown.size == 1
+      return
+    end
+
+    # Else, content block matching
+    mark_removed_in_current_markdown
+    mark_added_in_current_markdown
+  end
+
   # If the item doesn't exist in current, give it a blank
   # for accurate display of diff
   # Not needed for items that don't exist in previous as
@@ -80,11 +93,38 @@ private
     @current_content = current_content_array.to_h
   end
 
+  def mark_removed_in_current_markdown
+    current_part_ids = @current_markdown.keys
+
+    current_markdown_array = Array(@current_markdown) # Allows index specific insertion
+
+    @previous_markdown.each_with_index do |(previous_part_id, previous_part), index|
+      next if current_part_ids.include?(previous_part_id)
+
+      previous_part_heading = previous_part[:heading]
+      insert_at = [index, current_markdown_array.length].min
+      item_copy = { heading: "#{previous_part_heading} (REMOVED)", body: "" }
+      current_markdown_array.insert(insert_at, [previous_part_id, item_copy])
+
+      current_part_ids << previous_part_id
+    end
+
+    @current_markdown = current_markdown_array.to_h
+  end
+
   def mark_added_in_current
     @current_content.each do |part_id, current_part|
       current_part_heading = current_part[:heading]
 
       @current_content[part_id][:heading] = "#{current_part_heading} (ADDED)" if @previous_content[part_id].blank?
+    end
+  end
+
+  def mark_added_in_current_markdown
+    @current_markdown.each do |part_id, current_part|
+      current_part_heading = current_part[:heading]
+
+      @current_markdown[part_id][:heading] = "#{current_part_heading} (ADDED)" if @previous_markdown[part_id].blank?
     end
   end
 
