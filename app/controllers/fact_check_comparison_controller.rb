@@ -33,8 +33,9 @@ private
 
   def check_already_responded
     return if @request.response.blank?
+    return if @request.diff_accessible?
 
-    render "application/fact_check_already_submitted"
+    render "application/fact_check_expired"
   end
 
   def mark_current_content

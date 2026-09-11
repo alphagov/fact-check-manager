@@ -1,4 +1,5 @@
 require "rails_helper"
+require "gds_api/test_helpers/calendars"
 
 RSpec.shared_examples "test JSON content" do |content_field|
   context "when #{content_field} is not a hash" do
@@ -67,6 +68,9 @@ RSpec.shared_examples "test JSON content" do |content_field|
 end
 
 RSpec.describe Request, type: :model do
+  include GdsApi::TestHelpers::Calendars
+  include ActiveSupport::Testing::TimeHelpers
+
   context "when missing required attributes" do
     it "is invalid" do
       record = described_class.new
@@ -210,6 +214,53 @@ RSpec.describe Request, type: :model do
       record = FactoryBot.build(:request, previous_content: { "id_value" => { "heading" => "test_heading", "body" => "<p>Previous content</p>" } })
 
       expect(record.first_edition?).to be(false)
+    end
+  end
+
+  describe "#diff_accessible?" do
+    before do
+      stub_calendars_has_no_bank_holidays(in_division: "england-and-wales")
+    end
+
+    context "when the request has no response" do
+      it "returns true" do
+        record = FactoryBot.create(:request)
+
+        expect(record.diff_accessible?).to be(true)
+      end
+    end
+
+    context "when the request has a response" do
+      let(:record) { FactoryBot.create(:request) }
+      let(:response_created_at) { Time.zone.parse("2026-09-03 15:00") }
+      let(:third_business_day) { Date.new(2026, 9, 8) }
+      let(:fourth_business_day) { Date.new(2026, 9, 9) }
+
+      before do
+        FactoryBot.create(
+          :response,
+          request: record,
+          created_at: response_created_at,
+        )
+      end
+
+      it "returns true on the third business day after submission" do
+        travel_to third_business_day.beginning_of_day do
+          expect(record.diff_accessible?).to be(true)
+        end
+      end
+
+      it "returns true at the end of the third business day" do
+        travel_to third_business_day.end_of_day do
+          expect(record.diff_accessible?).to be(true)
+        end
+      end
+
+      it "returns false at the start of the fourth business day" do
+        travel_to fourth_business_day.beginning_of_day do
+          expect(record.diff_accessible?).to be(false)
+        end
+      end
     end
   end
 

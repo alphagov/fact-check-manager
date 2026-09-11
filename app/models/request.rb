@@ -4,6 +4,7 @@ class Request < ApplicationRecord
   has_one :response
 
   ZENDESK_NUMBER_REGEX = /\A\d{7,}\z/
+  DIFF_ACCESS_DAYS = 3
 
   normalizes :zendesk_number, with: ->(value) { value.presence }
 
@@ -21,6 +22,12 @@ class Request < ApplicationRecord
 
   def first_edition?
     previous_content.blank?
+  end
+
+  def diff_accessible?
+    return true if response.blank?
+
+    Date.current <= WorkingDaysCalculator.new(response.created_at.to_date).after(DIFF_ACCESS_DAYS)
   end
 
 private
