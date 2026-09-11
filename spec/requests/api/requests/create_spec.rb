@@ -197,6 +197,19 @@ RSpec.describe "POST /api/requests", type: :request do
       }.not_to(change { recipient1.reload.updated_at })
     end
 
+    it "ignores duplicate recipient email addresses, including those that differ by case or whitespace" do
+      allow(@notify_client_spy).to receive(:send_email)
+
+      expect {
+        post "/api/requests", params: valid_payload.merge(recipients: ["dup@example.com", "Dup@example.com", " dup@example.com "]), as: :json
+      }.to change(User, :count).by(1)
+                               .and change(Collaboration, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      expect(@notify_client_spy).to have_received(:send_email).once
+      expect(@notify_client_spy).to have_received(:send_email).with(hash_including(email_address: "dup@example.com"))
+    end
+
     context "Notify" do
       context "successfully sends emails" do
         it "to each recipient" do
