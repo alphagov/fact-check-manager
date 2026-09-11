@@ -10,20 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_10_121953) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_103034) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
 
   create_table "collaborations", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "request_id"
+    t.bigint "request_id", null: false
     t.string "role"
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
+    t.bigint "user_id", null: false
     t.index ["request_id"], name: "index_collaborations_on_request_id"
     t.index ["user_id", "request_id"], name: "index_collaborations_on_user_id_and_request_id", unique: true
-    t.index ["user_id"], name: "index_collaborations_on_user_id"
   end
 
   create_table "requests", force: :cascade do |t|
@@ -50,7 +49,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_10_121953) do
   end
 
   create_table "responses", force: :cascade do |t|
-    t.boolean "accepted"
+    t.boolean "accepted", null: false
     t.text "body"
     t.datetime "created_at", null: false
     t.bigint "request_id", null: false
@@ -72,9 +71,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_10_121953) do
     t.boolean "remotely_signed_out", default: false
     t.string "uid"
     t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
+  add_foreign_key "collaborations", "requests"
+  add_foreign_key "collaborations", "users"
   add_foreign_key "responses", "requests"
   add_foreign_key "responses", "users"
 end

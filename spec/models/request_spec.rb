@@ -159,6 +159,134 @@ RSpec.describe Request, type: :model do
     end
   end
 
+  describe "requester_email" do
+    context "when the email address is not in a valid format" do
+      it "is not valid" do
+        %w[user@-example.com user@example-.com invalid@@example.com gemma@government].each do |invalid_email|
+          record = FactoryBot.build(:request, requester_email: invalid_email)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Requester email must be a valid email address")
+        end
+      end
+    end
+    context "when the email address is in a valid format" do
+      it "is valid" do
+        %w[o'connor@example.com
+           john.smith@example.com
+           john+newsletter@example.com
+           foo_bar@example.com
+           phoebe.smith@digital.this-dept.gov.uk].each do |valid_email|
+          record = FactoryBot.build(:request, requester_email: valid_email)
+
+          expect(record).to be_valid
+        end
+      end
+    end
+  end
+
+  describe "deadline" do
+    context "when blank" do
+      it "is not valid" do
+        record = FactoryBot.build(:request, deadline: nil)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Deadline can't be blank")
+      end
+
+      context "when deadline is not a datetime" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 2_345_6)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a valid datetime")
+        end
+      end
+
+      context "when in the past" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 1.year.ago)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a date between now and 10 years in the future")
+        end
+      end
+
+      context "when over 10 years in the future" do
+        it "is not valid" do
+          record = FactoryBot.build(:request, deadline: 10.years.from_now + 1.day)
+
+          expect(record).not_to be_valid
+          expect(record.errors.full_messages).to include("Deadline must be a date between now and 10 years in the future")
+        end
+      end
+    end
+
+    context "if is a future date within the next 10 years" do
+      it "should be valid" do
+        record = FactoryBot.build(:request, deadline: 1.week.from_now)
+
+        expect(record).to be_valid
+      end
+    end
+  end
+
+  describe "source_url" do
+    it "is valid when it is has a valid URL format" do
+      %w[https://www.gov.uk/help
+         https://www.gov.uk/government/organisations/dsit
+         https://www.gov.uk/search?q=ruby
+         https://example.com?page=1&sort=name].each do |valid_url|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: valid_url)
+
+        expect(record).to be_valid
+      end
+    end
+
+    it "is invalid when it does not have a valid URL format" do
+      %w[www.gov.uk example.com ://example.com https//example.com].each do |invalid_url|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: invalid_url)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Source URL must be a valid URL (http: or https:)")
+      end
+    end
+
+    it "is invalid if it doesn't use either http or https" do
+      %w[ftp://example.com file:///tmp/report.pdf mailto:test@example.com ssh://server.internal].each do |url_with_bad_scheme|
+        record = FactoryBot.build(:request, deadline: 1.year.from_now, source_url: url_with_bad_scheme)
+
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("Source URL must be a valid URL (http: or https:)")
+      end
+    end
+  end
+
+  describe "draft detail attributes" do
+    it "is valid if all draft details (draft_auth_bypass_id, draft_content_id, draft_slug) are present" do
+      record = FactoryBot.build(:request)
+
+      expect(record.draft_content_id).not_to be_blank
+      expect(record.draft_auth_bypass_id).not_to be_blank
+      expect(record.draft_slug).not_to be_blank
+      expect(record).to be_valid
+    end
+
+    it "is valid if no draft details (draft_auth_bypass_id, draft_content_id, draft_slug) are present" do
+      record = FactoryBot.build(:request, draft_auth_bypass_id: nil, draft_content_id: nil, draft_slug: nil)
+
+      expect(record).to be_valid
+    end
+
+    %i[draft_auth_bypass_id draft_content_id draft_slug].each do |draft_attribute|
+      it "are invalid if #{draft_attribute} is blank when the others are provided" do
+        record = FactoryBot.build(:request, draft_attribute => nil)
+        expect(record).not_to be_valid
+        expect(record.errors.full_messages).to include("draft_auth_bypass_id, draft_content_id and draft_slug must all be provided together")
+      end
+    end
+  end
+
   describe "searching by source_id" do
     it "can save and retrieve multiple requests that share the same source_id" do
       shared_uuid = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
@@ -182,6 +310,26 @@ RSpec.describe Request, type: :model do
                                           request: record)
 
       expect(record.collaborations).to include(collaboration_1, collaboration_2)
+    end
+
+    it "is invalid when the same recipient is added twice" do
+      request = build(:request)
+      user = create(:user)
+
+      request.collaborations.build(user: user)
+      request.collaborations.build(user: user)
+
+      expect(request).to be_invalid
+    end
+
+    context "deleting a request" do
+      it "removes associated collaborations" do
+        request = create(:request)
+        create(:collaboration, request: request)
+
+        expect { request.destroy }
+          .to change(Collaboration, :count).by(-1)
+      end
     end
   end
 

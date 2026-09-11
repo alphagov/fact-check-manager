@@ -22,6 +22,51 @@ RSpec.describe Response, type: :model do
     expect(response).to be_valid
   end
 
+  describe "#accepted" do
+    %w[true false].each do |boolean_value|
+      it "is valid if either true or false" do
+        response = FactoryBot.build(:response, accepted: boolean_value)
+
+        expect(response).to be_valid
+      end
+    end
+
+    it "is invalid if nil" do
+      response = FactoryBot.build(:response, accepted: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:accepted]).to include("must be true or false")
+    end
+  end
+
+  describe "#body" do
+    it "must be present if accepted is false" do
+      response = FactoryBot.build(:response, accepted: false, body: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include("cannot be blank if accepted is false")
+    end
+
+    it "can be empty if accepted is true" do
+      response = FactoryBot.build(:response, accepted: true)
+
+      expect(response).to be_valid
+    end
+
+    it "must have a max length of 9000 characters" do
+      response = FactoryBot.build(:response, accepted: false, body: "a" * 9001)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include("length must be a maximum of 9000 characters")
+    end
+
+    it "can have a length of 8999 characters" do
+      response = FactoryBot.build(:response, accepted: false, body: "a" * 8999)
+
+      expect(response).to be_valid
+    end
+  end
+
   describe "validations" do
     it "validates that there can only be one response per request" do
       existing_response = FactoryBot.create(:response)

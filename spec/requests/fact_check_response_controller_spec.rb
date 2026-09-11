@@ -24,7 +24,7 @@ RSpec.describe "FactCheckResponse", type: :request do
                params: { fact_check_response: { accepted: "true", body: "" } }
 
           expect(@notify_client_spy).to have_received(:send_email)
-                                          .with(hash_including(personalisation: hash_including(responder_name: "Douglas Adams")))
+                                          .with(hash_including(personalisation: hash_including(responder_name: "Ada Lovelace")))
                                           .exactly(1).times
         end
 
@@ -84,7 +84,7 @@ RSpec.describe "FactCheckResponse", type: :request do
   end
 
   context "signed in user who is a collaborator" do
-    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user, :full) }
+    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user, :full, name: "Ada Lovelace") }
     let(:request) do
       FactoryBot.create(
         :request,
@@ -234,14 +234,14 @@ RSpec.describe "FactCheckResponse", type: :request do
 
   context "signed in user who is an admin" do
     before do
-      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin govuk_admin])
+      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin govuk_admin], name: "Ada Lovelace")
     end
-    let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
+    let(:colab_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
       FactoryBot.create(
         :request,
         :with_collaborator,
-        collaborator: test_user,
+        collaborator: colab_user,
         previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
         current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
       )

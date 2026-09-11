@@ -22,7 +22,7 @@ RSpec.describe User, type: :model do
     end
 
     context "deleting a user" do
-      it "causes the associated collaborations to be destroyed" do
+      it "removes associated collaborations" do
         user = create(:user)
         request = create(:request)
         create(:collaboration, user: user, request: request)
