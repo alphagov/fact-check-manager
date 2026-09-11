@@ -528,5 +528,15 @@ RSpec.describe "POST /api/requests", type: :request do
         expect(json["errors"]).to include("Zendesk number cannot start with zero")
       end
     end
+
+    context "if a duplicate email address is sent" do
+      it "returns an error" do
+        post "/api/requests", params: valid_payload.merge(recipients: ["dup@example.com", "dup@example.com"]), as: :json
+
+        expect(response).to have_http_status(:bad_request)
+        json = JSON.parse(response.body)
+        expect(json["errors"]).to include("Recipients duplicate email specified")
+      end
+    end
   end
 end

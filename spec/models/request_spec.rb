@@ -311,6 +311,26 @@ RSpec.describe Request, type: :model do
 
       expect(record.collaborations).to include(collaboration_1, collaboration_2)
     end
+
+    it "is invalid when the same recipient is added twice" do
+      request = build(:request)
+      user = create(:user)
+
+      request.collaborations.build(user: user)
+      request.collaborations.build(user: user)
+
+      expect(request).to be_invalid
+    end
+
+    context "deleting a request" do
+      it "removes associated collaborations" do
+        request = create(:request)
+        create(:collaboration, request: request)
+
+        expect { request.destroy }
+          .to change(Collaboration, :count).by(-1)
+      end
+    end
   end
 
   describe "#formatted_deadline" do

@@ -30,11 +30,23 @@ RSpec.describe Collaboration, type: :model do
                                                  request: existing_collaboration.request)
 
       expect(duplicate_collaboration).not_to be_valid
-      expect(duplicate_collaboration.errors[:user_id]).to include("is already a collaborator on this request")
+      expect(duplicate_collaboration.errors[:user]).to include("duplicate recipient specified")
     end
   end
 
   describe "associations" do
+    it "belongs to a user" do
+      association = described_class.reflect_on_association(:request)
+
+      expect(association.macro).to eq(:belongs_to)
+    end
+
+    it "belongs to a request" do
+      association = described_class.reflect_on_association(:user)
+
+      expect(association.macro).to eq(:belongs_to)
+    end
+
     it "allows request to return a collection of user objects" do
       shared_request = FactoryBot.create(:request)
       collaboration_1 = FactoryBot.create(:collaboration, request: shared_request)
