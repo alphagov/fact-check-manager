@@ -12,7 +12,7 @@ module Api
 
       fact_check_request = Request.new(request_params.except(:recipients))
 
-      request_params[:recipients].each do |email|
+      request_params[:recipients].uniq { |email| User.normalize_value_for(:email, email) }.each do |email|
         user = User.find_or_create_by!(email: email)
         fact_check_request.collaborations.build(user: user, role: "fact_checker")
       end
@@ -78,10 +78,11 @@ module Api
 
     def validate_create_params
       errors = []
+
       errors << "At least one recipient email is required" if request_params[:recipients].blank?
+
       deadline = request_params[:deadline]
       errors << "Deadline must be a valid datetime string" unless deadline.is_a?(String) && Time.zone.parse(deadline)
-
       %i[current_content previous_content].each do |content_hash|
         if params.dig(:request, content_hash).present? && request_params[content_hash].blank?
           errors << "#{content_hash} must be a hash"

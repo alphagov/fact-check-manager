@@ -10,20 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_10_105923) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_11_103034) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
 
   create_table "collaborations", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "request_id"
+    t.bigint "request_id", null: false
     t.string "role"
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
+    t.bigint "user_id", null: false
     t.index ["request_id"], name: "index_collaborations_on_request_id"
     t.index ["user_id", "request_id"], name: "index_collaborations_on_user_id_and_request_id", unique: true
-    t.index ["user_id"], name: "index_collaborations_on_user_id"
   end
 
   create_table "requests", force: :cascade do |t|
@@ -76,6 +75,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_10_105923) do
     t.index ["uid"], name: "index_users_on_uid", unique: true
   end
 
+  add_foreign_key "collaborations", "requests"
+  add_foreign_key "collaborations", "users"
   add_foreign_key "responses", "requests"
   add_foreign_key "responses", "users"
 end
