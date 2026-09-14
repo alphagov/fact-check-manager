@@ -615,6 +615,18 @@ RSpec.describe "POST /api/requests", type: :request do
           "Deadline must be a valid datetime string",
         )
       end
+
+      it "returns 400 if deadline string cannot be parsed into a datetime" do
+        ["2030-13-45", "2030-06-12#{'x' * 200}"].each do |unparseable_deadline|
+          post "/api/requests", params: base_payload.merge(deadline: unparseable_deadline), as: :json
+
+          expect(response).to have_http_status(:bad_request)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to include(
+            "Deadline must be a valid datetime string",
+          )
+        end
+      end
     end
 
     context "if current_content value is not a hash" do
