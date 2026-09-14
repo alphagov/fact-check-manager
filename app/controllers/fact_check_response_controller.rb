@@ -117,6 +117,7 @@ private
     {
       content_title: response.request.source_title,
       responder_name: response.user.name,
+      non_tokenised_link: generate_compare_link(response.request),
     }.tap do |hash|
       unless response.accepted
         formatted_body = response.body.lines(chomp: true).map { |line| "^#{line}" }.join("\n")

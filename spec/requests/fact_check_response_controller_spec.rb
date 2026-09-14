@@ -28,6 +28,16 @@ RSpec.describe "FactCheckResponse", type: :request do
                                           .exactly(1).times
         end
 
+        it "sends the fact check link" do
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expected_link = Plek.external_url_for("fact-check-manager") + compare_path(request.source_app, request.source_id)
+          expect(@notify_client_spy).to have_received(:send_email)
+                                          .with(hash_including(personalisation: hash_including(non_tokenised_link: expected_link)))
+                                          .exactly(1).times
+        end
+
         it "includes the formatted response body if the fact check is not accepted" do
           post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
                params: { fact_check_response: { accepted: "false", body: "The fact check is not acceptable" } }
