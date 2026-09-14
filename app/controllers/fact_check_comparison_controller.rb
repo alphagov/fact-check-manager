@@ -97,15 +97,24 @@ private
   end
 
   def token_bypass?
-    return false if bypass_params[:token].blank?
+    return false if allowed_params[:token].blank?
 
-    current_request = Request.most_recent_for_source(source_app: bypass_params[:source_app], source_id: bypass_params[:source_id])
+    current_request = Request.most_recent_for_source(source_app: allowed_params[:source_app], source_id: allowed_params[:source_id])
     return unless current_request
 
-    valid_compare_preview_jwt?(bypass_params[:token], current_request)
+    valid_compare_preview_jwt?(allowed_params[:token], current_request)
   end
 
-  def bypass_params
-    params.permit(:source_app, :source_id, :token)
+  def allowed_params
+    params.permit(
+      :source_app,
+      :source_id,
+      :token,
+      :utm_source,
+      :utm_medium,
+      :utm_term,
+      :utm_content,
+      :utm_campaign,
+    )
   end
 end
