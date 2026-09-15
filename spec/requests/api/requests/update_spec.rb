@@ -12,6 +12,16 @@ RSpec.describe "PATCH /api/requests/:source_app/:source_id", type: :request do
     }
   end
 
+  let!(:update_payload_with_markdown) do
+    {
+      source_app: "Mainstream",
+      source_id: existing_request.source_id,
+      source_title: "Updated Title",
+      current_content: { "part_id" => { "heading" => "heading", "body" => "Updated body goes here" } },
+      current_markdown: { "part_id" => { "heading" => "# heading", "body" => "# Updated body goes here" } },
+    }
+  end
+
   context "with a valid payload" do
     it "updates the Request with collaborations" do
       expect {
@@ -30,6 +40,50 @@ RSpec.describe "PATCH /api/requests/:source_app/:source_id", type: :request do
       expect(request.source_id).to be_present
       expect(request.source_title).to eq("Updated Title")
       expect(request.current_content).to eq("part_id" => { "heading" => "heading", "body" => "Updated body goes here" })
+      expect(request.status).to eq("new")
+      expect(request.requester_name).to eq("Malcolm Tucker")
+      expect(request.requester_email).to eq("m.tucker@gov.uk")
+    end
+
+    it "updates the draft_auth_bypass_id" do
+      new_auth_bypass_id = SecureRandom.uuid
+      payload_with_auth_bypass = update_payload.merge(draft_auth_bypass_id: new_auth_bypass_id)
+
+      patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: payload_with_auth_bypass, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(existing_request.reload.draft_auth_bypass_id).to eq(new_auth_bypass_id)
+    end
+
+    it "updates the draft_slug" do
+      payload_with_slug = update_payload.merge(draft_slug: "updated-slug")
+
+      patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: payload_with_slug, as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(existing_request.reload.draft_slug).to eq("updated-slug")
+    end
+  end
+
+  context "with markdown in the payload" do
+    it "updates the Request with collaborations" do
+      expect {
+        patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: update_payload_with_markdown, as: :json
+      }.not_to change(Request, :count)
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json).to include("id")
+      expect(json).to include("source_id")
+      expect(json).to include("source_app")
+
+      request = Request.last
+      expect(request.source_app).to eq("publisher")
+      expect(request.source_id).to be_present
+      expect(request.source_title).to eq("Updated Title")
+      expect(request.current_content).to eq("part_id" => { "heading" => "heading", "body" => "Updated body goes here" })
+      expect(request.current_markdown).to eq("part_id" => { "heading" => "# heading", "body" => "# Updated body goes here" })
       expect(request.status).to eq("new")
       expect(request.requester_name).to eq("Malcolm Tucker")
       expect(request.requester_email).to eq("m.tucker@gov.uk")

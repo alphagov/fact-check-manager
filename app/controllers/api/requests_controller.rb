@@ -75,6 +75,7 @@ module Api
         :draft_auth_bypass_id, # optional
         :draft_slug, # optional
         current_content: {},
+        current_markdown: {}, # optional
       )
     end
 
