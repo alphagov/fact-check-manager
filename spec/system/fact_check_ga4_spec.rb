@@ -1,6 +1,9 @@
 require "rails_helper"
+require "gds_api/test_helpers/calendars"
 
 RSpec.describe "FactCheckGA4", type: :system do
+  include GdsApi::TestHelpers::Calendars
+
   before do
     allow(PublisherApiService).to receive(:post_fact_check_response).and_return(double(code: 200))
     allow(NotifyApiService).to receive(:send_email_to_recipient).and_return(double(code: 200))
@@ -424,6 +427,43 @@ RSpec.describe "FactCheckGA4", type: :system do
 
     setup do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer on load" do
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+    end
+
+    it "pushes the correct values to the dataLayer when the user interacts with page elements" do
+      disable_links
+
+      click_link("Zendesk ticket")
+
+      event_data = get_event_data
+
+      expect(event_data[0]["event_name"]).to eq("navigation")
+      expect(event_data[0]["link_domain"]).to eq("https://govuk.zendesk.com")
+      expect(event_data[0]["method"]).to eq("primary click")
+      expect(event_data[0]["external"]).to eq("true")
+      expect(event_data[0]["text"]).to eq("Zendesk ticket")
+      expect(event_data[0]["type"]).to eq("generic_link")
+      expect(event_data[0]["url"]).to end_with("/tickets/1234567")
+    end
+  end
+
+  describe "Fact check expired page" do
+    let!(:response) do
+      create(:response, request: request, created_at: Date.new(2026, 9, 4))
+    end
+
+    setup do
+      request.update!(zendesk_number: "1234567")
+      stub_calendars_has_no_bank_holidays(in_division: "england-and-wales")
+      visit compare_path(source_app: request.source_app, source_id: request.source_id)
     end
 
     it "pushes the correct values to the dataLayer on load" do
