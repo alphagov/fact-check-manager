@@ -8,7 +8,12 @@
     data-module="ga4-links-setup ga4-link-tracker"
   >
     <% unless current_user.nil? %>
-      <% if current_user.govuk_admin? || @request.users.include?(current_user) %>
+      <% if @request.response.present? %>
+        <%= render "govuk_publishing_components/components/inset_text", {
+          text: t("fact_check_comparison.response_submitted"),
+        } %>
+
+      <% elsif current_user.govuk_admin? || @request.users.include?(current_user) %>
         <%= render "govuk_publishing_components/components/inset_text", {} do %>
           <%= t "fact_check_comparison.respond_by" %> <span class="govuk-!-font-weight-bold"><%= @deadline %></span>
         <% end %>

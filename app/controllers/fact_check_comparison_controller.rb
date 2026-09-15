@@ -6,10 +6,10 @@ class FactCheckComparisonController < ApplicationController
 
   before_action :authenticate_user!, unless: :token_bypass?, only: :compare
   before_action :set_request, only: :compare
-  before_action :check_already_responded, only: :compare
 
   def compare
     return unless token_bypass? || check_permissions(current_user, @request)
+    return render "application/fact_check_expired" unless @request.diff_accessible?
 
     @current_content = @request.current_content.deep_symbolize_keys
     # First editions have no previous version, so diff current content against
@@ -29,12 +29,6 @@ private
   def set_request
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
-  end
-
-  def check_already_responded
-    return if @request.response.blank?
-
-    render "application/fact_check_already_submitted"
   end
 
   def mark_current_content

@@ -12,6 +12,7 @@ en:
     guidance_deleted: "Red highlights and a minus sign (–) show content that’s been deleted"
     guidance_added: "Green highlights and a plus sign (+) show content that’s been added"
     guidance_link: "Fact checking guidance (opens in new tab)"
+    response_submitted: "This fact check request has already been completed."
   fact_check_response:
     heading: "Confirm the changes are factually correct"
     form_heading: "Are the changes factually correct?"
@@ -56,4 +57,8 @@ en:
   fact_check_already_submitted:
     heading: "Response already submitted"
     fact_check_already_completed: "This fact check request has already been completed."
+    questions: "You can send any questions on the"
+  fact_check_expired:
+    heading: "You can no longer view the fact check"
+    response_too_old: "The response was submitted more than 3 working days ago."
     questions: "You can send any questions on the"
