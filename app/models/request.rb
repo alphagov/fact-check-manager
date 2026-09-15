@@ -37,7 +37,7 @@ private
 
   def content_fields_are_correctly_structured
     # The structure being validated here is { "string_id": { "heading" => "string_heading": "body" => "content_string" }, ... }
-    %i[current_content previous_content].each do |content_field|
+    %i[current_content previous_content current_markdown previous_markdown].each do |content_field|
       outer_hash = public_send(content_field)
       next if outer_hash.nil?
 

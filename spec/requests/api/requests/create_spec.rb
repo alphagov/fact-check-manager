@@ -32,6 +32,32 @@ RSpec.describe "POST /api/requests", type: :request do
     }
   end
 
+  let(:valid_payload_with_markdown) do
+    {
+      source_app: "Mainstream",
+      source_id: SecureRandom.uuid,
+      source_url: "",
+      source_title: "",
+      requester_name: "GDS Content Designer",
+      requester_email: "gds-content-designer@example.com",
+      current_content: { "part_id" => {
+        "heading" => "heading", "body" => "Many lines of data for the content. Many changes that need fact checking"
+      } },
+      current_markdown: { "part_id" => {
+        "heading" => "# heading", "body" => "# Many lines of data for the content. Many changes that need fact checking"
+      } },
+      previous_content: {},
+      previous_markdown: {},
+      reason_for_change: "a reason",
+      zendesk_number: "1234567",
+      deadline: 1.week.from_now.iso8601,
+      recipients: ["recipient1@example.com", "recipient2@example.com"],
+      draft_content_id:,
+      draft_auth_bypass_id:,
+      draft_slug: "test-edition-slug",
+    }
+  end
+
   context "with a valid payload" do
     it "creates a new Request with collaborations" do
       expect {
@@ -336,6 +362,134 @@ RSpec.describe "POST /api/requests", type: :request do
           end
         end
       end
+    end
+  end
+
+  context "with a valid payload with markdown" do
+    it "creates a new Request with collaborations" do
+      expect {
+        post "/api/requests", params: valid_payload_with_markdown, as: :json
+      }.to change(Request, :count).by(1)
+                                  .and change(Collaboration, :count).by(2)
+
+      expect(response).to have_http_status(:created)
+
+      json = JSON.parse(response.body)
+      expect(json).to include("id")
+
+      request = Request.last
+      expect(request.source_app).to eq("Mainstream")
+      expect(request.source_id).to be_present
+      expect(request.current_content["part_id"]["body"]).to eq("Many lines of data for the content. Many changes that need fact checking")
+      expect(request.current_markdown["part_id"]["body"]).to eq("# Many lines of data for the content. Many changes that need fact checking")
+      expect(request.status).to eq("new")
+      expect(request.requester_name).to eq("GDS Content Designer")
+      expect(request.requester_email).to eq("gds-content-designer@example.com")
+      expect(request.reason_for_change).to eq("a reason")
+      expect(request.zendesk_number).to eq("1234567")
+      expect(request.draft_content_id).to eq(draft_content_id)
+      expect(request.draft_auth_bypass_id).to eq(draft_auth_bypass_id)
+      expect(request.draft_slug).to eq("test-edition-slug")
+    end
+
+    it "creates a Request without zendesk_number" do
+      payload_without_zendesk = valid_payload_with_markdown.except(:zendesk_number)
+
+      expect {
+        post "/api/requests", params: payload_without_zendesk, as: :json
+      }.to change(Request, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+
+      request = Request.last
+      expect(request.zendesk_number).to be_nil
+    end
+
+    it "creates a Request without reason_for_change" do
+      payload_without_zendesk = valid_payload_with_markdown.except(:reason_for_change)
+
+      expect {
+        post "/api/requests", params: payload_without_zendesk, as: :json
+      }.to change(Request, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+
+      request = Request.last
+      expect(request.reason_for_change).to be_nil
+    end
+
+    it "creates a Request without draft fields" do
+      payload_without_draft = valid_payload_with_markdown.except(:draft_content_id, :draft_auth_bypass_id, :draft_slug)
+
+      expect {
+        post "/api/requests", params: payload_without_draft, as: :json
+      }.to change(Request, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+
+      request = Request.last
+      expect(request.draft_content_id).to be_nil
+      expect(request.draft_auth_bypass_id).to be_nil
+      expect(request.draft_slug).to be_nil
+    end
+
+    it "creates a user record for given email address when one does not already exist" do
+      expect {
+        post "/api/requests", params: valid_payload_with_markdown, as: :json
+      }.to change(User, :count).by(2)
+
+      expect(User.second_to_last.email).to eq("recipient1@example.com")
+      expect(User.last.email).to eq("recipient2@example.com")
+    end
+
+    it "does not create any new user records if they already exist for given email addresses" do
+      recipient1_email = "recipient1@example.com"
+      recipient1 = create(:user, email: recipient1_email)
+
+      expect {
+        post "/api/requests", params: valid_payload_with_markdown, as: :json
+      }.to change(User, :count).by(1)
+
+      expect(User.find_by(email: recipient1_email).id).to eq(recipient1.id)
+      expect(User.where(email: recipient1_email).count).to eq(1)
+    end
+
+    it "does not create any new user records if they already exist for given email addresses (case insensitive)" do
+      recipient1_email = "recipient1@example.com"
+      recipient1 = create(:user, email: recipient1_email)
+
+      recipient1_upcased = "RECIPIENT1@EXAMPLE.COM"
+
+      expect {
+        post "/api/requests", params: valid_payload_with_markdown.merge({ recipients: [recipient1_upcased] }), as: :json
+      }.to change(User, :count).by(0)
+
+      expect(User.find_by(email: recipient1_upcased).id).to eq(recipient1.id)
+      expect(User.where(email: recipient1_email).count).to eq(1)
+    end
+
+    it "creates a user record which contains only the email, ID, timestamps and defaults" do
+      post "/api/requests", params: valid_payload_with_markdown, as: :json
+
+      populated_attributes = User.last.attributes.compact.keys
+      expect(populated_attributes).to contain_exactly(
+        "email",
+        "id",
+        "created_at",
+        "updated_at",
+        "disabled",
+        "permissions",
+        "remotely_signed_out",
+      )
+    end
+
+    it "does not alter any existing user records" do
+      recipient1_email = "recipient1@example.com"
+      recipient1 = create(:user, email: recipient1_email)
+
+      expect {
+        post "/api/requests", params: valid_payload_with_markdown, as: :json
+      }.not_to(change { recipient1.reload.updated_at })
     end
   end
 
