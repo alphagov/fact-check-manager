@@ -227,6 +227,20 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(page).to have_text("You can enter up to 9000 characters")
         end
 
+        it "retains the content when the user fails validation for too many characters" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You can enter up to 9000 characters")
+          page.fill_in "fact_check_details", with: "a" * 9005
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+
+          expect(page).to have_text("a" * 9005)
+        end
+
         it "allows the user to submit the response" do
           visit compare_path(source_app: request.source_app, source_id: request.source_id)
           click_link(I18n.t("fact_check_comparison.respond_to_button"))
@@ -242,6 +256,7 @@ RSpec.describe "FactCheckResponse", type: :system do
           )
         end
       end
+
       context "when not entering body text" do
         it "shows a factual errors empty field error" do
           visit compare_path(source_app: request.source_app, source_id: request.source_id)
@@ -252,9 +267,10 @@ RSpec.describe "FactCheckResponse", type: :system do
           click_button(I18n.t("fact_check_response.continue_button"))
           expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
-          expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
         end
       end
+
       context "when entering too much body text" do
         it "warns the user when they are approaching the character limit" do
           visit compare_path(source_app: request.source_app, source_id: request.source_id)
@@ -275,6 +291,21 @@ RSpec.describe "FactCheckResponse", type: :system do
           page.fill_in "fact_check_details", with: "a" * 9005
           expect(page).to have_text("You have 5 characters too many")
         end
+
+        it "retains the content when the user fails validation for too many characters" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You have 9,000 characters remaining")
+          page.fill_in "fact_check_details", with: "a" * 9005
+          expect(page).to have_text("You have 5 characters too many")
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+
+          expect(page).to have_text("a" * 9005)
+        end
       end
     end
 
@@ -287,7 +318,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         click_button(I18n.t("fact_check_response.continue_button"))
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
-        expect(page).to have_text(I18n.t("fact_check_response.selection_error"))
+        expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
       end
     end
 

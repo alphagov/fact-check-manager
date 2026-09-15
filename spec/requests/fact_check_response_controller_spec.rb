@@ -134,7 +134,7 @@ RSpec.describe "FactCheckResponse", type: :request do
       end
 
       it "renders the response form with retained body content when params are provided" do
-        post respond_path(source_app: request.source_app, source_id: request.source_id, fact_check_response: {accepted: false, body: "Hello World"})
+        post respond_path(source_app: request.source_app, source_id: request.source_id, fact_check_response: { accepted: false, body: "Hello World" })
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("Hello World")
@@ -171,7 +171,7 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "" } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_response.selection_error"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
       end
 
       it "re-renders the response form with errors when incorrect and body is blank" do
@@ -179,7 +179,7 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "false", body: "" } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
       end
 
       it "does not require body when accepted is true" do
@@ -188,7 +188,7 @@ RSpec.describe "FactCheckResponse", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_verification.heading"))
-        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).not_to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
       end
     end
 

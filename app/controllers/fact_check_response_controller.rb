@@ -13,7 +13,15 @@ class FactCheckResponseController < ApplicationController
 
   def validate_fact_check_response
     @form_data = permitted_params
-    @errors = validate_form_data(@form_data)
+    @validation_response = Response.new(
+      request: @request,
+      user: current_user,
+      accepted: @form_data[:accepted],
+      body: @form_data[:body],
+    )
+
+    @validation_response.valid?
+    @errors = @validation_response.errors
 
     if @errors.any?
       render :fact_check_response
@@ -99,17 +107,6 @@ private
 
     params.require(:fact_check_response)
           .permit(:accepted, :body)
-  end
-
-  def validate_form_data(data)
-    errors = {}
-    errors[:accepted] = t("fact_check_response.selection_error") if data[:accepted].blank?
-
-    if data[:accepted] == "false" && data[:body].blank?
-      errors[:body] = t("fact_check_response.factual_errors_empty_field")
-    end
-
-    errors
   end
 
   def build_personalisation_hash(response)

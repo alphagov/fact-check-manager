@@ -1,5 +1,18 @@
 en:
-  hello: "Hello world"
+  activerecord:
+    errors:
+      models:
+        response:
+          attributes:
+            body:
+              format: "%{message}"
+              too_long: "Your feedback must be 9,000 characters or less"
+              blank: "Please could you provide more detail"
+            accepted:
+              format: "%{message}"
+              not_boolean: "Please select one option"
+            request_id:
+              not_unique: "has already been responded to"
   fact_check_comparison:
     heading: "Fact check the changes"
     respond_by: "Respond by"
@@ -16,12 +29,10 @@ en:
     heading: "Confirm the changes are factually correct"
     form_heading: "Are the changes factually correct?"
     error_heading: "There is a problem"
-    selection_error: "Please select one option"
     correct: "Yes, they're correct"
     incorrect: "No, there's an error"
     factual_errors: "What are the factual errors?"
     factual_errors_hint: "Say what's wrong, where it is, and why.<br /> For example: “Chapter 2, under ‘How much it costs’ – the fee is £150, not £130.”"
-    factual_errors_empty_field: "Please could you provide more detail"
     continue_button: "Continue"
   fact_check_verification:
     back_link: "Back"
