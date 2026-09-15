@@ -317,42 +317,29 @@ RSpec.describe "FactCheckGA4", type: :system do
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
       disable_form_submit
 
-      click_button("Back")
-      page.find("a", text: "Change\n#{I18n.t('fact_check_verification.confirm_changes')}").click
-      page.find("a", text: "Change\n#{I18n.t('fact_check_verification.factual_errors')}").click
+      click_button(I18n.t("fact_check_verification.back_link"))
+      click_button(I18n.t("fact_check_verification.change_answers_button"))
       click_button(I18n.t("fact_check_verification.confirm_button"))
 
       event_data = get_event_data
 
-      expect(event_data[0]["event_name"]).to eq("navigation")
-      expect(event_data[0]["link_domain"]).to eq(current_host)
-      expect(event_data[0]["method"]).to eq("primary click")
-      expect(event_data[0]["external"]).to eq("false")
+      expect(event_data[0]["action"]).to eq("back")
+      expect(event_data[0]["event_name"]).to eq("form_response")
+      expect(event_data[0]["section"]).to eq("Back")
       expect(event_data[0]["text"]).to eq("Back")
       expect(event_data[0]["type"]).to eq("back")
-      expect(event_data[0]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}")
 
-      expect(event_data[1]["event_name"]).to eq("navigation")
-      expect(event_data[1]["link_domain"]).to start_with(current_host)
-      expect(event_data[1]["method"]).to eq("primary click")
-      expect(event_data[1]["external"]).to eq("false")
-      expect(event_data[1]["text"]).to eq("Change Confirm the changes are factually correct")
-      expect(event_data[1]["type"]).to eq("generic_link")
-      expect(event_data[1]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
+      expect(event_data[2]["action"]).to eq("back")
+      expect(event_data[2]["event_name"]).to eq("form_response")
+      expect(event_data[2]["section"]).to eq("Back")
+      expect(event_data[2]["text"]).to eq("Change your answers")
+      expect(event_data[2]["type"]).to eq("back")
 
-      expect(event_data[2]["event_name"]).to eq("navigation")
-      expect(event_data[2]["link_domain"]).to start_with(current_host)
-      expect(event_data[2]["method"]).to eq("primary click")
-      expect(event_data[2]["external"]).to eq("false")
-      expect(event_data[2]["text"]).to eq("Change What are the factual errors?")
-      expect(event_data[2]["type"]).to eq("generic_link")
-      expect(event_data[2]["url"]).to eq("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
-
-      expect(event_data[3]["action"]).to eq("confirm and send")
-      expect(event_data[3]["event_name"]).to eq("form_response")
-      expect(event_data[3]["section"]).to eq("Check your answers before sending your response")
-      expect(event_data[3]["text"]).to eq("No answer given")
-      expect(event_data[3]["type"]).to eq("new")
+      expect(event_data[5]["action"]).to eq("confirm and send")
+      expect(event_data[5]["event_name"]).to eq("form_response")
+      expect(event_data[5]["section"]).to eq("Check your answers before sending your response")
+      expect(event_data[5]["text"]).to eq("No answer given")
+      expect(event_data[5]["type"]).to eq("new")
     end
 
     context "when the API fails" do
@@ -457,7 +444,7 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   def disable_form_submit
-    execute_script("document.querySelector('form').addEventListener('submit',function(e){e.preventDefault()})")
+    execute_script("document.querySelectorAll('form').forEach(function(form){form.addEventListener('submit',function(e){e.preventDefault()})})")
   end
 
   def get_event_data
