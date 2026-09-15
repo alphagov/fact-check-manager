@@ -106,7 +106,7 @@ module Api
     end
 
     def set_zendesk_link(zendesk_number)
-      zendesk_number.present? ? "Zendesk link: [#{zendesk_number}](https://govuk.zendesk.com/agent/tickets/#{zendesk_number})" : ""
+      zendesk_number.present? ? "Zendesk ticket: [#{zendesk_number}](https://govuk.zendesk.com/agent/tickets/#{zendesk_number})" : ""
     end
 
     def build_personalisation_hash(request)
