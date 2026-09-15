@@ -3,14 +3,14 @@
   title: t("fact_check_response.error_heading"),
   items: [
     {
-      text: @errors[:accepted] || @errors[:body],
+      text: @errors[:accepted].first || @errors[:body].first,
       href: @errors[:accepted].present? ? "#selection_radio_buttons" : "#fact_check_details",
       data_attributes: {
         module: "ga4-auto-tracker",
         "ga4-auto": {
           event_name: "form_error",
           type: t("fact_check_response.heading"),
-          text: @errors[:accepted] || @errors[:body],
+          text: @errors[:accepted].first || @errors[:body].first,
           section: t("fact_check_response.heading"),
           action: "error",
         },

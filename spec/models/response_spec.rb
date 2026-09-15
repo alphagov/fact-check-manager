@@ -11,8 +11,13 @@ RSpec.describe Response, type: :model do
     record = described_class.new
     record.valid?
 
+    expect(record.errors.attribute_names).to include(:accepted)
     expect(record.errors.attribute_names).to include(:request)
     expect(record.errors.attribute_names).to include(:user)
+
+    record.accepted = false
+    record.valid?
+
     expect(record.errors.attribute_names).to include(:body)
   end
 
@@ -75,6 +80,33 @@ RSpec.describe Response, type: :model do
 
       expect(duplicate_response).not_to be_valid
       expect(duplicate_response.errors[:request_id]).to include("has already been responded to")
+    end
+
+    it "validates that accepted must be true or false" do
+      response = FactoryBot.build(:response, accepted: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:accepted]).to include(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
+    end
+
+    it "validates that body must be present when accepted is false" do
+      response = FactoryBot.build(:response, accepted: false, body: nil)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
+    end
+
+    it "validates that body must be in length bounds when accepted is false" do
+      response = FactoryBot.build(:response, accepted: false, body: "a" * 9001)
+
+      expect(response).not_to be_valid
+      expect(response.errors[:body]).to include(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+    end
+
+    it "does not validate body when accepted is true" do
+      response = FactoryBot.create(:response, accepted: true)
+
+      expect(response).to be_valid
     end
   end
 
