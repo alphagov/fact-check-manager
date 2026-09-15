@@ -8,6 +8,6 @@
             hint: sanitize(t("fact_check_response.factual_errors_hint")),
             value: @form_data&.dig(:body),
             error: @errors[:body].presence,
-            error_message: @errors[:body].present? ? t("fact_check_response.factual_errors_empty_field") : nil,
+            error_message: @errors[:body].presence,
             rows: 18,
           } %>

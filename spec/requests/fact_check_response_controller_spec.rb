@@ -24,7 +24,7 @@ RSpec.describe "FactCheckResponse", type: :request do
                params: { fact_check_response: { accepted: "true", body: "" } }
 
           expect(@notify_client_spy).to have_received(:send_email)
-                                          .with(hash_including(personalisation: hash_including(responder_name: "Douglas Adams")))
+                                          .with(hash_including(personalisation: hash_including(responder_name: "Ada Lovelace")))
                                           .exactly(1).times
         end
 
@@ -84,7 +84,7 @@ RSpec.describe "FactCheckResponse", type: :request do
   end
 
   context "signed in user who is a collaborator" do
-    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user, :full) }
+    let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user, :full, name: "Ada Lovelace") }
     let(:request) do
       FactoryBot.create(
         :request,
@@ -149,6 +149,16 @@ RSpec.describe "FactCheckResponse", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+      end
+
+      it "re-renders the response form with errors when body is over the maximum length" do
+        post verify_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "false", body: "a" * 9001 } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Your response must be 9000 characters or less")
+        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).not_to include(I18n.t("fact_check_verification.heading"))
       end
 
       it "does not require body when accepted is true" do
@@ -234,14 +244,14 @@ RSpec.describe "FactCheckResponse", type: :request do
 
   context "signed in user who is an admin" do
     before do
-      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin govuk_admin])
+      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin govuk_admin], name: "Ada Lovelace")
     end
-    let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
+    let(:collab_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
       FactoryBot.create(
         :request,
         :with_collaborator,
-        collaborator: test_user,
+        collaborator: collab_user,
         previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
         current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
       )

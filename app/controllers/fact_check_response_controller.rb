@@ -108,6 +108,8 @@ private
 
     if data[:accepted] == "false" && data[:body].blank?
       errors[:body] = t("fact_check_response.factual_errors_empty_field")
+    elsif data[:body].to_s.length > Response::BODY_MAX_LENGTH
+      errors[:body] = t("fact_check_response.factual_errors_too_long", count: Response::BODY_MAX_LENGTH)
     end
 
     errors
