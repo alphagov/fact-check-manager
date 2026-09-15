@@ -26,6 +26,7 @@ en:
     factual_errors_too_long: "Your response must be %{count} characters or less"
     continue_button: "Continue"
   fact_check_verification:
+    back_link: "Back"
     heading: "Check your answers before sending your response"
     confirm_changes: "Confirm the changes are factually correct"
     factual_errors: "What are the factual errors?"
@@ -33,6 +34,7 @@ en:
     send_response: "Now send your response"
     send_response_warning: "Only one fact check response can be submitted. Make sure you’ve discussed this with colleagues first."
     confirm_button: "Confirm and send"
+    change_answers_button : "Change your answers"
     error_heading: "There is a problem"
     api_submission_request_cancelled: "We have cancelled this request. Contact us on the Zendesk ticket if you have any other questions."
     api_submission_error: "Please try submitting again"
