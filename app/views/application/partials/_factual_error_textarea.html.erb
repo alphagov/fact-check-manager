@@ -8,7 +8,7 @@
             hint: sanitize(t("fact_check_response.factual_errors_hint")),
             value: @form_data&.dig(:body),
             error: @errors[:body].presence,
-            error_message: @errors[:body].present? ? @errors[:body].first : nil,
+            error_message: (@errors[:body].presence&.first),
             rows: 18,
           },
       id: "fact_check_details",
