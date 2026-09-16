@@ -2,7 +2,8 @@ require "rails_helper"
 
 RSpec.describe "FactCheckComparison", type: :system do
   let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
-  let(:previous_content) { { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line will be changed</div>" } } }
+  let(:previous_content) { { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><h2>This line will be changed</h2>" } } }
+  let(:previous_markdown) { { "test_id" => { "heading" => "Test Heading", "body" => "This is the unchanged line. # This line will be changed" } } }
   let(:request) do
     FactoryBot.create(
       :request,
@@ -11,24 +12,40 @@ RSpec.describe "FactCheckComparison", type: :system do
       source_title: "Example title",
       deadline: Time.zone.now + 5.days,
       previous_content:,
-      current_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } },
+      current_content: { "test_id" => { "heading" => "Test Heading", "body" => "<div>This is the unchanged line.</div><h2>This line has changes</h2" } },
+      current_markdown: { "test_id" => { "heading" => "Test Heading", "body" => "This is the unchanged line. # This line has changes" } },
+      previous_markdown:,
     )
   end
 
   describe "The comparison page" do
-    it "displays the article title and deadline" do
+    it "displays the article title, deadline and both view tabs" do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(page).to have_text(request.source_title)
       expect(page).to have_text(request.formatted_deadline)
+      expect(page).to have_css("a", id: "tab_formatted-view", text: "Formatted view")
+      expect(page).to have_css("a", id: "tab_markdown-view", text: "Markdown view")
     end
 
-    it "displays deleted and added content in the diff" do
+    it "displays deleted and added content in the HTML diff" do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       expect(page).to have_text("This is the unchanged line.")
       expect(page).to have_css(".del", text: "This line will be changed")
       expect(page).to have_css(".ins", text: "This line has changes")
+      expect(page).not_to have_css(".del", text: "# This line will be changed")
+      expect(page).not_to have_css(".ins", text: "# This line has changes")
+    end
+
+    it "displays deleted and added content in the govspeak diff" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id, anchor: "markdown-view")
+
+      expect(page).to have_text("This is the unchanged line.")
+      expect(page).to have_css(".del", text: "# This line will be changed")
+      expect(page).to have_css(".ins", text: "# This line has changes")
+      expect(page).not_to have_css(".del", text: "line. This line will be changed")
+      expect(page).not_to have_css(".ins", text: "line. This line has changes")
     end
 
     it "has a link to respond to the fact check" do

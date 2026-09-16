@@ -64,6 +64,8 @@ module Api
         # dynamic hash fields at the end
         current_content: {},
         previous_content: {}, # optional
+        current_markdown: {}, # optional
+        previous_markdown: {}, # optional
       )
     end
 
@@ -73,6 +75,7 @@ module Api
         :draft_auth_bypass_id, # optional
         :draft_slug, # optional
         current_content: {},
+        current_markdown: {}, # optional
       )
     end
 
