@@ -31,23 +31,25 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <% if @markdown_differ %>
-      <%= render "govuk_publishing_components/components/tabs", {
+      <% component_helper = GovukPublishingComponents::Presenters::ComponentWrapperHelper.new(local_assigns) %>
+      <%= tag.div(**component_helper.all_attributes) do %>
+        <%= render "govuk_publishing_components/components/tabs", {
         panel_border: true,
+        data_attributes: {module: "lastTabClicked"},
         tabs: [
           {
             id: "formatted-view",
             label: "Formatted view",
             content: render(partial: "application/partials/html_diff"),
-            tab_data_attributes: {module: "lastTabClicked"},
           },
           {
             id: "markdown-view",
             label: "Markdown view",
             content: render(partial: "application/partials/govspeak_diff"),
-            tab_data_attributes: {module: "lastTabClicked"},
           },
         ],
       } %>
+      <% end %>
     <% else %>
       <%= render "application/partials/html_diff" %>
     <% end %>
