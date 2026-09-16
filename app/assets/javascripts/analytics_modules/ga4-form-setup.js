@@ -27,11 +27,7 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
     var section = form.closest('[data-ga4-section]').getAttribute('data-ga4-section')
     var type = 'new'
     var eventData
-    var action
-
-    if (form.querySelector('button[type="submit"]')) {
-      action = form.querySelector('button[type="submit"]').textContent.toLowerCase()
-    } else { action = 'None' }
+    var action = form.querySelector('button[type="submit"]').textContent.toLowerCase()
 
     eventData = {
       event_name: 'form_response',

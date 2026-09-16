@@ -331,20 +331,20 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(event_data[0]["action"]).to eq("back")
       expect(event_data[0]["event_name"]).to eq("form_response")
       expect(event_data[0]["section"]).to eq("Back")
-      expect(event_data[0]["text"]).to eq("Back")
-      expect(event_data[0]["type"]).to eq("back")
+      expect(event_data[0]["text"]).to eq("{}")
+      expect(event_data[0]["type"]).to eq("new")
 
-      expect(event_data[2]["action"]).to eq("back")
+      expect(event_data[1]["action"]).to eq("back")
+      expect(event_data[1]["event_name"]).to eq("form_response")
+      expect(event_data[1]["section"]).to eq("Back")
+      expect(event_data[1]["text"]).to eq("{}")
+      expect(event_data[1]["type"]).to eq("new")
+
+      expect(event_data[2]["action"]).to eq("confirm and send")
       expect(event_data[2]["event_name"]).to eq("form_response")
-      expect(event_data[2]["section"]).to eq("Back")
-      expect(event_data[2]["text"]).to eq("Change your answers")
-      expect(event_data[2]["type"]).to eq("back")
-
-      expect(event_data[5]["action"]).to eq("confirm and send")
-      expect(event_data[5]["event_name"]).to eq("form_response")
-      expect(event_data[5]["section"]).to eq("Check your answers before sending your response")
-      expect(event_data[5]["text"]).to eq("No answer given")
-      expect(event_data[5]["type"]).to eq("new")
+      expect(event_data[2]["section"]).to eq("Check your answers before sending your response")
+      expect(event_data[2]["text"]).to eq("No answer given")
+      expect(event_data[2]["type"]).to eq("new")
     end
 
     context "when the API fails" do
