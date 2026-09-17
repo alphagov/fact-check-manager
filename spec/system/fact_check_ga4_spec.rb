@@ -206,6 +206,8 @@ RSpec.describe "FactCheckGA4", type: :system do
 
       click_button(I18n.t("fact_check_response.continue_button"))
 
+      page.has_css?(".govuk-error-summary")
+
       event_data = get_event_data
 
       assert_equal "form_error", event_data[0]["event_name"]
