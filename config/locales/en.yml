@@ -23,6 +23,7 @@ en:
     factual_errors: "What are the factual errors?"
     factual_errors_hint: "Say what's wrong, where it is, and why.<br /> For example: “Chapter 2, under ‘How much it costs’ – the fee is £150, not £130.”"
     factual_errors_empty_field: "Please could you provide more detail"
+    factual_errors_too_long: "Your response must be %{count} characters or less"
     continue_button: "Continue"
   fact_check_verification:
     heading: "Check your answers before sending your response"
