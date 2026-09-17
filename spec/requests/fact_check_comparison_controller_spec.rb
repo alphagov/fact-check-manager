@@ -92,6 +92,38 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
     end
 
+    context "when accessed with a valid JWT token and no signed in user" do
+      let(:request) do
+        FactoryBot.create(
+          :request,
+          source_title: "Example title",
+          deadline: Time.zone.now + 5.days,
+          previous_content: { "test_part" => { "heading" => "body", "body" => "<div>Old content</div>" } },
+          current_content: { "test_part" => { "heading" => "body", "body" => "<div>New content</div>" } },
+        )
+      end
+
+      let(:token) do
+        helper = Object.new
+        helper.extend(AuthenticationHelper)
+        helper.send(:compare_preview_jwt_token, request)
+      end
+
+      before do
+        GDS::SSO.test_user = nil
+      end
+
+      it "renders the read-only message" do
+        get compare_path(
+          source_app: request.source_app,
+          source_id: request.source_id,
+          token: token,
+        )
+
+        expect(response.body).to include("Only the person coordinating the fact check can submit it to GDS.")
+      end
+    end
+
     context "when request already has a response" do
       let(:current_user) { FactoryBot.create(:user, permissions: %w[signin govuk_admin]) }
 
