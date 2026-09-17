@@ -34,7 +34,7 @@ end
 
 group :test do
   gem "climate_control"
-  gem "simplecov", "~>1.2"
+  gem "simplecov", "~>1.3"
   gem "webmock"
 end
 
