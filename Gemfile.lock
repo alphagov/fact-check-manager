@@ -119,7 +119,7 @@ GEM
     date (3.5.1)
     diff-lcs (1.6.2)
     diffy (3.4.4)
-    domain_name (0.6.20240107)
+    domain_name (0.6.20260907)
     drb (2.2.3)
     erb (6.0.7)
     erb_lint (0.9.0)
@@ -150,7 +150,7 @@ GEM
     ffi (1.17.4-x86_64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
     ffi (1.17.4-x86_64-linux-musl)
-    gds-api-adapters (103.3.1)
+    gds-api-adapters (103.5.0)
       addressable
       link_header
       null_logger
@@ -191,16 +191,6 @@ GEM
       rake (~> 13.3)
     googleapis-common-protos-types (1.23.0)
       google-protobuf (~> 4.26)
-    govspeak (10.9.1)
-      actionview (>= 6, < 8.1.4)
-      addressable (>= 2.3.8, < 2.9.1)
-      govuk_publishing_components (>= 43)
-      htmlentities (~> 4)
-      i18n (>= 0.7, < 1.14.9)
-      kramdown (>= 2.3.1, < 2.5.3)
-      nokogiri (~> 1.12)
-      rinku (~> 2.0)
-      sanitize (>= 6, < 8)
     govuk_app_config (9.26.0)
       connection_pool (< 4)
       logstasher (>= 2.1, < 4.0)
@@ -241,13 +231,12 @@ GEM
     hashdiff (1.2.1)
     hashie (5.1.0)
       logger
-    htmlentities (4.4.2)
     http-accept (1.7.0)
     http-cookie (1.1.6)
       domain_name (~> 0.5)
-    i18n (1.14.8)
+    i18n (1.15.2)
       concurrent-ruby (~> 1.0)
-    io-console (0.9.2)
+    io-console (0.9.4)
     irb (1.18.0)
       pp (>= 0.6.0)
       prism (>= 1.3.0)
@@ -298,20 +287,14 @@ GEM
       net-protocol
     net-pop (0.1.2)
       net-protocol
-    net-protocol (0.3.0)
+    net-protocol (0.4.0)
       timeout
     net-smtp (0.5.1)
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.5)
-    nokodiff (1.0.0.rc1)
-      actionview (>= 6, < 8.1.4)
-      byebug
+    nokodiff (1.0.0)
       diff-lcs
-      gds-api-adapters (>= 101.0, < 103.4)
-      govspeak (>= 10.6.3)
-      rails (>= 6, < 8.1.4)
-      view_component (~> 4)
     nokogiri (1.19.4-aarch64-linux-gnu)
       racc (~> 1.4)
     nokogiri (1.19.4-aarch64-linux-musl)
@@ -348,7 +331,7 @@ GEM
     omniauth-oauth2 (1.9.0)
       oauth2 (>= 2.0.2, < 3)
       omniauth (~> 2.0)
-    opentelemetry-api (1.11.0)
+    opentelemetry-api (1.11.1)
       logger
     opentelemetry-common (0.25.1)
       opentelemetry-api (~> 1.0)
@@ -470,7 +453,7 @@ GEM
       opentelemetry-helpers-sql
       opentelemetry-helpers-sql-processor
       opentelemetry-instrumentation-base (~> 0.25)
-    opentelemetry-instrumentation-net_http (0.29.0)
+    opentelemetry-instrumentation-net_http (0.29.1)
       opentelemetry-instrumentation-base (~> 0.25)
     opentelemetry-instrumentation-pg (0.37.0)
       opentelemetry-helpers-sql
@@ -515,7 +498,7 @@ GEM
       opentelemetry-semantic_conventions (>= 1.8.0)
     opentelemetry-registry (0.6.3)
       opentelemetry-api (~> 1.1)
-    opentelemetry-sdk (1.13.0)
+    opentelemetry-sdk (1.13.1)
       logger
       opentelemetry-api (~> 1.1)
       opentelemetry-common (~> 0.20)
@@ -617,7 +600,6 @@ GEM
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
     rexml (3.4.4)
-    rinku (2.0.6)
     rouge (5.1.0)
       strscan (~> 3.1)
     rspec (3.13.2)
@@ -682,9 +664,6 @@ GEM
       rubocop (~> 1.81)
     ruby-progressbar (1.13.0)
     rubyzip (3.2.2)
-    sanitize (7.0.0)
-      crass (~> 1.0.2)
-      nokogiri (>= 1.16.8)
     sass-embedded (1.94.2-aarch64-linux-gnu)
       google-protobuf (~> 4.31)
     sass-embedded (1.94.2-aarch64-linux-musl)
@@ -754,10 +733,6 @@ GEM
     uri (1.1.1)
     useragent (0.16.11)
     version_gem (1.1.14)
-    view_component (4.12.0)
-      actionview (>= 7.1.0)
-      activesupport (>= 7.1.0)
-      concurrent-ruby (~> 1)
     warden (1.2.9)
       rack (>= 2.0.9)
     warden-oauth2 (0.0.1)
@@ -805,7 +780,7 @@ DEPENDENCIES
   govuk_sidekiq
   govuk_test
   listen
-  nokodiff (= 1.0.0.rc1)
+  nokodiff (= 1.0.0)
   notifications-ruby-client
   pg
   plek
