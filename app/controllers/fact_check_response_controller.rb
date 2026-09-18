@@ -5,21 +5,27 @@ class FactCheckResponseController < ApplicationController
   before_action :check_already_responded, only: %i[respond_to_fact_check validate_fact_check_response send_response]
 
   def respond_to_fact_check
-    session.delete(:fact_check_response) unless params[:back]
     @errors = {}
-    @form_data = session.fetch(:fact_check_response, {}).with_indifferent_access
+    @form_data = permitted_params
 
     render :fact_check_response
   end
 
   def validate_fact_check_response
     @form_data = permitted_params
-    @errors = validate_form_data(@form_data)
+    @validation_response = Response.new(
+      request: @request,
+      user: current_user,
+      accepted: @form_data[:accepted],
+      body: @form_data[:body],
+    )
+
+    @validation_response.valid?
+    @errors = @validation_response.errors
 
     if @errors.any?
       render :fact_check_response
     else
-      session[:fact_check_response] = @form_data
       render :fact_check_verify_response
     end
   end
@@ -75,7 +81,6 @@ class FactCheckResponseController < ApplicationController
     if @errors.present?
       render :fact_check_verify_response
     else
-      session.delete(:fact_check_response)
       render :fact_check_submitted
     end
   end
@@ -98,21 +103,10 @@ private
   end
 
   def permitted_params
+    return {} if params[:fact_check_response].blank?
+
     params.require(:fact_check_response)
           .permit(:accepted, :body)
-  end
-
-  def validate_form_data(data)
-    errors = {}
-    errors[:accepted] = t("fact_check_response.selection_error") if data[:accepted].blank?
-
-    if data[:accepted] == "false" && data[:body].blank?
-      errors[:body] = t("fact_check_response.factual_errors_empty_field")
-    elsif data[:body].to_s.length > Response::BODY_MAX_LENGTH
-      errors[:body] = t("fact_check_response.factual_errors_too_long", count: Response::BODY_MAX_LENGTH)
-    end
-
-    errors
   end
 
   def build_personalisation_hash(response)

@@ -18,7 +18,7 @@
         heading: t("fact_check_response.form_heading"),
         id: "selection_radio_buttons",
         visually_hidden_heading: true,
-        error_message: (@errors[:accepted].presence),
+        error_message: (@errors[:accepted].presence&.first),
         items: [
           {
             value: true,
