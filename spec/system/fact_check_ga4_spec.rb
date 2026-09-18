@@ -234,6 +234,24 @@ RSpec.describe "FactCheckGA4", type: :system do
       assert_equal "error", event_data[0]["action"]
     end
 
+    it "pushes the correct values to the dataLayer on load where there are errors caused by the user entering too many characters into the 'What are the factual errors?' text field" do
+      visit respond_path(source_app: request.source_app, source_id: request.source_id)
+
+      choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+      page.fill_in(I18n.t("fact_check_response.factual_errors"), with: "a" * 9001)
+      click_button(I18n.t("fact_check_response.continue_button"))
+
+      page.has_css?("h1", text: "Confirm the changes are factually correct")
+
+      event_data = get_event_data
+
+      assert_equal "form_error", event_data[0]["event_name"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["type"]
+      assert_equal "Your feedback must be 9,000 characters or less", event_data[0]["text"]
+      assert_equal "Confirm the changes are factually correct", event_data[0]["section"]
+      assert_equal "error", event_data[0]["action"]
+    end
+
     it "pushes the correct values to the dataLayer on load" do
       visit respond_path(source_app: request.source_app, source_id: request.source_id)
 

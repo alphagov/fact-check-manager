@@ -197,8 +197,8 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "false", body: "a" * 9001 } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Your response must be 9000 characters or less")
-        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+        expect(response.body).not_to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
         expect(response.body).not_to include(I18n.t("fact_check_verification.heading"))
       end
 

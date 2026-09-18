@@ -40,7 +40,7 @@ RSpec.describe Response, type: :model do
       response = FactoryBot.build(:response, accepted: nil)
 
       expect(response).not_to be_valid
-      expect(response.errors[:accepted]).to include("must be true or false")
+      expect(response.errors[:accepted]).to include(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe Response, type: :model do
       response = FactoryBot.build(:response, accepted: false, body: nil)
 
       expect(response).not_to be_valid
-      expect(response.errors[:body]).to include("cannot be blank if accepted is false")
+      expect(response.errors[:body]).to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
     end
 
     it "can be empty if accepted is true" do
@@ -62,7 +62,7 @@ RSpec.describe Response, type: :model do
       response = FactoryBot.build(:response, accepted: false, body: "a" * 9001)
 
       expect(response).not_to be_valid
-      expect(response.errors[:body]).to include("length must be a maximum of 9000 characters")
+      expect(response.errors[:body]).to include(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
     end
 
     it "can have a length of 8999 characters" do
