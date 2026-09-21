@@ -129,6 +129,37 @@ RSpec.describe "FactCheckResponse", type: :request do
       end
     end
 
+    describe "POST /respond" do
+      it "returns 404 when no request exists for the given source_app and source_id" do
+        post respond_path(source_app: "invalid", source_id: "invalid")
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "renders the response form empty when no params are provided" do
+        post respond_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_response.heading"))
+      end
+
+      it "renders the response form with retained body content when params are provided" do
+        post respond_path(source_app: request.source_app, source_id: request.source_id, fact_check_response: { accepted: false, body: "Hello World" })
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Hello World")
+      end
+
+      it "shows the already submitted page when visiting respond for a request with a response" do
+        create(:response, request: request)
+
+        get respond_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_already_submitted.heading"))
+      end
+    end
+
     describe "POST /verify-response" do
       it "returns 404 when no request exists for the given source_app and source_id" do
         post verify_response_path(source_app: "invalid", source_id: "invalid"),
@@ -150,7 +181,7 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "" } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_response.selection_error"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
       end
 
       it "re-renders the response form with errors when incorrect and body is blank" do
@@ -158,7 +189,7 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "false", body: "" } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
       end
 
       it "re-renders the response form with errors when body is over the maximum length" do
@@ -166,8 +197,8 @@ RSpec.describe "FactCheckResponse", type: :request do
              params: { fact_check_response: { accepted: "false", body: "a" * 9001 } }
 
         expect(response).to have_http_status(:ok)
-        expect(response.body).to include("Your response must be 9000 characters or less")
-        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).to include(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+        expect(response.body).not_to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
         expect(response.body).not_to include(I18n.t("fact_check_verification.heading"))
       end
 
@@ -177,7 +208,7 @@ RSpec.describe "FactCheckResponse", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_verification.heading"))
-        expect(response.body).not_to include(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(response.body).not_to include(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
       end
     end
 

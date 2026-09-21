@@ -50,10 +50,9 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_text(I18n.t("fact_check_verification.heading"))
         expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
         expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
-        expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
         expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
         expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
+        expect(page).to have_button(I18n.t("fact_check_verification.change_answers_button"))
 
         click_button(I18n.t("fact_check_verification.confirm_button"))
         expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
@@ -69,7 +68,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_text(I18n.t("fact_check_submitted.thirty_sec"))
       end
 
-      it "allows the user to click the change link without wiping the previous selection" do
+      it "allows the user to click the change button without wiping the previous selection" do
         visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
         expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
@@ -85,9 +84,9 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
         expect(page).to have_text(I18n.t("fact_check_response.correct"))
-        expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
+        expect(page).to have_text(I18n.t("fact_check_verification.change_answers_button"))
 
-        click_link(I18n.t("fact_check_verification.change_link"))
+        click_button(I18n.t("fact_check_verification.change_answers_button"))
         expect(page).to have_current_path("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -110,7 +109,9 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_button(I18n.t("fact_check_response.continue_button"))
 
         choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+        expect(page).to have_text("You have 9,000 characters remaining")
         page.fill_in "fact_check_details", with: "Fact check error detail test string"
+        expect(page).to have_text("You have 8,965 characters remaining")
 
         click_button(I18n.t("fact_check_response.continue_button"))
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
@@ -120,7 +121,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_text("Fact check error detail test string")
       end
 
-      it "allows the user to click the change link without losing the detail contents for an incorrect response" do
+      it "allows the user to click the change answers button without losing the detail contents for an incorrect response" do
         visit compare_path(source_app: request.source_app, source_id: request.source_id)
         click_link(I18n.t("fact_check_comparison.respond_to_button"))
         expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
@@ -141,7 +142,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         expect(page).to have_text(I18n.t("fact_check_verification.factual_errors"))
         expect(page).to have_text("Fact check error detail test string")
 
-        click_link(I18n.t("fact_check_verification.change_link"), match: :first)
+        click_button(I18n.t("fact_check_verification.change_answers_button"))
         expect(page).to have_current_path("#{respond_path(source_app: request.source_app, source_id: request.source_id)}?back=true")
 
         expect(page).to have_text(I18n.t("fact_check_response.heading"))
@@ -215,6 +216,111 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(link[:target]).to eq("_blank")
         end
       end
+      context "when javascript is disabled", js: false do
+        it "uses the fallback character count message" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You can enter up to 9000 characters")
+          page.fill_in "fact_check_details", with: "a" * 9000
+          expect(page).to have_text("You can enter up to 9000 characters")
+        end
+
+        it "retains the content when the user fails validation for too many characters" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You can enter up to 9000 characters")
+          page.fill_in "fact_check_details", with: "a" * 9005
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+
+          expect(page).to have_text("a" * 9005)
+        end
+
+        it "allows the user to submit the response" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          page.fill_in "fact_check_details", with: "Fact check error detail test string"
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          click_button(I18n.t("fact_check_verification.confirm_button"))
+
+          expect(page).to have_current_path(
+            confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+          )
+        end
+      end
+
+      context "when not entering body text" do
+        it "shows a factual errors empty field error" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+          expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
+
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.blank"))
+        end
+      end
+
+      context "when entering too much body text" do
+        it "warns the user when they are approaching the character limit after 8550 characters" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+
+          page.fill_in "fact_check_details", with: "a" * 8549
+
+          # The text is always on the page, it's just hidden by CSS below the threshold amount. The normal have_text method can't really deal with this
+          expect(page).to have_css(".govuk-character-count__message--disabled",
+                                   text: "You have 451 characters remaining",
+                                   visible: false)
+
+          page.fill_in "fact_check_details", with: "a" * 8550
+          expect(page).to have_css(".govuk-character-count__message",
+                                   text: "You have 450 characters remaining",
+                                   visible: true)
+
+          page.fill_in "fact_check_details", with: "a" * 9000
+          expect(page).to have_css(".govuk-character-count__message",
+                                   text: "You have 0 characters remaining",
+                                   visible: true)
+        end
+
+        it "warns the user when they have exceeded the character limit" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You have 9,000 characters remaining")
+          page.fill_in "fact_check_details", with: "a" * 9005
+          expect(page).to have_text("You have 5 characters too many")
+        end
+
+        it "retains the content when the user fails validation for too many characters" do
+          visit compare_path(source_app: request.source_app, source_id: request.source_id)
+          click_link(I18n.t("fact_check_comparison.respond_to_button"))
+
+          choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
+          expect(page).to have_text("You have 9,000 characters remaining")
+          page.fill_in "fact_check_details", with: "a" * 9005
+          expect(page).to have_text("You have 5 characters too many")
+
+          click_button(I18n.t("fact_check_response.continue_button"))
+          expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.body.too_long"))
+
+          expect(page).to have_text("a" * 9005)
+        end
+      end
     end
 
     context "when submitting without selecting a radio button" do
@@ -226,21 +332,7 @@ RSpec.describe "FactCheckResponse", type: :system do
         click_button(I18n.t("fact_check_response.continue_button"))
         expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
 
-        expect(page).to have_text(I18n.t("fact_check_response.selection_error"))
-      end
-    end
-
-    context "when submitting 'Incorrect' without entering body text" do
-      it "shows a factual errors empty field error" do
-        visit compare_path(source_app: request.source_app, source_id: request.source_id)
-        click_link(I18n.t("fact_check_comparison.respond_to_button"))
-        expect(page).to have_current_path(respond_path(source_app: request.source_app, source_id: request.source_id))
-
-        choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
-        click_button(I18n.t("fact_check_response.continue_button"))
-        expect(page).to have_current_path(verify_response_path(source_app: request.source_app, source_id: request.source_id))
-
-        expect(page).to have_text(I18n.t("fact_check_response.factual_errors_empty_field"))
+        expect(page).to have_text(I18n.t("activerecord.errors.models.response.attributes.accepted.not_boolean"))
       end
     end
 
@@ -279,10 +371,9 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(page).to have_text(I18n.t("fact_check_verification.heading"))
           expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
           expect(page).to have_text(I18n.t("fact_check_response.correct"))
-          expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
-          expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
           expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
           expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
+          expect(page).to have_button(I18n.t("fact_check_verification.change_answers_button"))
 
           click_button(I18n.t("fact_check_verification.confirm_button"))
           expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
@@ -317,10 +408,9 @@ RSpec.describe "FactCheckResponse", type: :system do
           expect(page).to have_text(I18n.t("fact_check_verification.heading"))
           expect(page).to have_text(I18n.t("fact_check_verification.confirm_changes"))
           expect(page).to have_text(I18n.t("fact_check_response.correct"))
-          expect(page).to have_text(I18n.t("fact_check_verification.change_link"))
-          expect(page).to have_text(I18n.t("fact_check_verification.send_response"))
           expect(page).to have_text(I18n.t("fact_check_verification.send_response_warning"))
           expect(page).to have_button(I18n.t("fact_check_verification.confirm_button"))
+          expect(page).to have_button(I18n.t("fact_check_verification.change_answers_button"))
 
           click_button(I18n.t("fact_check_verification.confirm_button"))
           expect(page).to have_current_path(confirm_response_path(source_app: request.source_app, source_id: request.source_id))
