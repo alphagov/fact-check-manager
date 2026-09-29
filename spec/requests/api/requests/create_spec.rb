@@ -349,6 +349,7 @@ RSpec.describe "POST /api/requests", type: :request do
           fake_response = double("response", code: 500, body: "Simulated Notify Error")
           specific_error = Notifications::Client::RequestError.new(fake_response)
           allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+          allow(GovukError).to receive(:notify)
 
           expect {
             post "/api/requests", params: valid_payload, as: :json
@@ -357,6 +358,14 @@ RSpec.describe "POST /api/requests", type: :request do
           expect(response).to have_http_status(:bad_gateway)
           json = JSON.parse(response.body)
           expect(json.dig("errors", "notify_error")).to eq("Simulated Notify Error")
+          expect(GovukError).to have_received(:notify).with(
+            specific_error,
+            extra: hash_including(
+              source_app: valid_payload[:source_app],
+              source_id: valid_payload[:source_id],
+              request_id: be_present,
+            ),
+          )
         end
 
         it "process team only API key errors differently" do
@@ -365,6 +374,7 @@ RSpec.describe "POST /api/requests", type: :request do
             specific_error = Notifications::Client::BadRequestError.new(fake_response)
             allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
             allow(Rails.logger).to receive(:error)
+            allow(GovukError).to receive(:notify)
 
             expect {
               post "/api/requests", params: valid_payload, as: :json
@@ -372,6 +382,7 @@ RSpec.describe "POST /api/requests", type: :request do
 
             expect(response).to have_http_status(:bad_gateway)
             expect(Rails.logger).to have_received(:error).with(/GOV.UK Notify team/)
+            expect(GovukError).not_to have_received(:notify)
           end
         end
 
@@ -381,10 +392,12 @@ RSpec.describe "POST /api/requests", type: :request do
             specific_error = Notifications::Client::BadRequestError.new(fake_response)
             allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
             allow(Rails.logger).to receive(:error)
+            allow(GovukError).to receive(:notify)
 
             post "/api/requests", params: valid_payload, as: :json
 
             expect(Rails.logger).to have_received(:error).with(/Simulated bad template error/)
+            expect(GovukError).to have_received(:notify).with(specific_error, extra: anything)
             json = JSON.parse(response.body)
             expect(json.dig("errors", "error_code")).to eq(400)
           end
