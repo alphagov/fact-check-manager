@@ -7,7 +7,7 @@ module ApiErrorHandlerConcern
   end
 
   def notify_request_error_handler(exception)
-    Rails.logger.info("Error: #{exception.code}, #{exception.message}")
+    Rails.logger.error("Error: #{exception.code}, #{exception.message}")
     render json: { errors: { notify_error: exception.message, error_code: exception.code } }, status: :bad_gateway
   end
 
@@ -15,7 +15,7 @@ module ApiErrorHandlerConcern
     not_prod = %w[integration staging].include?(ENV.fetch("GOVUK_ENVIRONMENT", nil))
     if not_prod && exception.message =~ /team-only API key/
       team_only_error_message = "One or more recipients not in GOV.UK Notify team. This error will not occur in Production."
-      Rails.logger.info("Error: #{exception.code}, #{team_only_error_message}")
+      Rails.logger.error("Error: #{exception.code}, #{team_only_error_message}")
       render json: {
         errors: {
           notify_error: team_only_error_message,

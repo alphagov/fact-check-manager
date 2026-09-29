@@ -139,12 +139,12 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
           fake_response = double("response", code: 400, body: "Simulated team-only API key Error")
           specific_error = Notifications::Client::BadRequestError.new(fake_response)
           allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
-          allow(Rails.logger).to receive(:info)
+          allow(Rails.logger).to receive(:error)
 
           make_request
 
           expect(response).to have_http_status(:bad_gateway)
-          expect(Rails.logger).to have_received(:info).with(/GOV.UK Notify team/)
+          expect(Rails.logger).to have_received(:error).with(/GOV.UK Notify team/)
         end
       end
 
@@ -153,11 +153,11 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
           fake_response = double("response", code: 400, body: "Simulated bad template error")
           specific_error = Notifications::Client::BadRequestError.new(fake_response)
           allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
-          allow(Rails.logger).to receive(:info)
+          allow(Rails.logger).to receive(:error)
 
           make_request
 
-          expect(Rails.logger).to have_received(:info).with(/Simulated bad template error/)
+          expect(Rails.logger).to have_received(:error).with(/Simulated bad template error/)
           json = JSON.parse(response.body)
           expect(json.dig("errors", "error_code")).to eq(400)
         end
