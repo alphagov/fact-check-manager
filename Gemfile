@@ -28,6 +28,11 @@ gem "sentry-sidekiq"
 gem "terser"
 gem "uglifier"
 
+# Temporary workaround: nokodiff 1.0.0 requires byebug when Rails loads the
+# application. Remove this dependency back into the development/test group
+# once a nokodiff release no longer does.
+gem "byebug", require: false
+
 group :development do
   gem "listen"
 end
@@ -39,7 +44,6 @@ group :test do
 end
 
 group :development, :test do
-  gem "byebug"
   gem "factory_bot_rails"
   gem "govuk_test"
   gem "rspec-html-matchers"
