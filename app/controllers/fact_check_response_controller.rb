@@ -66,8 +66,10 @@ class FactCheckResponseController < ApplicationController
           else
             NotifyApiService.send_response_rejected_email(@response, personalisation_hash)
           end
-        rescue Notifications::Client::RequestError
-          # We don't roll back the DB or Publisher if the confirmation email fails, but we do display an error
+        rescue StandardError => e
+          # Publisher has already accepted the response, so we don't roll back the DB if the confirmation
+          # email fails for any reason, including network errors, but we do report it and display an error
+          GovukError.notify(e, extra: error_context)
           @errors << t("fact_check_verification.notify_submission_error")
         end
       else

@@ -83,12 +83,34 @@ RSpec.describe "FactCheckResponse", type: :request do
         fake_response = double("response", code: 500, body: "Simulated Notify Error")
         specific_error = Notifications::Client::RequestError.new(fake_response)
         allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+        allow(GovukError).to receive(:notify)
 
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+        expect(GovukError).to have_received(:notify).with(
+          specific_error,
+          extra: hash_including(
+            source_app: request.source_app,
+            source_id: request.source_id,
+            request_id: be_present,
+          ),
+        )
+      end
+
+      it "keeps the response, displays an error and reports it if Notify cannot be reached" do
+        allow(@notify_client_spy).to receive(:send_email).and_raise(Net::ReadTimeout)
+        allow(GovukError).to receive(:notify)
+
+        post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "true", body: "" } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+        expect(Response.count).to eq(1)
+        expect(GovukError).to have_received(:notify).with(instance_of(Net::ReadTimeout), extra: anything)
       end
     end
   end
