@@ -2,3 +2,4 @@
 //= link application.js
 //= link_tree ../builds
 //= link es6-components.js
+//= link domain-config.js

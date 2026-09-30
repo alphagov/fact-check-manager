@@ -7,6 +7,7 @@
   <meta name="govuk:user-organisation-name" content="<%= current_user&.organisation_slug %>">
   <meta name="govuk:content-id" content="<%= @request.source_id %>" %>
   <%= javascript_include_tag "es6-components", type: "module" %>
+  <%= javascript_include_tag "domain-config" %>
   <%= javascript_include_tag "govuk_publishing_components/load-analytics" %>
 <% end %>
 
