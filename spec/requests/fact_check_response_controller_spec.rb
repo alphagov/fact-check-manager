@@ -83,12 +83,34 @@ RSpec.describe "FactCheckResponse", type: :request do
         fake_response = double("response", code: 500, body: "Simulated Notify Error")
         specific_error = Notifications::Client::RequestError.new(fake_response)
         allow(@notify_client_spy).to receive(:send_email).and_raise(specific_error)
+        allow(GovukError).to receive(:notify)
 
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+        expect(GovukError).to have_received(:notify).with(
+          specific_error,
+          extra: hash_including(
+            source_app: request.source_app,
+            source_id: request.source_id,
+            request_id: be_present,
+          ),
+        )
+      end
+
+      it "keeps the response, displays an error and reports it if Notify cannot be reached" do
+        allow(@notify_client_spy).to receive(:send_email).and_raise(Net::ReadTimeout)
+        allow(GovukError).to receive(:notify)
+
+        post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "true", body: "" } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_verification.notify_submission_error"))
+        expect(Response.count).to eq(1)
+        expect(GovukError).to have_received(:notify).with(instance_of(Net::ReadTimeout), extra: anything)
       end
     end
   end
@@ -245,6 +267,8 @@ RSpec.describe "FactCheckResponse", type: :request do
       end
 
       context "Publisher API failure" do
+        before { allow(GovukError).to receive(:notify) }
+
         it "rolls back the response when the API fails" do
           allow(PublisherApiService).to receive(:post_fact_check_response)
                                           .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
@@ -255,6 +279,57 @@ RSpec.describe "FactCheckResponse", type: :request do
           expect(response).to have_http_status(:ok)
           expect(response.body).to include(I18n.t("fact_check_verification.api_submission_error"))
           expect(Response.count).to eq(0)
+        end
+
+        it "reports the failure to Sentry as a message with context" do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPErrorResponse.new(422, "", "forced test error"))
+
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(GovukError).to have_received(:notify).with(
+            "Failed to send fact check response to Publisher",
+            extra: hash_including(
+              source_app: request.source_app,
+              source_id: request.source_id,
+              request_id: be_present,
+              error_class: "GdsApi::HTTPErrorResponse",
+              status_code: 422,
+            ),
+          )
+        end
+
+        it "reports a 503 from Publisher as a message so Sentry does not drop it" do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::HTTPUnavailable.new(503, "", nil))
+
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(response.body).to include(I18n.t("fact_check_verification.api_submission_error"))
+          expect(Response.count).to eq(0)
+          expect(GovukError).to have_received(:notify).with(
+            "Failed to send fact check response to Publisher",
+            extra: hash_including(error_class: "GdsApi::HTTPUnavailable", status_code: 503),
+          )
+        end
+
+        it "rolls back, displays an error and reports it when Publisher times out" do
+          allow(PublisherApiService).to receive(:post_fact_check_response)
+                                          .and_raise(GdsApi::TimedOutException)
+
+          post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+               params: { fact_check_response: { accepted: "true", body: "" } }
+
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_verification.api_submission_error"))
+          expect(Response.count).to eq(0)
+          expect(@notify_client_spy).not_to have_received(:send_email)
+          expect(GovukError).to have_received(:notify).with(
+            "Failed to send fact check response to Publisher",
+            extra: hash_including(error_class: "GdsApi::TimedOutException", status_code: nil),
+          )
         end
 
         it "does not trigger Notify to send the emails when the API fails" do

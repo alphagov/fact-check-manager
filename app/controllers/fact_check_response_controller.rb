@@ -45,19 +45,16 @@ class FactCheckResponseController < ApplicationController
       if @response.save
         begin
           PublisherApiService.post_fact_check_response(@response)
-        rescue GdsApi::HTTPErrorResponse => e
-          if e.error_details&.empty? || e.error_details.is_a?(String)
-            @errors << t("fact_check_verification.api_submission_error")
-          else
-            received_errors = e.error_details&.dig("errors")
-            @errors << if state_error_present?(received_errors)
-                         t("fact_check_verification.api_submission_request_cancelled")
-                       else
-                         # Error is probably a hash (Model error) but not a state error
-                         # We may deal with more error types here in future
-                         t("fact_check_verification.api_submission_error")
-                       end
-          end
+        rescue GdsApi::BaseError => e
+          GovukError.notify(
+            "Failed to send fact check response to Publisher",
+            extra: error_context.merge(
+              error_class: e.class.name,
+              error_message: e.message,
+              status_code: e.try(:code),
+            ),
+          )
+          @errors << publisher_error_message(e)
 
           raise ActiveRecord::Rollback
         end
@@ -69,8 +66,10 @@ class FactCheckResponseController < ApplicationController
           else
             NotifyApiService.send_response_rejected_email(@response, personalisation_hash)
           end
-        rescue Notifications::Client::RequestError
-          # We don't roll back the DB or Publisher if the confirmation email fails, but we do display an error
+        rescue StandardError => e
+          # Publisher has already accepted the response, so we don't roll back the DB if the confirmation
+          # email fails for any reason, including network errors, but we do report it and display an error
+          GovukError.notify(e, extra: error_context)
           @errors << t("fact_check_verification.notify_submission_error")
         end
       else
@@ -119,6 +118,25 @@ private
         formatted_body = response.body.lines(chomp: true).map { |line| "^#{line}" }.join("\n")
         hash[:reason_for_rejection] = formatted_body
       end
+    end
+  end
+
+  def error_context
+    {
+      source_app: @request.source_app,
+      source_id: @request.source_id,
+      request_id: request.request_id,
+    }
+  end
+
+  def publisher_error_message(error)
+    # Only HTTP errors carry details; timeouts and connection failures do not
+    error_details = error.try(:error_details)
+
+    if error_details.is_a?(Hash) && state_error_present?(error_details["errors"])
+      t("fact_check_verification.api_submission_request_cancelled")
+    else
+      t("fact_check_verification.api_submission_error")
     end
   end
 
