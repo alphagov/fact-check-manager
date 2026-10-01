@@ -293,7 +293,7 @@ GEM
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.5)
-    nokodiff (1.0.0)
+    nokodiff (1.1.0)
       diff-lcs
     nokogiri (1.19.4-aarch64-linux-gnu)
       racc (~> 1.4)
@@ -780,7 +780,7 @@ DEPENDENCIES
   govuk_sidekiq
   govuk_test
   listen
-  nokodiff (= 1.0.0)
+  nokodiff
   notifications-ruby-client
   pg
   plek
