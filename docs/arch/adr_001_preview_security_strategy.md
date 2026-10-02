@@ -3,7 +3,7 @@
 ## Context
 We know that single points of contact (SPoCs) and subject matter experts (SMEs) need access to not yet published information in order to check it for 
 factual accuracy. To this end we need to provide them with a secure way to access this information 
-without requiring a SignOn account, as SMEs may not have a SignOn account.
+without requiring a Signon account, as SMEs may not have a Signon account.
 
 We know this need also exists in [Whitehall](https://github.com/alphagov/whitehall) and [Content Reuse](https://github.com/alphagov/content-block-manager), so multiple teams are solving for this 
 problem, and by solving in the same way we are providing a consistent security implementation. This consistency 
