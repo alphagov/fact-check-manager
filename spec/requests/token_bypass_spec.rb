@@ -128,6 +128,44 @@ RSpec.describe "Token Bypass Access", type: :request do
     end
   end
 
+  describe "responding to a fact check with a valid token and no signed in user" do
+    let(:token) { compare_preview_jwt_token(request_record) }
+    let(:path_params) { { source_app: request_record.source_app, source_id: request_record.source_id } }
+
+    before do
+      GDS::SSO.test_user = nil
+      allow(PublisherApiService).to receive(:post_fact_check_response)
+      expect_any_instance_of(ApplicationController).to receive(:authenticate_user!) do |controller|
+        controller.redirect_to("/auth/gds")
+      end
+    end
+
+    it "requires authentication on GET /respond" do
+      get respond_path(path_params), params: { token: token }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /respond" do
+      post respond_path(path_params), params: { token: token }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /verify-response" do
+      post verify_response_path(path_params),
+           params: { token: token, fact_check_response: { accepted: "true" } }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /confirm-response and does not submit a response" do
+      post confirm_response_path(path_params),
+           params: { token: token, fact_check_response: { accepted: "true", body: "" } }
+
+      expect(response).to redirect_to("/auth/gds")
+      expect(Response.count).to eq(0)
+      expect(PublisherApiService).not_to have_received(:post_fact_check_response)
+    end
+  end
+
   describe "sign out link" do
     let(:url) { "/requests/#{request_record.source_app}/#{request_record.source_id}/compare" }
 
