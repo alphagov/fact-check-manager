@@ -1,7 +1,7 @@
 # Decision record: Why we use the Shareable preview with JWT method for FCM
 
 ## Context
-We know that single points of contact (SPoCs) and subject matter experts (SMEs) need access to not yet pubished information in order to check it for 
+We know that single points of contact (SPoCs) and subject matter experts (SMEs) need access to not yet published information in order to check it for 
 factual accuracy. To this end we need to provide them with a secure way to access this information 
 without requiring a SignOn account, as SMEs may not have a SignOn account.
 
