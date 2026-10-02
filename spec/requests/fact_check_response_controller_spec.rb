@@ -414,7 +414,7 @@ RSpec.describe "FactCheckResponse", type: :request do
 
   context "signed in user who is not an admin or collaborator" do
     before do
-      GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin])
+      GDS::SSO.test_user = FactoryBot.create(:user, :full, permissions: %w[signin], name: "Ada Lovelace")
     end
     let(:test_user) { FactoryBot.create(:user, email: "test@collab.test") }
     let(:request) do
@@ -428,19 +428,19 @@ RSpec.describe "FactCheckResponse", type: :request do
     end
 
     describe "GET /respond" do
-      it "redirects to the compare page" do
+      it "renders the response form" do
         get respond_path(source_app: request.source_app, source_id: request.source_id)
 
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:ok)
       end
     end
 
     describe "POST /verify-response" do
-      it "redirects to the compare page" do
+      it "renders the verify page" do
         post verify_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true" } }
 
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:ok)
       end
     end
 
@@ -448,13 +448,19 @@ RSpec.describe "FactCheckResponse", type: :request do
       before do
         allow(PublisherApiService).to receive(:post_fact_check_response)
                                         .and_return(double(code: 200))
+        allow(@notify_client_spy).to receive(:send_email)
       end
 
-      it "redirects to the compare page" do
+      include_examples "Notify email service"
+
+      it "creates a response attributed to the signed in user" do
         post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
              params: { fact_check_response: { accepted: "true", body: "" } }
 
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include(I18n.t("fact_check_submitted.fact_check_submitted"))
+        expect(Response.last.user).to eq(GDS::SSO.test_user)
+        expect(@notify_client_spy).to have_received(:send_email)
       end
     end
   end

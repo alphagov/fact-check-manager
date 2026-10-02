@@ -1,8 +1,10 @@
 module AuthenticationHelper
-  def check_permissions(user, request)
-    return true if user.govuk_admin? || request.users.include?(current_user)
+  def check_permissions(_user, _request)
+    # Collaborator check disabled for launch so shared inboxes can respond.
+    # return true if user.govuk_admin? || request.users.include?(current_user)
 
-    raise GDS::SSO::PermissionDeniedError, "You do not have permission to see this page."
+    # raise GDS::SSO::PermissionDeniedError, "You do not have permission to see this page."
+    true
   end
 
   def generate_compare_link(request)

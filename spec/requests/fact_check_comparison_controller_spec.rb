@@ -78,16 +78,11 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
 
       describe "GET /compare" do
-        it "does not render the page" do
+        it "renders the respond to fact check button" do
           get compare_path(source_app: request.source_app, source_id: request.source_id)
 
-          expect(response).to have_http_status(:forbidden)
-        end
-
-        it "does not render the page with tab anchor" do
-          get compare_path(source_app: request.source_app, source_id: request.source_id, anchor: "markdown-view")
-
-          expect(response).to have_http_status(:forbidden)
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include(I18n.t("fact_check_comparison.respond_to_button"))
         end
       end
     end

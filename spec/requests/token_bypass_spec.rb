@@ -52,9 +52,9 @@ RSpec.describe "Token Bypass Access", type: :request do
     context "when logged in as a GDS user who is not a collaborator or admin" do
       before { GDS::SSO.test_user = FactoryBot.create(:user) }
 
-      it "prevents access with no token" do
+      it "allows access with no token" do
         get url
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:success)
       end
 
       it "allows access with a valid token" do
@@ -64,11 +64,11 @@ RSpec.describe "Token Bypass Access", type: :request do
         expect(response).to have_http_status(:success)
       end
 
-      it "prevents access with an invalid token" do
+      it "allows access with an invalid token" do
         token = "invalid-token"
 
         get url, params: { token: token }
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:success)
       end
     end
 
