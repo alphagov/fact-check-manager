@@ -11,9 +11,11 @@ does not deal with the backend handling of these requests. For information on th
 When a fact check request is made from the initial application, outside of FCM, a new page is created within FCM that
 can be linked to from anywhere. 
 
-However, there are measures in place to ensure that only the user who sent the request,
-as well as the recipients of that request, are able to read and respond. All other users will be unable to
-view its contents and will instead see an error when trying to load the page.
+Users need to sign in through Signon to read and respond to a request. Anyone with a shareable preview link can also
+read it without signing in, but they need to sign in to respond.
+
+Any signed in user with the link can respond, not just the recipients of the request. This is so that requests sent
+to shared inboxes can be responded to. Read [ADR 002](../arch/adr_002_any_signed_in_user_can_respond.md) for why.
 
 To learn more about how we handle permissions, read the [user access documentation](user-access.md).
 
@@ -33,8 +35,8 @@ application sends the data to FCM. Regardless, the process is the same for chang
 > **Note:** If there is no previous version to compare to, the diff view will only show the current content without any
 > formatting. This is by design, as there is no prior document from which changes have been made.
 
-Once the user has considered the changes (or the whole document in the case of a new release), and they have the 
-permissions required to respond, they can move onto the response view.
+Once the user has considered the changes (or the whole document in the case of a new release), and they are signed
+in, they can move onto the response view.
 
 ## Response View
 The response view is a simple page giving the user the option to approve the changes with no modifications needed, or to
