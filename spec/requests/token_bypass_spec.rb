@@ -52,9 +52,9 @@ RSpec.describe "Token Bypass Access", type: :request do
     context "when logged in as a GDS user who is not a collaborator or admin" do
       before { GDS::SSO.test_user = FactoryBot.create(:user) }
 
-      it "prevents access with no token" do
+      it "allows access with no token" do
         get url
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:success)
       end
 
       it "allows access with a valid token" do
@@ -64,11 +64,11 @@ RSpec.describe "Token Bypass Access", type: :request do
         expect(response).to have_http_status(:success)
       end
 
-      it "prevents access with an invalid token" do
+      it "allows access with an invalid token" do
         token = "invalid-token"
 
         get url, params: { token: token }
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:success)
       end
     end
 
@@ -125,6 +125,44 @@ RSpec.describe "Token Bypass Access", type: :request do
         get url, params: { token: token }
         expect(response).to have_http_status(:success)
       end
+    end
+  end
+
+  describe "responding to a fact check with a valid token and no signed in user" do
+    let(:token) { compare_preview_jwt_token(request_record) }
+    let(:path_params) { { source_app: request_record.source_app, source_id: request_record.source_id } }
+
+    before do
+      GDS::SSO.test_user = nil
+      allow(PublisherApiService).to receive(:post_fact_check_response)
+      expect_any_instance_of(ApplicationController).to receive(:authenticate_user!) do |controller|
+        controller.redirect_to("/auth/gds")
+      end
+    end
+
+    it "requires authentication on GET /respond" do
+      get respond_path(path_params), params: { token: token }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /respond" do
+      post respond_path(path_params), params: { token: token }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /verify-response" do
+      post verify_response_path(path_params),
+           params: { token: token, fact_check_response: { accepted: "true" } }
+      expect(response).to redirect_to("/auth/gds")
+    end
+
+    it "requires authentication on POST /confirm-response and does not submit a response" do
+      post confirm_response_path(path_params),
+           params: { token: token, fact_check_response: { accepted: "true", body: "" } }
+
+      expect(response).to redirect_to("/auth/gds")
+      expect(Response.count).to eq(0)
+      expect(PublisherApiService).not_to have_received(:post_fact_check_response)
     end
   end
 

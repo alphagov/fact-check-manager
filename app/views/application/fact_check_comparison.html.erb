@@ -12,7 +12,7 @@
         text: t("fact_check_comparison.response_submitted"),
       } %>
 
-    <% elsif current_user.nil? || (!current_user.govuk_admin? && !@request.users.include?(current_user)) %>
+    <% elsif current_user.nil? %>
       <%= render "govuk_publishing_components/components/inset_text", {
         text: "Only the person coordinating the fact check can submit it to GDS.",
       } %>
