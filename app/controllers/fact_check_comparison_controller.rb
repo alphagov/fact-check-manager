@@ -36,6 +36,18 @@ class FactCheckComparisonController < ApplicationController
 
 private
 
+  ALLOWED_PARAMS = {
+    utm_source: %w[notify],
+    utm_medium: %w[email],
+    utm_campaign: %w[fact_check],
+    utm_term: %w[sme spoc],
+    utm_content: %w[
+      zendesk_ticket
+      view_the_fact_check
+      respond_to_the_fact_check
+    ],
+  }.freeze
+
   def set_request
     @request = Request.most_recent_for_source(source_app: params[:source_app], source_id: params[:source_id])
     raise ActiveRecord::RecordNotFound, "No request found" unless @request
@@ -156,15 +168,28 @@ private
   end
 
   def token_bypass?
-    return false if bypass_params[:token].blank?
+    return false if allowed_params[:token].blank?
 
-    current_request = Request.most_recent_for_source(source_app: bypass_params[:source_app], source_id: bypass_params[:source_id])
+    current_request = Request.most_recent_for_source(source_app: allowed_params[:source_app], source_id: allowed_params[:source_id])
     return unless current_request
 
-    valid_compare_preview_jwt?(bypass_params[:token], current_request)
+    valid_compare_preview_jwt?(allowed_params[:token], current_request)
   end
 
-  def bypass_params
-    params.permit(:source_app, :source_id, :token)
+  def allowed_params
+    permitted = params.permit(
+      :source_app,
+      :source_id,
+      :token,
+      *ALLOWED_PARAMS.keys,
+    )
+
+    base_params = permitted.slice(:source_app, :source_id, :token)
+    valid_utm_params = ALLOWED_PARAMS.each_with_object({}) do |(key, allowed_values), result|
+      value = permitted[key]
+      result[key] = value if allowed_values.include?(value)
+    end
+
+    base_params.merge(valid_utm_params)
   end
 end
