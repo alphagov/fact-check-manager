@@ -145,7 +145,7 @@ private
       current_part_heading = current_part[:heading]
       current_part_content = current_part[:body]
 
-      previous_part_content = @previous_markdown.dig(part_id, :body)
+      previous_part_content = @previous_markdown.dig(part_id, :body).to_s
 
       heading = @current_markdown.size == 1 ? nil : current_part_heading
 
