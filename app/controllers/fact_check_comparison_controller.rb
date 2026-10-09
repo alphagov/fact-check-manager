@@ -7,6 +7,10 @@ class FactCheckComparisonController < ApplicationController
   before_action :authenticate_user!, unless: :token_bypass?, only: :compare
   before_action :set_request, only: :compare
 
+  def index
+    render "application/fact_check_homepage"
+  end
+
   def compare
     return unless token_bypass? || check_permissions(current_user, @request)
     return render "application/fact_check_expired" unless @request.diff_accessible?

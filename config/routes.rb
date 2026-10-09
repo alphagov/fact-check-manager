@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   get "/healthcheck/live", to: proc { [200, {}, %w[OK]] }
   get "/healthcheck/ready", to: GovukHealthcheck.rack_response
 
-  root to: proc { raise ActionController::RoutingError, "Not found" }
+  root to: "fact_check_comparison#index"
 
   scope "requests" do
     scope ":source_app" do
