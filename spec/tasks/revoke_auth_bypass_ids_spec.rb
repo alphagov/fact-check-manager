@@ -38,7 +38,7 @@ RSpec.describe "RakeTaskTests", type: :request do
 
       pre_processed_bypass_id = @test_request.auth_bypass_id
 
-      Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke(@test_request.source_id.to_s)
+      Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke("publisher", @test_request.source_id.to_s)
       @test_request.reload
 
       expect(pre_processed_bypass_id).not_to eq(@test_request.auth_bypass_id)
@@ -50,7 +50,7 @@ RSpec.describe "RakeTaskTests", type: :request do
       pre_processed_bypass_id = @test_request.auth_bypass_id
       pre_processed_bypass_id_2 = @test_request_2.auth_bypass_id
 
-      Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke(@test_request.source_id, @test_request_2.source_id)
+      Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke("publisher", @test_request.source_id, @test_request_2.source_id)
       @test_request.reload
       @test_request_2.reload
 
@@ -62,9 +62,17 @@ RSpec.describe "RakeTaskTests", type: :request do
       Rake::Task["fact_check:revoke_preview_links_by_source_ids"].reenable
       resent_request = FactoryBot.create(:request, source_id: @test_request.source_id)
 
-      expect { Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke(@test_request.source_id) }
+      expect { Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke("publisher", @test_request.source_id) }
         .to change { @test_request.reload.auth_bypass_id }
         .and(change { resent_request.reload.auth_bypass_id })
+    end
+
+    it "Does not reset a request from another source app with the same source id" do
+      Rake::Task["fact_check:revoke_preview_links_by_source_ids"].reenable
+      other_app_request = FactoryBot.create(:request, source_app: "whitehall", source_id: @test_request.source_id)
+
+      expect { Rake::Task["fact_check:revoke_preview_links_by_source_ids"].invoke("publisher", @test_request.source_id) }
+        .not_to(change { other_app_request.reload.auth_bypass_id })
     end
 
     it "Resets the requests it finds, then exits listing the ids it cannot find" do
