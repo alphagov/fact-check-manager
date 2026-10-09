@@ -551,5 +551,29 @@ RSpec.describe "FactCheckComparison", type: :request do
         end
       end
     end
+
+    context "when a part with an empty body is added" do
+      let(:request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+          deadline: Time.zone.now + 5.days,
+          previous_content: { "part_1" => { "heading" => "Part 1 heading", "body" => "<p>Part 1.</p>" } },
+          current_content: { "part_1" => { "heading" => "Part 1 heading", "body" => "<p>Part 1.</p>" },
+                             "part_2" => { "heading" => "Part 2 heading", "body" => "" } },
+          previous_markdown: { "part_1" => { "heading" => "Part 1 heading", "body" => "Part 1." } },
+          current_markdown: { "part_1" => { "heading" => "Part 1 heading", "body" => "Part 1." },
+                              "part_2" => { "heading" => "Part 2 heading", "body" => "" } },
+        )
+      end
+
+      it "renders the empty part as added" do
+        get compare_path(source_app: request.source_app, source_id: request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Part 2 heading (ADDED)")
+      end
+    end
   end
 end
