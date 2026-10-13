@@ -75,3 +75,8 @@ en:
     heading: "You can no longer view the fact check"
     response_too_old: "The response was submitted more than 3 working days ago."
     questions: "You can send any questions on the"
+  fact_check_homepage:
+    heading: "Using Fact Check Manager"
+    subheading: "You cannot see outstanding fact checks here."
+    how_to_heading: "If you need to respond to a fact check"
+    how_to_fact_check_html: 'You should have an email from GOV.UK Publishing containing direct links and instructions to complete the fact check.<br><br>If you are unsure what fact checking is, and what you need to do, you can <a href="https://www.gov.uk/government/publications/how-content-requests-from-government-get-published/fact-checking-content-on-govuk"> read the fact checking content on GOV.UK guidance</a>.'
