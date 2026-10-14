@@ -45,6 +45,29 @@ RSpec.describe "PATCH /api/requests/:source_app/:source_id", type: :request do
       expect(request.requester_email).to eq("m.tucker@gov.uk")
     end
 
+    it "does not update attributes outside the permitted parameters" do
+      payload = update_payload.merge(
+        source_app: "another-app",
+        source_id: "another-id",
+        requester_email: "changed@example.com",
+        status: "completed",
+      )
+
+      patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}",
+            params: payload,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+
+      existing_request.reload
+
+      expect(existing_request.source_app).to eq("publisher")
+      expect(existing_request.source_id).to eq(update_payload[:source_id])
+      expect(existing_request.requester_email).to eq("m.tucker@gov.uk")
+      expect(existing_request.status).to eq("new")
+      expect(existing_request.source_title).to eq("Updated Title")
+    end
+
     it "updates the draft_auth_bypass_id" do
       new_auth_bypass_id = SecureRandom.uuid
       payload_with_auth_bypass = update_payload.merge(draft_auth_bypass_id: new_auth_bypass_id)
