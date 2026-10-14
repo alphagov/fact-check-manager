@@ -68,6 +68,24 @@ RSpec.describe "PATCH /api/requests/:source_app/:source_id", type: :request do
       expect(existing_request.source_title).to eq("Updated Title")
     end
 
+    it "updates the most recent request when multiple requests exist for the same source" do
+      older_request = FactoryBot.create(
+        :request,
+        source_app: existing_request.source_app,
+        source_id: existing_request.source_id,
+        created_at: 1.day.ago,
+      )
+      older_title = older_request.source_title
+
+      patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}",
+            params: update_payload,
+            as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(existing_request.reload.source_title).to eq("Updated Title")
+      expect(older_request.reload.source_title).to eq(older_title)
+    end
+
     it "updates the draft_auth_bypass_id" do
       new_auth_bypass_id = SecureRandom.uuid
       payload_with_auth_bypass = update_payload.merge(draft_auth_bypass_id: new_auth_bypass_id)
