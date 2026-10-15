@@ -227,6 +227,42 @@ RSpec.describe "FactCheckComparison", type: :request do
       end
     end
 
+    context "when multiple requests exist for the same source" do
+      let(:current_user) { GDS::SSO.test_user = FactoryBot.create(:user) }
+
+      let!(:older_request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+          source_title: "Older Edition Title",
+          created_at: 2.days.ago,
+          current_content: { "part_1" => { "heading" => "Older Heading", "body" => "<div>Older edition body</div>" } },
+        )
+      end
+
+      let!(:latest_request) do
+        FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+          source_app: older_request.source_app,
+          source_id: older_request.source_id,
+          source_title: "Latest Edition Title",
+          created_at: 1.day.ago,
+          current_content: { "part_1" => { "heading" => "Latest Heading", "body" => "<div>Latest edition body</div>" } },
+        )
+      end
+
+      it "renders the most recent request" do
+        get compare_path(source_app: latest_request.source_app, source_id: latest_request.source_id)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Latest Edition Title")
+        expect(response.body).not_to include("Older Edition Title")
+      end
+    end
+
     context "with one part" do
       let(:current_content) { { "test_id" => { "heading" => "heading_not_shown", "body" => "<div>This is the unchanged line.</div><div>This line has changes</div>" } } }
 

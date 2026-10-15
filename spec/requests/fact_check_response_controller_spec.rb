@@ -266,6 +266,24 @@ RSpec.describe "FactCheckResponse", type: :request do
         expect(PublisherApiService).to have_received(:post_fact_check_response)
       end
 
+      it "attaches the response to the most recent request when multiple exist for the same source" do
+        older_request = FactoryBot.create(
+          :request,
+          :with_collaborator,
+          collaborator: current_user,
+          source_app: request.source_app,
+          source_id: request.source_id,
+          created_at: 2.days.ago,
+        )
+
+        post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
+             params: { fact_check_response: { accepted: "true", body: "" } }
+
+        expect(response).to have_http_status(:ok)
+        expect(request.reload.response).to be_present
+        expect(older_request.reload.response).to be_nil
+      end
+
       context "Publisher API failure" do
         before { allow(GovukError).to receive(:notify) }
 
