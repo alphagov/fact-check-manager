@@ -1,0 +1,125 @@
+<% content_for :title, "Accessibility statement for Fact Check Manager" %>
+<% content_for :page_title, "Accessibility statement for Fact Check Manager" %>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds" data-module="ga4-links-setup ga4-link-tracker">
+    <p class="govuk-body">
+      This accessibility statement applies to content published on the
+      <a class="govuk-link govuk-link--no-visited-state" href="https://fact-check-manager.publishing.service.gov.uk/">fact-check-manager.publishing.service.gov.uk</a>
+      domain.
+    </p>
+
+    <p class="govuk-body">
+      This website is run by the Government Digital Service. We want as many people as possible to be able to use this website. For example, that means you should be able to:
+    </p>
+
+    <%= render "govuk_publishing_components/components/list", {
+      visible_counters: true,
+      items: [
+        "change colours, contrast levels and fonts using browser or device settings",
+        "zoom in up to 400% without the text spilling off the screen",
+        "navigate most of the website using a keyboard or speech recognition software",
+        "listen to most of the website using a screen reader, including the most recent versions of JAWS, NVDA and VoiceOver",
+      ],
+    } %>
+
+    <p class="govuk-body">
+      We’ve also made the website text as simple as possible to understand.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "How accessible this website is",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      We know some parts of this website are not fully accessible as list structures are not communicated reliably to screen reader users.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Feedback and contact information",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      If you find any problems not listed on this page or think we’re not meeting accessibility requirements,
+      <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/contact/govuk">contact us</a>.
+    </p>
+
+    <p class="govuk-body">
+      You can also
+      <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/contact/govuk">tell us if you need information in a different format</a>.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Enforcement procedure",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      The Equality and Human Rights Commission (EHRC) is responsible for enforcing the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018 (the ‘accessibility regulations’). If you’re not happy with how we respond to your complaint, contact the
+      <a class="govuk-link govuk-link--no-visited-state" href="https://www.equalityadvisoryservice.com/">Equality Advisory and Support Service (EASS)</a>.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Technical information about this website’s accessibility",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      The Government Digital Service is committed to making its website accessible, in accordance with the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations 2018.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Compliance status",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      This website is partially compliant with the
+      <a class="govuk-link govuk-link--no-visited-state" href="https://www.w3.org/TR/WCAG22">Web Content Accessibility Guidelines version 2.2</a>
+      AA standard due to the non-compliances listed below.
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Non-compliance with the accessibility regulations",
+      heading_level: 3,
+      font_size: "s",
+      margin_bottom: 3,
+    } %>
+
+    <p class="govuk-body">
+      Some changed list items are announced by screen readers as individual bullets rather than as part of a bulleted list. This fails WCAG 2.2 success criterion 1.3.1 (Info and Relationships).
+    </p>
+
+    <%= render "govuk_publishing_components/components/heading", {
+      text: "Preparation of this accessibility statement",
+      heading_level: 2,
+      font_size: "m",
+      margin_bottom: 4,
+    } %>
+
+    <p class="govuk-body">
+      This statement was prepared on 14 October 2026.
+    </p>
+
+    <p class="govuk-body">
+      This website was last tested in October 2026 against the WCAG 2.2 AA standard.
+    </p>
+
+    <p class="govuk-body">
+      The test was carried out by a Senior Accessibility Specialist at
+      <a class="govuk-link govuk-link--no-visited-state" href="https://www.gov.uk/">GOV.UK</a>.
+    </p>
+  </div>
+</div>

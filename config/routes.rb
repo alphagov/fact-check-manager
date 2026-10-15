@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   get "/healthcheck/ready", to: GovukHealthcheck.rack_response
 
   root to: "fact_check_comparison#index"
+  get "/accessibility-statement", to: "application#accessibility_statement", as: :accessibility_statement
 
   scope "requests" do
     scope ":source_app" do
