@@ -43,6 +43,28 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
           expect(@notify_client_spy).to have_received(:send_email).with(hash_including(email_address: user2.email))
         end
       end
+
+      it "sends emails to collaborators on the most recent request for the source" do
+        older_user = create(:user, email: "older-recipient@example.com")
+        older_request = create(
+          :request,
+          source_app: existing_request.source_app,
+          source_id: existing_request.source_id,
+          created_at: 1.day.ago,
+        )
+        create(:collaboration, user: older_user, request: older_request, role: "fact_checker")
+
+        allow(@notify_client_spy).to receive(:send_email)
+
+        make_request
+
+        expect(@notify_client_spy).to have_received(:send_email)
+          .with(hash_including(email_address: user1.email))
+        expect(@notify_client_spy).to have_received(:send_email)
+          .with(hash_including(email_address: user2.email))
+        expect(@notify_client_spy).not_to have_received(:send_email)
+          .with(hash_including(email_address: older_user.email))
+      end
     end
 
     context "personalisation" do
