@@ -80,5 +80,27 @@ describe('GA4LinksSetup', function () {
       expect(bodyLink3GA4Data.event_name).toBe('navigation')
       expect(bodyLink3GA4Data.type).toBe('generic_link')
     })
+
+    it('redacts token query string parameters from link urls in the main section', function () {
+      var tokenLink, otherLink, tokenLinkGA4Data, otherLinkGA4Data
+
+      moduleHtml =
+        `<a id="tokenLink" href="https://draft-origin.example.com/test-slug?foo=bar&token=abc.def.ghi#section">Preview</a>
+        <a id="otherLink" href="/requests/publisher/1/respond">Respond</a>`
+      module = document.createElement('main')
+      module.innerHTML = moduleHtml
+      document.body.appendChild(module)
+
+      ga4LinksSetup = new window.GOVUK.Modules.Ga4LinksSetup(module)
+      ga4LinksSetup.init()
+
+      tokenLink = module.querySelector('a#tokenLink')
+      otherLink = module.querySelector('a#otherLink')
+      tokenLinkGA4Data = JSON.parse(tokenLink.dataset.ga4Link)
+      otherLinkGA4Data = JSON.parse(otherLink.dataset.ga4Link)
+
+      expect(tokenLinkGA4Data.url).toBe('https://draft-origin.example.com/test-slug?foo=bar&token=[token]#section')
+      expect(otherLinkGA4Data.url).toBe('/requests/publisher/1/respond')
+    })
   })
 })
