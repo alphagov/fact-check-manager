@@ -11,6 +11,10 @@ class FactCheckComparisonController < ApplicationController
     render "application/fact_check_homepage"
   end
 
+  def accessibility_statement
+    render "application/accessibility_statement"
+  end
+
   def compare
     return unless token_bypass? || check_permissions(current_user, @request)
     return render "application/fact_check_expired" unless @request.diff_accessible?
@@ -160,12 +164,25 @@ private
   end
 
   def token_bypass?
+    return @token_bypass if defined?(@token_bypass)
+
+    @token_bypass = valid_bypass_token?
+  end
+
+  def valid_bypass_token?
     return false if bypass_params[:token].blank?
 
     current_request = Request.most_recent_for_source(source_app: bypass_params[:source_app], source_id: bypass_params[:source_id])
-    return unless current_request
+    return false unless current_request
 
     valid_compare_preview_jwt?(bypass_params[:token], current_request)
+  end
+
+  # Carries the token through so token bypass users can view the statement without signing in
+  def accessibility_statement_link
+    return super unless token_bypass?
+
+    accessibility_statement_path(bypass_params.to_h)
   end
 
   def bypass_params
