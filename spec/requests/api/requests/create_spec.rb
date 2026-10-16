@@ -256,7 +256,7 @@ RSpec.describe "POST /api/requests", type: :request do
           post "/api/requests", params: valid_payload, as: :json
 
           request_record = Request.last
-          expected_prefix = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare?token="
+          expected_prefix = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check&token="
 
           expect(@notify_client_spy).to have_received(:send_email).with(
             hash_including(
@@ -271,7 +271,7 @@ RSpec.describe "POST /api/requests", type: :request do
           post "/api/requests", params: valid_payload, as: :json
 
           request_record = Request.last
-          expected_link = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare"
+          expected_link = "#{Plek.external_url_for('fact-check-manager')}/requests/#{request_record.source_app}/#{request_record.source_id}/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check"
 
           expect(@notify_client_spy).to have_received(:send_email)
             .with(hash_including(personalisation: hash_including(non_tokenised_link: expected_link))).exactly(2).times
