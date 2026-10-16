@@ -128,6 +128,19 @@ RSpec.describe "Token Bypass Access", type: :request do
     end
   end
 
+  describe "GET /" do
+    before { GDS::SSO.test_user = nil }
+
+    it "requires authentication" do
+      expect_any_instance_of(ApplicationController).to receive(:authenticate_user!) do |controller|
+        controller.redirect_to("/auth/gds")
+      end
+
+      get root_path
+      expect(response).to redirect_to("/auth/gds")
+    end
+  end
+
   describe "responding to a fact check with a valid token and no signed in user" do
     let(:token) { compare_preview_jwt_token(request_record) }
     let(:path_params) { { source_app: request_record.source_app, source_id: request_record.source_id } }
