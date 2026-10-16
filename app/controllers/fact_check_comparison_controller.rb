@@ -4,7 +4,7 @@ class FactCheckComparisonController < ApplicationController
 
   include AuthenticationHelper
 
-  before_action :authenticate_user!, unless: :token_bypass?, only: :compare
+  before_action :authenticate_user!, unless: :token_bypass?
   before_action :set_request, only: :compare
 
   def index
