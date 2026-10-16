@@ -8,11 +8,11 @@ module AuthenticationHelper
   end
 
   def generate_compare_link(request)
-    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id)}?#{utm_params('spoc')}"
+    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id, **utm_params('spoc'))}"
   end
 
   def generate_compare_preview_link(request)
-    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id)}?#{utm_params('sme')}&token=#{compare_preview_jwt_token(request)}"
+    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id, **utm_params('sme'))}&token=#{compare_preview_jwt_token(request)}"
   end
 
   def draft_origin_preview_url(request)
@@ -66,6 +66,12 @@ protected
   end
 
   def utm_params(utm_term)
-    "utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=#{utm_term}&utm_content=respond_to_fact_check"
+    {
+      utm_source: "notify",
+      utm_medium: "email",
+      utm_campaign: "fact_check",
+      utm_term:,
+      utm_content: "respond_to_fact_check",
+    }
   end
 end

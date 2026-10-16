@@ -32,7 +32,7 @@ RSpec.describe "FactCheckResponse", type: :request do
           post confirm_response_path(source_app: request.source_app, source_id: request.source_id),
                params: { fact_check_response: { accepted: "true", body: "" } }
 
-          expected_link = Plek.external_url_for("fact-check-manager") + compare_path(request.source_app, request.source_id)
+          expected_link = "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id)}?utm_campaign=fact_check&utm_content=respond_to_fact_check&utm_medium=email&utm_source=notify&utm_term=spoc"
           expect(@notify_client_spy).to have_received(:send_email)
                                           .with(hash_including(personalisation: hash_including(non_tokenised_link: expected_link)))
                                           .exactly(1).times
