@@ -164,6 +164,15 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(page_view["content_id"]).to eq(request.source_id)
     end
 
+    it "redacts the token from the page location on load" do
+      visit compare_path(source_app: request.source_app, source_id: request.source_id, token: "secret.jwt.token")
+
+      page_view = get_page_view_data
+
+      expect(page_view["location"]).to end_with("?token=[token]")
+      expect(page_view["location"]).not_to include("secret.jwt.token")
+    end
+
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
       disable_links
@@ -189,6 +198,7 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(event_data[1]["text"]).to eq("Preview the draft page (opens in new tab)")
       expect(event_data[1]["type"]).to eq("generic_link")
       expect(event_data[1]["url"]).to include(request.draft_slug.to_s)
+      expect(event_data[1]["url"]).to end_with("?token=[token]")
 
       expect(event_data[2]["event_name"]).to eq("navigation")
       expect(event_data[2]["link_domain"]).to eq("https://gov.uk")

@@ -47,9 +47,23 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
       }
 
       Array.from(links).forEach(function (link, index) {
+        var href = link.getAttribute('href')
+        // Links can carry preview JWTs, which must not be sent to GA4.
+        // These links sit inside data-ga4-do-not-redact, so the tracker's
+        // own query string stripping does not apply to them.
+        if (href) {
+          linkData.url = this.stripTokens(href)
+        } else {
+          delete linkData.url
+        }
+
         link.setAttribute('data-ga4-link', JSON.stringify(linkData))
-      })
+      }, this)
     }
+  }
+
+  Ga4LinksSetup.prototype.stripTokens = function (url) {
+    return url.replace(/((?:\?|&)token=)(?:[^&#\s]*)/g, '$1[token]')
   }
 
   Modules.Ga4LinksSetup = Ga4LinksSetup
