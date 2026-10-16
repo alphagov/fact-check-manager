@@ -8,11 +8,11 @@ module AuthenticationHelper
   end
 
   def generate_compare_link(request)
-    Plek.external_url_for("fact-check-manager") + compare_path(request.source_app, request.source_id)
+    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id)}?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check"
   end
 
   def generate_compare_preview_link(request)
-    "#{generate_compare_link(request)}?token=#{compare_preview_jwt_token(request)}"
+    "#{Plek.external_url_for('fact-check-manager')}#{compare_path(request.source_app, request.source_id)}?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check&token=#{compare_preview_jwt_token(request)}"
   end
 
   def draft_origin_preview_url(request)
