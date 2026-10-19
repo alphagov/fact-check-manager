@@ -1,26 +1,32 @@
 describe('GOVUK.Modules.LastTabClicked', () => {
   'use strict'
 
-  let container, formattedTabElement, markdownTabElement, buttonElement, formattedLastTabClicked, markdownLastTabClicked
+  let container, tabsElement, formattedTabElement, markdownTabElement, panelLinkElement, buttonElement, lastTabClicked
 
   const moduleHtml =
-      `<div>
-        <a id="formatted-view" href="#formatted-view">Formatted view/a>
-        <a id="markdown-view" href="#markdown-view">Markdown view/a>
-        <a class="js-response-button" href="https://www.gov.uk/test">Submit</a>
-      </div>`
+      `<div class="govuk-tabs">
+        <a class="govuk-tabs__tab" id="formatted-view" href="#formatted-view">Formatted view</a>
+        <a class="govuk-tabs__tab" id="markdown-view" href="#markdown-view">Markdown view</a>
+        <div class="govuk-tabs__panel">
+          <p>Some content <a id="panel-link" href="https://www.gov.uk/other">a link</a></p>
+        </div>
+      </div>
+      <a class="js-response-button" href="https://www.gov.uk/test">Submit</a>`
 
   beforeEach(() => {
     container = document.createElement('div')
     container.innerHTML = moduleHtml
     document.body.appendChild(container)
 
+    tabsElement = container.querySelector('.govuk-tabs')
     formattedTabElement = container.querySelector('#formatted-view')
     markdownTabElement = container.querySelector('#markdown-view')
+    panelLinkElement = container.querySelector('#panel-link')
     buttonElement = container.querySelector('.js-response-button')
 
-    formattedLastTabClicked = new window.GOVUK.Modules.LastTabClicked(formattedTabElement)
-    markdownLastTabClicked = new window.GOVUK.Modules.LastTabClicked(markdownTabElement)
+    panelLinkElement.addEventListener('click', (event) => event.preventDefault())
+
+    lastTabClicked = new window.GOVUK.Modules.LastTabClicked(tabsElement)
   })
 
   afterEach(() => {
@@ -29,8 +35,7 @@ describe('GOVUK.Modules.LastTabClicked', () => {
 
   describe('when a tab is clicked', () => {
     it('instantiates the module correctly', function () {
-      expect(formattedLastTabClicked).toBeDefined()
-      expect(markdownLastTabClicked).toBeDefined()
+      expect(lastTabClicked).toBeDefined()
     })
 
     it('appends the tab hash to the button URL as previousPageTab', () => {
@@ -52,6 +57,24 @@ describe('GOVUK.Modules.LastTabClicked', () => {
   describe('when no tab is clicked', () => {
     it('retains the default button url', () => {
       expect(buttonElement.href).toBe('https://www.gov.uk/test')
+    })
+  })
+
+  describe('when something other than a tab is clicked', () => {
+    it('retains the default button url', () => {
+      container.querySelector('.govuk-tabs__panel p').click()
+      panelLinkElement.click()
+
+      expect(buttonElement.href).toBe('https://www.gov.uk/test')
+    })
+  })
+
+  describe('when there is no response button', () => {
+    it('does not throw', () => {
+      buttonElement.remove()
+
+      expect(() => new window.GOVUK.Modules.LastTabClicked(tabsElement)).not.toThrow()
+      expect(() => formattedTabElement.click()).not.toThrow()
     })
   })
 })
