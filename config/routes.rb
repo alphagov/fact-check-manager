@@ -29,4 +29,6 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  mount GovukPublishingComponents::Engine, at: "/component-guide" if Rails.env.development?
 end
