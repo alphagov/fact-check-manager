@@ -3,6 +3,8 @@
 Fact check manager has a readily accessible API for use from other applications within the govuk ecosystem. Here is the
 API reference for quick lookup.
 
+Callers must be a Signon API user with the `internal_app` permission for Fact Check Manager, and send its bearer token.
+
 ## New Request
 For when a document does not exist inside Fact Check Manager and needs to be created.
 
