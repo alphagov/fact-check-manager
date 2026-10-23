@@ -8,4 +8,9 @@ RSpec.configure do |config|
       GDS::SSO.test_user = nil
     end
   end
+
+  # API specs call the API as Publisher's API user, which has internal_app
+  config.before(:each, type: :request, file_path: %r{spec/requests/api/requests/}) do
+    GDS::SSO.test_user = FactoryBot.create(:user, permissions: %w[signin internal_app])
+  end
 end
