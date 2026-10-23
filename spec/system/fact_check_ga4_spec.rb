@@ -223,7 +223,7 @@ RSpec.describe "FactCheckGA4", type: :system do
       choose(I18n.t("fact_check_response.incorrect"), allow_label_click: true)
       click_button(I18n.t("fact_check_response.continue_button"))
 
-      page.has_css?("h1", text: "Confirm the changes are factually correct")
+      page.has_css?(".govuk-error-summary")
 
       event_data = get_event_data
 
@@ -241,7 +241,7 @@ RSpec.describe "FactCheckGA4", type: :system do
       page.fill_in(I18n.t("fact_check_response.factual_errors"), with: "a" * 9001)
       click_button(I18n.t("fact_check_response.continue_button"))
 
-      page.has_css?("h1", text: "Confirm the changes are factually correct")
+      page.has_css?(".govuk-error-summary")
 
       event_data = get_event_data
 
