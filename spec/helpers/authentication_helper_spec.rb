@@ -10,7 +10,7 @@ RSpec.describe AuthenticationHelper, type: :helper do
       allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
 
       link = helper.generate_compare_preview_link(request_record)
-      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare?token=#{helper.compare_preview_jwt_token(request_record)}")
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check&token=#{helper.compare_preview_jwt_token(request_record)}")
     end
   end
 
@@ -19,7 +19,7 @@ RSpec.describe AuthenticationHelper, type: :helper do
       allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
 
       link = helper.generate_compare_link(request_record)
-      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare")
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check")
     end
   end
 

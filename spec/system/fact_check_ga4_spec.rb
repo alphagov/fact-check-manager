@@ -153,7 +153,7 @@ RSpec.describe "FactCheckGA4", type: :system do
   end
 
   describe "Fact check the changes page" do
-    it "pushes the correct values to the dataLayer on load" do
+    it "pushes the correct values to the dataLayer when the page loads with no tagging data" do
       visit compare_path(source_app: request.source_app, source_id: request.source_id)
 
       page_view = get_page_view_data
@@ -162,6 +162,49 @@ RSpec.describe "FactCheckGA4", type: :system do
       expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
       expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
       expect(page_view["content_id"]).to eq(request.source_id)
+      expect(page_view["location"]).to end_with("requests/#{request.source_app}/#{request.source_id}/compare")
+      expect(page_view["query_string"]).to eq(nil)
+      expect(page_view["utm_source"]).to eq(nil)
+      expect(page_view["utm_medium"]).to eq(nil)
+      expect(page_view["utm_campaign"]).to eq(nil)
+      expect(page_view["utm_term"]).to eq(nil)
+      expect(page_view["utm_content"]).to eq(nil)
+    end
+
+    it "pushes the correct values to the dataLayer when the page loads with tagging data from the 'View the fact check' email link" do
+      visit "#{compare_path(source_app: request.source_app, source_id: request.source_id)}?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check&token=1a2B3c4D"
+
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+      expect(page_view["location"]).to end_with("requests/#{request.source_app}/#{request.source_id}/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check")
+      expect(page_view["query_string"]).to eq("utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=sme&utm_content=respond_to_fact_check")
+      expect(page_view["utm_source"]).to eq("notify")
+      expect(page_view["utm_medium"]).to eq("email")
+      expect(page_view["utm_campaign"]).to eq("fact_check")
+      expect(page_view["utm_term"]).to eq("sme")
+      expect(page_view["utm_content"]).to eq("respond_to_fact_check")
+    end
+
+    it "pushes the correct values to the dataLayer when the page loads with tagging data from the 'Respond to the fact check' email link" do
+      visit "#{compare_path(source_app: request.source_app, source_id: request.source_id)}?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check"
+
+      page_view = get_page_view_data
+
+      expect(page_view["user_created_at"]).to eq(current_user.created_at.to_date.to_s)
+      expect(page_view["user_organisation_name"]).to eq(current_user.organisation_slug)
+      expect(page_view["user_id"]).to eq(current_user.anonymous_user_id)
+      expect(page_view["content_id"]).to eq(request.source_id)
+      expect(page_view["location"]).to end_with("requests/#{request.source_app}/#{request.source_id}/compare?utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check")
+      expect(page_view["query_string"]).to eq("utm_source=notify&utm_medium=email&utm_campaign=fact_check&utm_term=spoc&utm_content=respond_to_fact_check")
+      expect(page_view["utm_source"]).to eq("notify")
+      expect(page_view["utm_medium"]).to eq("email")
+      expect(page_view["utm_campaign"]).to eq("fact_check")
+      expect(page_view["utm_term"]).to eq("spoc")
+      expect(page_view["utm_content"]).to eq("respond_to_fact_check")
     end
 
     it "pushes the correct values to the dataLayer when the user interacts with page elements" do
