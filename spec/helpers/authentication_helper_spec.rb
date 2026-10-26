@@ -7,19 +7,17 @@ RSpec.describe AuthenticationHelper, type: :helper do
 
   describe "#generate_compare_preview_link" do
     it "returns the correct link with the token" do
-      allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
-
       link = helper.generate_compare_preview_link(request_record)
-      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare?token=#{helper.compare_preview_jwt_token(request_record)}")
+
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/#{request_record.source_id}/compare?utm_campaign=fact_check&utm_content=respond_to_fact_check&utm_medium=email&utm_source=notify&utm_term=sme&token=#{helper.compare_preview_jwt_token(request_record)}")
     end
   end
 
   describe "#generate_compare_link" do
     it "returns the correct link" do
-      allow(helper).to receive(:compare_path).and_return("/requests/publisher/123/compare")
-
       link = helper.generate_compare_link(request_record)
-      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/123/compare")
+
+      expect(link).to eq("#{Plek.external_url_for('fact-check-manager')}/requests/publisher/#{request_record.source_id}/compare?utm_campaign=fact_check&utm_content=respond_to_fact_check&utm_medium=email&utm_source=notify&utm_term=spoc")
     end
   end
 

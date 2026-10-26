@@ -91,7 +91,7 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
       it "includes a tokenised compare link with the fact-check-manager URL prefix" do
         make_request
 
-        expected_prefix = "#{Plek.external_url_for('fact-check-manager')}/requests/#{existing_request.source_app}/#{existing_request.source_id}/compare?token="
+        expected_prefix = "#{Plek.external_url_for('fact-check-manager')}/requests/#{existing_request.source_app}/#{existing_request.source_id}/compare?utm_campaign=fact_check&utm_content=respond_to_fact_check&utm_medium=email&utm_source=notify&utm_term=sme&token="
 
         expect(@notify_client_spy).to have_received(:send_email)
           .with(hash_including(personalisation: hash_including(tokenised_link: start_with(expected_prefix)))).exactly(2).times
@@ -100,7 +100,7 @@ RSpec.describe "POST /api/requests/:source_app/:source_id/resend-emails", type: 
       it "includes a non-tokenised compare link without a token" do
         make_request
 
-        expected_link = "#{Plek.external_url_for('fact-check-manager')}/requests/#{existing_request.source_app}/#{existing_request.source_id}/compare"
+        expected_link = "#{Plek.external_url_for('fact-check-manager')}/requests/#{existing_request.source_app}/#{existing_request.source_id}/compare?utm_campaign=fact_check&utm_content=respond_to_fact_check&utm_medium=email&utm_source=notify&utm_term=spoc"
 
         expect(@notify_client_spy).to have_received(:send_email)
           .with(hash_including(personalisation: hash_including(non_tokenised_link: expected_link))).exactly(2).times
