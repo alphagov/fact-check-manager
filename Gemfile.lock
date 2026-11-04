@@ -193,7 +193,7 @@ GEM
       rake (~> 13.3)
     googleapis-common-protos-types (1.25.0)
       google-protobuf (~> 4.26)
-    govuk_app_config (9.26.0)
+    govuk_app_config (9.27.0)
       connection_pool (< 4)
       logstasher (>= 2.1, < 4.0)
       opentelemetry-exporter-otlp (>= 0.25, < 0.35)
@@ -203,8 +203,8 @@ GEM
       prometheus_exporter (~> 2.3)
       puma (>= 5.6, < 9.0)
       rack-proxy (>= 0.7, < 2.0)
-      sentry-rails (>= 5.3, < 7.0)
-      sentry-ruby (>= 5.3, < 7.0)
+      sentry-rails (>= 5.3, < 8.0, != 7.0.0)
+      sentry-ruby (>= 5.3, < 8.0, != 7.0.0)
       statsd-ruby (~> 1.5)
     govuk_personalisation (1.2.0)
       plek (>= 1.9.0)
@@ -785,7 +785,7 @@ DEPENDENCIES
   factory_bot_rails
   gds-api-adapters
   gds-sso
-  govuk_app_config (~> 9.26.0)
+  govuk_app_config (~> 9.27.0)
   govuk_publishing_components
   govuk_sidekiq
   govuk_test
