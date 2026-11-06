@@ -22,7 +22,7 @@ module Api
 
         render json: { id: fact_check_request.id, source_id: fact_check_request.source_id }, status: :created
       else
-        render json: { errors: fact_check_request.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: fact_check_request.errors.full_messages }, status: :unprocessable_content
       end
     end
 
@@ -34,7 +34,7 @@ module Api
       if @request_record.update(update_params)
         render json: { id: @request_record.id, source_id: @request_record.source_id, source_app: @request_record.source_app }, status: :ok
       else
-        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: @request_record.errors.full_messages }, status: :unprocessable_content
       end
     end
 

@@ -210,7 +210,7 @@ RSpec.describe "PATCH /api/requests/:source_app/:source_id", type: :request do
     it "returns errors for missing required fields" do
       patch "/api/requests/#{existing_request.source_app}/#{existing_request.source_id}", params: invalid_content_payload, as: :json
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
 
       json = JSON.parse(response.body)
       expect(json["errors"]).to include(
