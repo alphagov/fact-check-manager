@@ -8,8 +8,8 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
   function Ga4FormSetup () {}
 
   Ga4FormSetup.prototype.init = function () {
-    var forms
-    var modules = document.querySelectorAll(
+    let forms
+    const modules = document.querySelectorAll(
       "[data-module~='ga4-form-setup']"
     )
 
@@ -24,16 +24,15 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
   }
 
   Ga4FormSetup.prototype.addDataAttributes = function (form) {
-    var section = form.closest('[data-ga4-section]').getAttribute('data-ga4-section')
-    var type = 'new'
-    var eventData
-    var action = form.querySelector('button[type="submit"]').textContent.toLowerCase()
+    const section = form.closest('[data-ga4-section]').getAttribute('data-ga4-section')
+    const type = 'new'
+    const action = form.querySelector('button[type="submit"]').textContent.toLowerCase()
 
-    eventData = {
+    const eventData = {
       event_name: 'form_response',
-      type: type,
-      section: section,
-      action: action
+      type,
+      section,
+      action
     }
 
     form.setAttribute('data-ga4-form-include-text', '')
@@ -44,7 +43,7 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
   }
 
   Ga4FormSetup.prototype.callFormChangeTracker = function (form) {
-    var ga4FormChangeTracker = new window.GOVUK.Modules.Ga4FormChangeTracker(form)
+    const ga4FormChangeTracker = new window.GOVUK.Modules.Ga4FormChangeTracker(form)
 
     ga4FormChangeTracker.init()
   }

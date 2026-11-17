@@ -1,10 +1,10 @@
 describe('GA4FormSetup', function () {
   'use strict'
 
-  var module, ga4FormSetup
+  let module, ga4FormSetup
 
   beforeEach(function () {
-    var moduleHtml =
+    const moduleHtml =
       `<div data-module="ga4-form-setup" data-ga4-section="The section name">
         <form>
           <fieldset>
@@ -27,7 +27,7 @@ describe('GA4FormSetup', function () {
   })
 
   describe('when loaded', function () {
-    var form, formGA4Data, formEventData
+    let form, formGA4Data, formEventData
 
     it('adds the correct parameters to the form', function () {
       form = module.querySelectorAll('form')[0]

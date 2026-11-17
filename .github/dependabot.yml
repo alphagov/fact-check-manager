@@ -38,7 +38,7 @@ updates:
 
       linting:
         patterns:
-          - standardx
+          - standard
           - stylelint
           - stylelint*
           - postcss
