@@ -14,8 +14,8 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
   }
 
   Ga4LinksSetup.prototype.addDataAttributes = function (module) {
-    var linkData
-    var links = module.querySelectorAll('a')
+    let linkData
+    const links = module.querySelectorAll('a')
 
     if (module.tagName.toLowerCase() === 'header') {
       linkData = {

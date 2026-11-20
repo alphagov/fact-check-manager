@@ -18,11 +18,11 @@ window.GOVUK.analyticsGa4.analyticsModules = window.GOVUK.analyticsGa4.analytics
   }
 
   Ga4IndexSectionSetup.prototype.indexElements = function (module) {
-    var indexableElements = []
+    const indexableElements = []
 
     // Find instances of these form elements:
     // select, textarea, fieldset, input (except hidden), input(not in fieldset), radio
-    var elements = module.querySelectorAll(
+    const elements = module.querySelectorAll(
       'select, textarea, fieldset, input:not([type="hidden"], [type="radio"])'
     )
 
