@@ -22,6 +22,7 @@ require_relative "./support/factory_bot"
 require_relative "./helpers/api_helpers"
 
 require "capybara/rails"
+require_relative "./support/capybara_chrome_reset"
 
 # Ensure Rake tasks are loaded for testing
 Rails.application.load_tasks
